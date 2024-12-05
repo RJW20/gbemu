@@ -26,12 +26,17 @@ uint16_t Register::get_hl() {
     return (uint16_t) (h << 8) | l;
 }
 
-/* Write the first byte of the given value to register a and the second byte to
- * register f. */
+/* Write the first byte of the given value to register a and the first 4 bits
+ * of the second byte to register f. 
+ * Outputs to std::cerr if the trailing 4 bits in the second byte are non-
+ * zero. */
 void Register::set_af(uint16_t value) {
     a = (uint8_t) value >> 8;
-    // TODO: prevent trailing 4 bits in F to be non-zero, and std::cerr if so
-    f = (uint8_t) value & 0xFF;
+    if (value & 0xF) {
+        std::cerr << "The trailing 4 bits in register f must always be zero, "
+            "ignoring them in value: " << std::hex << value << std::endl;
+    }
+    f = (uint8_t) value & 0xF0;
 }
 
 /* Write the first byte of the given value to register b and the second byte to
