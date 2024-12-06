@@ -12,7 +12,7 @@ public:
     InterruptManager();
     ~InterruptManager() {};
 
-    void request_interrupt(uint8_t interrupt_bit);
+    void request_interrupt(uint8_t bit);
 
     uint8_t read(uint16_t address) const;
     void write(uint16_t address, uint8_t value);
