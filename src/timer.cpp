@@ -88,12 +88,14 @@ bool Timer::timer_is_enabled() const {
 uint8_t Timer::tima_m_cycles() const {
     switch (tac & 0x03) { // Bits 0–1 of tac
         case 0x00:
-            return 256; // 4096 Hz
+            return (uint8_t) 0xFF; // 4096 Hz
         case 0x01:
-            return 4; // 262144 Hz
+            return (uint8_t) 0x4; // 262144 Hz
         case 0x10:
-            return 16; // 65536 Hz
+            return (uint8_t) 0x10; // 65536 Hz
         case 0x11:
-            return 64; // 16384 Hz
+            return (uint8_t) 0x40; // 16384 Hz
+        default:
+            return 0xFF;    // Never reach here
     }
 }
