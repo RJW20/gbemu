@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdint>
 #include "timer.hpp"
 
 // Initialise all components to zero.
