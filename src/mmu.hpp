@@ -4,18 +4,15 @@
 #include <cstdint>
 #include <vector>
 
-class Memory {
+class Mmu {
 public:
+    Mmu();
+    ~Mmu() {};
 
-    Memory();
-    ~Memory() {};
-
-    // Methods for single byte operations
     uint8_t read(uint16_t address);
     void write(uint16_t address, uint8_t value);
 
 private:
-    std::vector<uint8_t> memory;
 };
 
 #endif
