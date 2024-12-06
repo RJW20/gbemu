@@ -1,9 +1,10 @@
 #include <iostream>
 #include <cstdint>
 #include "timer.hpp"
+#include "interrupt_manager.hpp"
 
-// Initialise all components to zero.
-Timer::Timer() {
+// Initialise all components to zero and set the interrupt manager pointer.
+Timer::Timer(InterruptManager* inter_manag) {
     div = 0;
     tima = 0;
     tma = 0;
@@ -11,6 +12,8 @@ Timer::Timer() {
 
     div_counter = 0;
     tima_counter = 0;
+
+    interrupt_manager = inter_manag;
 }
 
 // Update the timer (called every m-cycle).
@@ -30,7 +33,7 @@ void Timer::tick() {
             
             if (++tima == 0) {
                 tima = tma;
-                // TODO: send interrupt here
+                interrupt_manager->request_interrupt(2);
             }
             
         }

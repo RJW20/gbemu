@@ -2,6 +2,7 @@
 #define TIMER_HPP
 
 #include <cstdint>
+#include "interrupt_manager.hpp"
 
 class Timer {
 public:
@@ -10,7 +11,7 @@ public:
     uint8_t tma;    // Timer Modulo
     uint8_t tac;    // Timer Control
 
-    Timer();
+    Timer(InterruptManager* interrupt_manager);
     ~Timer() {};
 
     void tick();
@@ -21,6 +22,8 @@ private:
     // Counters for m-cycles
     uint8_t div_counter;
     uint8_t tima_counter;
+
+    InterruptManager* interrupt_manager;    // Allows interrupt requests
 
     bool timer_is_enabled() const;
     uint8_t tima_m_cycles() const;
