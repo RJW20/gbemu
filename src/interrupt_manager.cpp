@@ -9,6 +9,17 @@ InterruptManager::InterruptManager() {
     ix = 0;
 }
 
+/* Request an interrupt of the given type.
+ * The value of the given bit decides the type of interrupt:
+ * - 0   Vblank 
+ * - 1   LCD
+ * - 2   Timer 
+ * - 3   Serial Link 
+ * - 4   Joypad */
+void InterruptManager::request_interrupt(uint8_t bit) {
+    ix |= (1 << bit);
+}
+
 // Read from an interrupt register address.
 uint8_t InterruptManager::read(uint16_t address) const {
     switch (address) {
