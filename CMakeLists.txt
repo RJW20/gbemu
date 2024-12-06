@@ -4,7 +4,13 @@ project(gbemu)
 set(CMAKE_CXX_STANDARD 17)
 
 # Source files
-set(SOURCES src/main.cpp)
+set(SOURCES
+    src/main.cpp
+    src/gameboy.cpp
+    src/interrupt_manager.cpp
+    src/timer.cpp
+    src/mmu.cpp
+)
 
 # SDL2 (for graphics, sound, and input)
 find_package(SDL2 REQUIRED)
