@@ -5,8 +5,10 @@
 
 class Register {
 public:
-    Register() {};
+    Register() {reset();};
     ~Register() {};
+
+    void reset();
 
     // 16 bit getters
     uint16_t get_af();

@@ -2,6 +2,16 @@
 #include <cstdint>
 #include "register.hpp"
 
+// Set all register values to their default GameBoy initial values
+void Register::reset() {
+    set_af(0x01B0);
+    set_bc(0x0013);
+    set_de(0x00D8);
+    set_hl(0x014D);
+    pc = 0x100;
+    sp = 0xFFFE;
+}
+
 /* Return a 16 bit integer made up of register a as the first byte and register
  * f as the second byte. */
 uint16_t Register::get_af() {
