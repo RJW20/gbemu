@@ -9,6 +9,7 @@ set(SOURCES
     src/gameboy.cpp
     src/interrupt_manager.cpp
     src/timer.cpp
+    src/cartridge/cartridge.cpp
     src/mmu.cpp
 )
 
