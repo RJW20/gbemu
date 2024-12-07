@@ -27,3 +27,14 @@ Cartridge::Cartridge(std::string rom_path) {
     }
     file.close();
 }
+
+// Read from the rom.
+uint8_t Cartridge::read(uint16_t address) const {
+    return rom[address];
+}
+
+/* Write to the Rom.
+ * Interpreted as an opcode by the MBC. */
+void Cartridge::write(uint16_t address, uint8_t value) {
+    std::cerr << "ROM \'writes\' currently not implemented." << std::endl;
+}
