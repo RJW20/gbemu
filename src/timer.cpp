@@ -40,43 +40,19 @@ void Timer::tick() {
     }
 }
 
-// Read from a timer memory address.
-uint8_t Timer::read(uint16_t address) const {
-    switch (address) {
-        case 0xFF04:
-            return div >> 8; // Upper 8 bits of div
-        case 0xFF05:
-            return tima;
-        case 0xFF06:
-            return tma;
-        case 0xFF07:
-            return tac;
-        default:
-            std::cerr << "Invalid timer read at address: " << std::hex <<
-                address << std::endl;
-            return 0xFF;
-    }
+// Return the upper 8 bits of the divider register.
+uint8_t Timer::exposed_div() const {
+    return div >> 8;
 }
 
-// Write to a timer memory address.
-void Timer::write(uint16_t address, uint8_t value) {
-    switch (address) {
-        case 0xFF04:
-            div = 0; // Writing to div resets it
-            break;
-        case 0xFF05:
-            tima = value;
-            break;
-        case 0xFF06:
-            tma = value;
-            break;
-        case 0xFF07:
-            tac = value & 0x07; // Only the lower 3 bits are valid
-            break;
-        default:
-            std::cerr << "Invalid timer write at address: " << std::hex <<
-                address << std::endl;
-    }
+// Set the divider register to zero.
+void Timer::reset_div() {
+    div = 0;
+}
+
+// Set the timer control to the lower 3 bits of the given value.
+void Timer::set_tac(uint8_t value) {
+    tac = value & 0x07;
 }
 
 // Check if the timer is enabled.

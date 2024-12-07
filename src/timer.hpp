@@ -6,7 +6,6 @@
 
 class Timer {
 public:
-    uint16_t div;   // Divider Register (only upper 8 bits are exposed)
     uint8_t tima;   // Timer Counter
     uint8_t tma;    // Timer Modulo
     uint8_t tac;    // Timer Control
@@ -15,10 +14,13 @@ public:
     ~Timer() {};
 
     void tick();
-    uint8_t read(uint16_t address) const;
-    void write(uint16_t address, uint8_t value);
+    uint8_t exposed_div() const;
+    void reset_div();
+    void set_tac(uint8_t value);
 
 private:
+    uint16_t div;   // Divider Register (only upper 8 bits are exposed)
+
     // Counters for m-cycles
     uint8_t div_counter;
     uint8_t tima_counter;
