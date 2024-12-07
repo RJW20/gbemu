@@ -1,5 +1,5 @@
 #include "gameboy.hpp"
+#include "cartridge/cartridge.hpp"
 #include "interrupt_manager.hpp"
 #include "timer.hpp"
 #include "mmu.hpp"
-
