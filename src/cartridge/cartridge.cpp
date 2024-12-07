@@ -22,7 +22,7 @@ Cartridge::Cartridge(std::string rom_path) {
 
     // Read the file into the rom vector
     if (!file.read(reinterpret_cast<char*>(rom.data()), size)) {
-        std::cerr << "Failed to read file!" << std::endl;
+        std::cerr << "Failed to read ROM: " << rom_path << std::endl;
         exit(0);
     }
     file.close();
