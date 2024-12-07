@@ -64,7 +64,7 @@ uint8_t Cartridge::read_ram(uint16_t address) const {
 }
 
 // Write the given 8 bit value to the ram at the given address.
-void Cartridge::write_rom(uint16_t address, uint8_t value) {
+void Cartridge::write_ram(uint16_t address, uint8_t value) {
 
     if (address >= ram_size) {
         std::cerr << "Invalid cartridge RAM write at address: " << std::hex <<
