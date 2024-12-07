@@ -14,6 +14,7 @@ public:
     void write(uint16_t address, uint8_t value);
 
 private:
+    int length;                 // Length of the ROM
     std::vector<uint8_t> rom;   // Vector to store ROM in
 };
 
