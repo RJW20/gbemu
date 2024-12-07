@@ -3,7 +3,7 @@
 #include <fstream>
 #include "cartridge.hpp"
 
-// Load the ROM into rom.
+// Load the ROM into rom and initialise the ram.
 Cartridge::Cartridge(std::string rom_path) {
     
     std::cout << "Loading ROM: " << rom_path << std::endl;
@@ -17,7 +17,7 @@ Cartridge::Cartridge(std::string rom_path) {
 
     // Get the file size
     std::streamsize size = file.tellg();
-    length = (int) size;
+    rom_size = (int) size;
     file.seekg(0, std::ios::beg);
     rom.resize(size);
 
@@ -27,13 +27,17 @@ Cartridge::Cartridge(std::string rom_path) {
         exit(0);
     }
     file.close();
+
+    // Initialise the ram
+    ram_size = 0x2000;  // 8 KB
+    ram.resize(ram_size);
 }
 
-// Read from the rom.
-uint8_t Cartridge::read(uint16_t address) const {
+// Return the 8 bit value in the rom at the given address.
+uint8_t Cartridge::read_rom(uint16_t address) const {
 
-    if (address >= length) {
-        std::cerr << "Invalid cartridge read at address: " << std::hex <<
+    if (address >= rom_size) {
+        std::cerr << "Invalid cartridge ROM read at address: " << std::hex <<
             address << std::endl;
         return 0xFF;
     }
@@ -41,8 +45,33 @@ uint8_t Cartridge::read(uint16_t address) const {
     return rom[address];
 }
 
-/* Write to the rom.
+/* Write the given 8 bit value to the rom at the given address.
  * Interpreted as an opcode by the MBC. */
-void Cartridge::write(uint16_t address, uint8_t value) {
+void Cartridge::write_rom(uint16_t address, uint8_t value) {
     std::cerr << "ROM \'writes\' currently not implemented." << std::endl;
+}
+
+// Return the 8 bit value in the ram at the given address.
+uint8_t Cartridge::read_ram(uint16_t address) const {
+
+    if (address >= ram_size) {
+        std::cerr << "Invalid cartridge RAM read at address: " << std::hex <<
+            address << std::endl;
+        return 0xFF;
+    }
+
+    return ram[address];
+}
+
+// Write the given 8 bit value to the ram at the given address.
+void Cartridge::write_rom(uint16_t address, uint8_t value) {
+
+    if (address >= ram_size) {
+        std::cerr << "Invalid cartridge RAM write at address: " << std::hex <<
+            address << std::endl;
+        return;
+    }
+
+    ram[address] = value;
+
 }

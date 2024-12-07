@@ -15,12 +15,12 @@ Mmu::Mmu(Cartridge* cart, InterruptManager* inter_manag, Timer* t) {
     hram.resize(0x7F);
 }
 
-/* Read the 8 bit value stored at the given address.
- * If necessary directs the address to the corresponding component. */
+/* Return the 8 bit value stored at the given address.
+ * Directs the address to its corresponding component. */
 uint8_t Mmu::read(uint16_t address) const {
 
     if (address < 0x8000) {
-        return cartridge->read(address);
+        return cartridge->read_rom(address);
     }
 
     else if (0x8000 <= address && address < 0xA000) {
@@ -30,9 +30,7 @@ uint8_t Mmu::read(uint16_t address) const {
     }
 
     else if (0xA000 <= address && address < 0xC000) {
-        std::cerr << "Failed to read from address: " << std::hex << address <<
-            ". Cartridge RAM currently not implemented." << std::endl;
-        return 0xFF;
+        return cartridge->read_ram(address - 0xA000);
     }
     
     else if (0xC000 <= address && address < 0xE000) {
@@ -85,11 +83,11 @@ uint8_t Mmu::read(uint16_t address) const {
 }
 
 /* Write the given 8 bit value to the given address.
- * If necessary directs the address to the corresponding component. */
+ * Directs the address to its corresponding component. */
 void Mmu::write(uint16_t address, uint8_t value) {
 
     if (address < 0x8000) {
-        return cartridge->write(address, value);
+        cartridge->write_rom(address, value);
     }
 
     else if (0x8000 <= address && address < 0xA000) {
@@ -98,8 +96,7 @@ void Mmu::write(uint16_t address, uint8_t value) {
     }
 
     else if (0xA000 <= address && address < 0xC000) {
-        std::cerr << "Failed to write to address: " << std::hex << address <<
-            ". Cartridge RAM currently not implemented." << std::endl;
+        cartridge->write_ram(address - 0xA000, value);
     }
     
     else if (0xC000 <= address && address < 0xE000) {
