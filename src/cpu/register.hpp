@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+/*
+ */
 class Register {
 public:
     Register() {reset();};
@@ -11,16 +13,28 @@ public:
     void reset();
 
     // 16 bit getters
-    uint16_t get_af();
-    uint16_t get_bc();
-    uint16_t get_de();
-    uint16_t get_hl();
+    uint16_t af();
+    uint16_t bc();
+    uint16_t de();
+    uint16_t hl();
 
     // 16 bit setters
     void set_af(uint16_t value);
     void set_bc(uint16_t value);
     void set_de(uint16_t value);
     void set_hl(uint16_t value);
+
+    // flag getters
+    bool flag_z();
+    bool flag_n();
+    bool flag_h();
+    bool flag_c();
+
+    // flag setters
+    void set_flag_z(bool value);
+    void set_flag_n(bool value);
+    void set_flag_h(bool value);
+    void set_flag_c(bool value);
 
 private:
     uint8_t a, f;   // Accumulator and Flags

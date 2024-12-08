@@ -14,25 +14,25 @@ void Register::reset() {
 
 /* Return a 16 bit integer made up of register a as the first byte and register
  * f as the second byte. */
-uint16_t Register::get_af() {
+uint16_t Register::af() {
     return (uint16_t) (a << 8) | f;
 }
 
 /* Return a 16 bit integer made up of register b as the first byte and register
  * c as the second byte. */
-uint16_t Register::get_bc() {
+uint16_t Register::bc() {
     return (uint16_t) (b << 8) | c;
 }
 
 /* Return a 16 bit integer made up of register d as the first byte and register
  * e as the second byte. */
-uint16_t Register::get_de() {
+uint16_t Register::de() {
     return (uint16_t) (d << 8) | e;
 }
 
 /* Return a 16 bit integer made up of register h as the first byte and register
  * l as the second byte. */
-uint16_t Register::get_hl() {
+uint16_t Register::hl() {
     return (uint16_t) (h << 8) | l;
 }
 
@@ -68,4 +68,44 @@ void Register::set_de(uint16_t value) {
 void Register::set_hl(uint16_t value) {
     h = (uint8_t) value >> 8;
     l = (uint8_t) value & 0xFF;
+}
+
+// Return the 7th bit of register f.
+bool Register::flag_z() {
+    return (bool) f >> 7;
+}
+
+// Return the 6th bit of register f.
+bool Register::flag_n() {
+    return (bool) (f >> 6) & 1;
+}
+
+// Return the 5th bit of register f.
+bool Register::flag_h() {
+    return (bool) (f >> 5) & 1;
+}
+
+// Return the 4th bit of register f.
+bool Register::flag_c() {
+    return (bool) (f >> 4) & 1;
+}
+
+// Write the given value to the 7th bit of register f.
+void Register::set_flag_z(bool value) {
+    f |= ((uint8_t) value) << 7;
+}
+
+// Write the given value to the 6th bit of register f.
+void Register::set_flag_n(bool value) {
+    f |= ((uint8_t) value) << 6;
+}
+
+// Write the given value to the 5th bit of register f.
+void Register::set_flag_h(bool value) {
+    f |= ((uint8_t) value) << 5;
+}
+
+// Write the given value to the 4th bit of register f.
+void Register::set_flag_c(bool value) {
+    f |= ((uint8_t) value) << 4;
 }
