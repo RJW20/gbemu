@@ -8,8 +8,9 @@
 
 typedef std::function<void()> Step;
 
-class Opcode {
-public:
+/* Contains all relevant information about an Opcode.
+ * Should be passed lambdas from the cpu as steps. */
+struct Opcode {
     Opcode(
         uint8_t value,
         std::string name,
