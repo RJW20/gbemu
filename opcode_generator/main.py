@@ -8,9 +8,9 @@ def declaration(opcode: Opcode, prefixed=False) -> str:
     """Return the Cpu function declaration for the given opcode."""
 
     if not prefixed:
-        return f"Opcode Cpu::opcode_{opcode["addr"]} ();\n"
+        return f"Opcode opcode_{opcode["addr"]} ();\n"
     else:
-        return f"Opcode Cpu::opcode_cb_{opcode["addr"]} ();\n"
+        return f"Opcode opcode_cb_{opcode["addr"]} ();\n"
 
 
 def main() -> None:
