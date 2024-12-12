@@ -90,22 +90,27 @@ bool Register::flag_c() {
     return (bool) (f >> 4) & 1;
 }
 
-// Write the given value to the 7th bit of register f.
+/* Write the given value to the 7th bit of register f.
+ * Should be set if the result of an operation is zero. */
 void Register::set_flag_z(bool value) {
     f |= ((uint8_t) value) << 7;
 }
 
-// Write the given value to the 6th bit of register f.
+/* Write the given value to the 6th bit of register f.
+ * Should be set if the last operation was a subtraction. */
 void Register::set_flag_n(bool value) {
     f |= ((uint8_t) value) << 6;
 }
 
-// Write the given value to the 5th bit of register f.
+/* Write the given value to the 5th bit of register f.
+ * Should be set if a carry occurred between the 3rd and 4th bits in the last
+ * operation. */
 void Register::set_flag_h(bool value) {
     f |= ((uint8_t) value) << 5;
 }
 
-// Write the given value to the 4th bit of register f.
+/* Write the given value to the 4th bit of register f.
+ * Should be set if the last operation resulted in a carry (an overflow). */
 void Register::set_flag_c(bool value) {
     f |= ((uint8_t) value) << 4;
 }

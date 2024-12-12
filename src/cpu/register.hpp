@@ -25,10 +25,10 @@ public:
     void set_hl(uint16_t value);
 
     // flag getters
-    bool flag_z();
-    bool flag_n();
-    bool flag_h();
-    bool flag_c();
+    bool flag_z();  // Zero flag
+    bool flag_n();  // Subtract flag
+    bool flag_h();  // Half-carry flag
+    bool flag_c();  // Carry flag
 
     // flag setters
     void set_flag_z(bool value);
