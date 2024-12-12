@@ -12,10 +12,35 @@ void Register::reset() {
     sp = 0xFFFE;
 }
 
+/* Return the flags register.
+ * Has the following structure:
+ * - Bit 7 = flag_z
+ * - Bit 6 = flag_n
+ * - Bit 5 = flag_h
+ * - Bit 4 = flag_c
+ * - Bits 0-3 = 0 */
+uint8_t Register::f() {
+    return (flag_z << 7) | (flag_n << 6) | (flag_h << 5) | (flag_c << 4);
+}
+
+/* Set the flags that make up the flags register.
+ * Outputs to std::cerr if the trailing 4 bits in the given value are non-
+ * zero. */
+void Register::set_f(uint8_t value) {
+    if (value & 0xF) {
+        std::cerr << "The trailing 4 bits in register f must always be zero, "
+            "ignoring them in value: " << std::hex << value << std::endl;
+    }
+    flag_z = value >> 7;
+    flag_n = (value >> 6) & 1;
+    flag_h = (value >> 5) & 1;
+    flag_c = (value >> 4) & 1;
+}
+
 /* Return a 16 bit integer made up of register a as the first byte and register
  * f as the second byte. */
 uint16_t Register::af() {
-    return (uint16_t) (a << 8) | f;
+    return (uint16_t) (a << 8) | f();
 }
 
 /* Return a 16 bit integer made up of register b as the first byte and register
@@ -37,16 +62,10 @@ uint16_t Register::hl() {
 }
 
 /* Write the first byte of the given value to register a and the first 4 bits
- * of the second byte to register f. 
- * Outputs to std::cerr if the trailing 4 bits in the second byte are non-
- * zero. */
+ * of the second byte to register f. */
 void Register::set_af(uint16_t value) {
     a = (uint8_t) value >> 8;
-    if (value & 0xF) {
-        std::cerr << "The trailing 4 bits in register f must always be zero, "
-            "ignoring them in value: " << std::hex << value << std::endl;
-    }
-    f = (uint8_t) value & 0xF0;
+    set_f((uint8_t) value);
 }
 
 /* Write the first byte of the given value to register b and the second byte to
@@ -68,49 +87,4 @@ void Register::set_de(uint16_t value) {
 void Register::set_hl(uint16_t value) {
     h = (uint8_t) value >> 8;
     l = (uint8_t) value & 0xFF;
-}
-
-// Return the 7th bit of register f.
-bool Register::flag_z() {
-    return (bool) f >> 7;
-}
-
-// Return the 6th bit of register f.
-bool Register::flag_n() {
-    return (bool) (f >> 6) & 1;
-}
-
-// Return the 5th bit of register f.
-bool Register::flag_h() {
-    return (bool) (f >> 5) & 1;
-}
-
-// Return the 4th bit of register f.
-bool Register::flag_c() {
-    return (bool) (f >> 4) & 1;
-}
-
-/* Write the given value to the 7th bit of register f.
- * Should be set if the result of an operation is zero. */
-void Register::set_flag_z(bool value) {
-    f |= ((uint8_t) value) << 7;
-}
-
-/* Write the given value to the 6th bit of register f.
- * Should be set if the last operation was a subtraction. */
-void Register::set_flag_n(bool value) {
-    f |= ((uint8_t) value) << 6;
-}
-
-/* Write the given value to the 5th bit of register f.
- * Should be set if a carry occurred between the 3rd and 4th bits in the last
- * operation. */
-void Register::set_flag_h(bool value) {
-    f |= ((uint8_t) value) << 5;
-}
-
-/* Write the given value to the 4th bit of register f.
- * Should be set if the last operation resulted in a carry (an overflow). */
-void Register::set_flag_c(bool value) {
-    f |= ((uint8_t) value) << 4;
 }
