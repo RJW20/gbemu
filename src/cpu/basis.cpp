@@ -2,6 +2,52 @@
 #include "cpu.hpp"
 
 // ----------------------------------------------------------------------------
+// 8-bit arithmetic
+// ----------------------------------------------------------------------------
+
+/* Set a to a + value.
+ * Sets the zero, subtract, half-carry and carry flags. */
+void Cpu::add(uint8_t value) {
+    int result = reg.a + value;
+    reg.flag_z = ((result & 0xFF) == 0);
+    reg.flag_n = false;
+    reg.flag_h = ((reg.a & 0xF) + (value & 0xF) > 0xF); // Bits 3 and 4
+    reg.flag_c = (result > 0xFF);
+    reg.a = (uint8_t) result;
+}
+
+/* Set a to a - value.
+ * Sets the zero, subtract, half-carry and carry flags. */
+void Cpu::sub(uint8_t value) {
+    int result = reg.a - value;
+    reg.flag_z = ((result & 0xFF) == 0);
+    reg.flag_n = true;
+    reg.flag_h = (reg.a & 0xF < value & 0xF); // Bits 3 and 4
+    reg.flag_c = (result < 0);
+    reg.a = (uint8_t) result;
+}
+
+/* Return the given value incremented by 1.
+ * Sets the zero, subtract and half-carry flags as necessary. */
+uint8_t Cpu::increment(uint8_t value) {
+    uint8_t result = value + 1;
+    reg.flag_z = (result == 0);
+    reg.flag_n = false;
+    reg.flag_h = ((value & 0xF) == 0xF);    // Bits 3 and 4
+    return result;
+}
+
+/* Return the given value decremented by 1.
+ * Sets the zero, subtract and half-carry flags as necessary. */
+uint8_t Cpu::decrement(uint8_t value) {
+    uint8_t result = value - 1;
+    reg.flag_z = (result == 0);
+    reg.flag_n = true;
+    reg.flag_h = ((value & 0xF) == 0);      // Bits 3 and 4
+    return result;
+}
+
+// ----------------------------------------------------------------------------
 // Rotates and Shifts
 // ----------------------------------------------------------------------------
 

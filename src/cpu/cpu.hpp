@@ -29,6 +29,11 @@ private:
     // Variables for the opcodes to manipulate
 
     // Basis of cpu functionality
+    void add(uint8_t value);
+    void sub(uint8_t value);
+    uint8_t increment(uint8_t value);
+    uint8_t decrement(uint8_t value);
+
     uint8_t rotate_left_circular(uint8_t value);
     uint8_t rotate_left(uint8_t value);
     uint8_t rotate_right_circular(uint8_t value);
