@@ -29,13 +29,13 @@ private:
     // Variables for the opcodes to manipulate
 
     // Basis of cpu functionality
-    uint8_t rlc(uint8_t value);
-    uint8_t rl(uint8_t value);
-    uint8_t rrc(uint8_t value);
-    uint8_t rr(uint8_t value);
-    uint8_t sla(uint8_t value);
-    uint8_t sra(uint8_t value);
-    uint8_t srl(uint8_t value);
+    uint8_t rotate_left_circular(uint8_t value);
+    uint8_t rotate_left(uint8_t value);
+    uint8_t rotate_right_circular(uint8_t value);
+    uint8_t rotate_right(uint8_t value);
+    uint8_t shift_left_arithmetic(uint8_t value);
+    uint8_t shift_right_arithmetic(uint8_t value);
+    uint8_t shift_right_logical(uint8_t value);
 };
 
 #endif
