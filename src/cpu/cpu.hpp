@@ -7,11 +7,13 @@
 #include "interrupt_manager.hpp"
 #include "timer.hpp"
 #include "mmu.hpp"
+#include "interrupt_manager.hpp"
 #include "opcode.hpp"
 
 class Cpu {
 public:
-    Cpu(Mmu* mmu) : mmu(mmu) {initialise_opcodes();};
+    Cpu(Mmu* mmu, InterruptManager* interrupt_manager) :
+        mmu(mmu), interrupt_manager(interrupt_manager) {initialise_opcodes();};
     ~Cpu() {};
 
     void tick();
@@ -19,6 +21,7 @@ public:
 private:
     Register reg;
     Mmu* mmu;
+    InterruptManager* interrupt_manager;
 
     // Opcode dictionaries
     std::unordered_map<uint8_t, Opcode> opcodes;
@@ -42,6 +45,14 @@ private:
 
     void add_hl(uint16_t value);
     uint16_t add_signed8(uint16_t value16, int8_t value8);
+
+    uint8_t swap(uint8_t value);
+    void decimal_adjust_accumulator();
+    void complement_accumulator();
+    void complement_carry_flag();
+    void set_carry_flag();
+    void disable_interrupts();
+    void enable_interrupts();
 
     uint8_t rotate_left_circular(uint8_t value);
     uint8_t rotate_left(uint8_t value);

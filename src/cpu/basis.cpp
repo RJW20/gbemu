@@ -143,6 +143,79 @@ uint16_t Cpu::add_signed8(uint16_t value16, int8_t value8) {
 }
 
 // ----------------------------------------------------------------------------
+// Miscellaneous
+// ----------------------------------------------------------------------------
+
+/* Return the given value with the first and last 4 bits swapped. 
+ * Sets the zero, subtract, half-carry and carry flags as necessary. */
+uint8_t Cpu::swap(uint8_t value) {
+    reg.flag_z = (value == 0);
+    reg.flag_n = false;
+    reg.flag_h = false;
+    reg.flag_c = false;
+    return (uint8_t) (value << 4) | (value >> 4);
+}
+
+/* Adjust a to a binary coded decimal (bcd).
+ * Assumes to have taken place after bcd addition or subtraction operations.
+ * Sets the zero, half-carry and carry flags as necessary. */
+void Cpu::decimal_adjust_accumulator() {
+    reg.flag_z = (reg.a == 0);
+    if (!reg.flag_n) {  // just carried out addition
+        if (reg.flag_c || reg.a > 0x99) {
+            reg.a += 0x60;
+            reg.flag_c = true;
+        }
+        if (reg.flag_h || reg.a & 0xF > 0x9) {
+            reg.a += 0x6;
+        }
+    }
+    else {  // just carried out subtraction
+        if (reg.flag_c) {
+            reg.a -= 0x60;
+        }
+        if (reg.flag_h) {
+            reg.a -= 0x6;
+        }
+    }
+    reg.flag_h = false;
+}
+
+/* Flip all bits in a.
+ * Sets the subtract and half-carry flags as necessary. */
+void Cpu::complement_accumulator() {
+    reg.a = ~reg.a;
+    reg.flag_n = true;
+    reg.flag_h = true;
+}
+
+/* Flip the carry flag.
+ * Sets the subtract and half-carry flags as necessary. */
+void Cpu::complement_carry_flag() {
+    reg.flag_c = !reg.flag_c;
+    reg.flag_n = false;
+    reg.flag_h = false;
+}
+
+/* Set the carry flag.
+ * Sets the subtract and half-carry flags as necessary. */
+void Cpu::set_carry_flag() {
+    reg.flag_c = true;
+    reg.flag_n = false;
+    reg.flag_h = false;
+}
+
+
+void Cpu::disable_interrupts() {
+    interrupt_manager->disable_interrupts();
+}
+
+void Cpu::enable_interrupts() {
+    interrupt_manager->enable_interrupts();
+}
+
+
+// ----------------------------------------------------------------------------
 // Rotates and Shifts
 // ----------------------------------------------------------------------------
 
