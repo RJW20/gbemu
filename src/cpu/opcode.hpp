@@ -14,17 +14,17 @@ struct Opcode {
     Opcode(
         uint8_t address,
         std::string name,
-        int t_cycles,
         int length,
+        int t_cycles,
         std::vector<Step> steps
-    ) : address(address), name(name), t_cycles(t_cycles), length(length),
+    ) : address(address), name(name), length(length), t_cycles(t_cycles),
         steps(steps) {};
     ~Opcode() {};
 
     uint8_t address;            // Hex address of opcode
     std::string name;           // Common name for opcode
-    int t_cycles;               // t-cycles required to execute
     int length;                 // The number of steps in the execution
+    int t_cycles;               // t-cycles required to execute
     std::vector<Step> steps;    // Functions carried out during the execution
 };
 
