@@ -1,10 +1,13 @@
 import json
 
 from opcode import Opcode
+from definitions import add
 
 
 def main() -> None:
-    """"""
+    """Load all opcodes from "opcodes.json" and create files containing their
+    corresponding function declarations, dictionary definitions and function
+    definitions, to be used as part of gbemu/src/cpu."""
     
     with open("opcodes.json", "r") as f:
         all_opcodes = json.load(f)
@@ -48,7 +51,23 @@ def main() -> None:
         f.write("};")
         
     # Definitions
+    with open("opcodes.cpp", "w+") as f:
 
+        f.write("// This file is auto-generated.\n")
+        f.write("// Do not modify this file directly.\n\n")
+
+        f.write("#include <vector>\n")
+        f.write("#include \"cpu.hpp\"\n")
+        f.write("#include \"opcode.hpp\"\n\n")
+
+        for opcode in opcodes:
+            match opcode.mnemonic:
+
+                case "ADD":
+                    if opcode.operand1 != "HL":
+                        f.write(add(opcode))
+            
+            f.write("\n")
 
 
 if __name__ == "__main__":

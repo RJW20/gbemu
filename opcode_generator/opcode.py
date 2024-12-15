@@ -1,8 +1,10 @@
 from typing import Any
 
+INDENT = "    "
+
 
 class Opcode:
-    """Base class for an opcode."""
+    """Class for an opcode."""
 
     def __init__(self, opcode_dict: dict[str, Any], prefixed: bool) -> None:
 
@@ -45,3 +47,22 @@ class Opcode:
             return f"{self.mnemonic} {self.operand1}"
         else:
             return f"{self.mnemonic} {self.operand1}, {self.operand2}"
+
+    @property
+    def function_start(self) -> str:
+        """Return the first 2 lines of this opcodes function definition."""
+
+        return (
+            f"// {self.full_name}\n"
+            f"Opcode Cpu::{self.function_handle}() {{\n"
+            f"{INDENT}std::vector<Step> steps;\n"
+        )
+    
+    @property
+    def function_end(self) -> str:
+        """Return the last 3 lines of this opcodes function definition."""
+
+        return (
+            f"{INDENT}return Opcode({self.address}, \"{self.full_name}\", "
+            f"{self.length}, {self.cycles}, steps);\n}}\n"
+        )
