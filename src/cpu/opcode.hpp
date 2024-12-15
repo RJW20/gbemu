@@ -12,16 +12,16 @@ typedef std::function<void()> Step;
  * Should be passed lambdas from the cpu as steps. */
 struct Opcode {
     Opcode(
-        uint8_t value,
+        uint8_t address,
         std::string name,
         int t_cycles,
         int length,
         std::vector<Step> steps
-    ) : value(value), name(name), t_cycles(t_cycles), length(length),
+    ) : address(address), name(name), t_cycles(t_cycles), length(length),
         steps(steps) {};
     ~Opcode() {};
 
-    uint8_t value;              // Hex value of opcode
+    uint8_t address;            // Hex address of opcode
     std::string name;           // Common name for opcode
     int t_cycles;               // t-cycles required to execute
     int length;                 // The number of steps in the execution
