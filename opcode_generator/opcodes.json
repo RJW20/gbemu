@@ -2374,7 +2374,7 @@
     "0x46": {
       "mnemonic": "BIT",
       "length": 2,
-      "cycles": 16,
+      "cycles": 12,
       "addr": "0x46",
       "operand1": "0",
       "operand2": "(HL)"
@@ -2438,7 +2438,7 @@
     "0x4e": {
       "mnemonic": "BIT",
       "length": 2,
-      "cycles": 16,
+      "cycles": 12,
       "addr": "0x4e",
       "operand1": "1",
       "operand2": "(HL)"
@@ -2502,7 +2502,7 @@
     "0x56": {
       "mnemonic": "BIT",
       "length": 2,
-      "cycles": 16,
+      "cycles": 12,
       "addr": "0x56",
       "operand1": "2",
       "operand2": "(HL)"
@@ -2566,7 +2566,7 @@
     "0x5e": {
       "mnemonic": "BIT",
       "length": 2,
-      "cycles": 16,
+      "cycles": 12,
       "addr": "0x5e",
       "operand1": "3",
       "operand2": "(HL)"
@@ -2630,7 +2630,7 @@
     "0x66": {
       "mnemonic": "BIT",
       "length": 2,
-      "cycles": 16,
+      "cycles": 12,
       "addr": "0x66",
       "operand1": "4",
       "operand2": "(HL)"
@@ -2694,7 +2694,7 @@
     "0x6e": {
       "mnemonic": "BIT",
       "length": 2,
-      "cycles": 16,
+      "cycles": 12,
       "addr": "0x6e",
       "operand1": "5",
       "operand2": "(HL)"
@@ -2758,7 +2758,7 @@
     "0x76": {
       "mnemonic": "BIT",
       "length": 2,
-      "cycles": 16,
+      "cycles": 12,
       "addr": "0x76",
       "operand1": "6",
       "operand2": "(HL)"
@@ -2822,7 +2822,7 @@
     "0x7e": {
       "mnemonic": "BIT",
       "length": 2,
-      "cycles": 16,
+      "cycles": 12,
       "addr": "0x7e",
       "operand1": "7",
       "operand2": "(HL)"
