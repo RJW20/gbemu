@@ -61,6 +61,10 @@ private:
     uint8_t shift_left_arithmetic(uint8_t value);
     uint8_t shift_right_arithmetic(uint8_t value);
     uint8_t shift_right_logical(uint8_t value);
+
+    void bit(uint8_t value, int position);
+    uint8_t set(uint8_t value, int position);
+    uint8_t reset(uint8_t value, int position);
 };
 
 #endif

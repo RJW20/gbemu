@@ -205,7 +205,6 @@ void Cpu::set_carry_flag() {
     reg.flag_h = false;
 }
 
-
 void Cpu::disable_interrupts() {
     interrupt_manager->disable_interrupts();
 }
@@ -213,7 +212,6 @@ void Cpu::disable_interrupts() {
 void Cpu::enable_interrupts() {
     interrupt_manager->enable_interrupts();
 }
-
 
 // ----------------------------------------------------------------------------
 // Rotates and Shifts
@@ -251,7 +249,7 @@ uint8_t Cpu::rotate_right(uint8_t value) {
  * The 0th bit is filled with 0.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 uint8_t Cpu::shift_left_arithmetic(uint8_t value) {
-    uint8_t result = (uint8_t) (value << 1);
+    uint8_t result = value << 1;
     reg.flag_z = (result == 0);
     reg.flag_n = false;
     reg.flag_h = false;
@@ -276,4 +274,27 @@ uint8_t Cpu::shift_right_logical(uint8_t value) {
     reg.flag_h = false;
     reg.flag_c = (bool) (value & 1);
     return result;
+}
+
+// ----------------------------------------------------------------------------
+// Bit Opcodes
+// ----------------------------------------------------------------------------
+
+/* Set the zero flag to the complement of the bit in the given value at the
+ * given bit position.
+ * Sets the subtract and half-carry flags as necessary. */
+void Cpu::bit(uint8_t value, int position) {
+    reg.flag_z = ((value >> position) & 1 == 0);
+    reg.flag_n = false;
+    reg.flag_h = true;
+}
+
+/* Return the given value with the bit at the given bit position set to 1. */
+uint8_t Cpu::set(uint8_t value, int position) {
+    return value | (1 << position);
+}
+
+/* Return the given value with the bit at the given bit position reset to 0. */
+uint8_t Cpu::reset(uint8_t value, int position) {
+    return value & ~(1 << position);
 }
