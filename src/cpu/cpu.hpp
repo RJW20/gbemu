@@ -30,7 +30,13 @@ private:
 
     // Basis of cpu functionality
     void add(uint8_t value);
-    void sub(uint8_t value);
+    void add_with_carry(uint8_t value);
+    void subtract(uint8_t value);
+    void subtract_with_carry(uint8_t value);
+    void and_(uint8_t value);
+    void or_(uint8_t value);
+    void xor_(uint8_t value);
+    void compare(uint8_t value);
     uint8_t increment(uint8_t value);
     uint8_t decrement(uint8_t value);
 
