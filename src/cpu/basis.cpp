@@ -116,6 +116,33 @@ uint8_t Cpu::decrement(uint8_t value) {
 }
 
 // ----------------------------------------------------------------------------
+// 16-bit arithmetic
+// ----------------------------------------------------------------------------
+
+/* Set hl to hl + value.
+ * Sets the subtract, half-carry and carry flags as necessary. */
+void Cpu::add_hl(uint16_t value) {
+    int result = reg.hl() + value;
+    reg.flag_n = false;
+    reg.flag_h = ((reg.hl() & 0xFFF) + (value & 0xFFF) > 0xFFF); // Bits 11 and 12
+    reg.flag_c = (result > 0xFFFF);
+    reg.set_hl((uint16_t) result);
+}
+
+/* Return the addition of the given unsigned 16-bit value and signed 8-bit
+ * value.
+ * Sets the zero, subtract, half-carry and carry flags as necessary.
+ * The half-carry and carry flags are calculated as if the operation was
+ * unsigned. */
+uint16_t Cpu::add_signed8(uint16_t value16, int8_t value8) {
+    reg.flag_z = false;
+    reg.flag_n = false;
+    reg.flag_h = ((value16 & 0xF) + (value8 & 0xF) > 0xF);  // Bits 3 and 4
+    reg.flag_c = ((value16 & 0xF) + (uint8_t) value8 > 0xFF);
+    return value16 + value8;
+}
+
+// ----------------------------------------------------------------------------
 // Rotates and Shifts
 // ----------------------------------------------------------------------------
 
