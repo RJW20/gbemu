@@ -3,6 +3,28 @@ from typing import Callable
 from opcode import Opcode, INDENT
 
 
+def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
+    """Write all opcode function definitions to the file "opcodes.cpp"."""
+    
+    with open("opcodes.cpp", "w+") as f:
+
+        f.write("// This file is auto-generated.\n")
+        f.write("// Do not modify this file directly.\n\n")
+
+        f.write("#include <vector>\n")
+        f.write("#include \"cpu.hpp\"\n")
+        f.write("#include \"opcode.hpp\"\n\n")
+
+        for opcode in opcodes:
+            match opcode.mnemonic:
+
+                case "ADD":
+                    if opcode.operand1 != "HL":
+                        f.write(add(opcode))
+            
+            f.write("\n")
+
+
 def wrap_function_definition() -> Callable[
     [Callable[[Opcode], str]], Callable[[Opcode], str]
 ]:
