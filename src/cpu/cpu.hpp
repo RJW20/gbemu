@@ -12,16 +12,16 @@
 
 class Cpu {
 public:
-    Cpu(Mmu* mmu, InterruptManager* interrupt_manager) :
-        mmu(mmu), interrupt_manager(interrupt_manager) {initialise_opcodes();};
+    Cpu(InterruptManager* interrupt_manager, Mmu* mmu) :
+        interrupt_manager(interrupt_manager), mmu(mmu) {initialise_opcodes();};
     ~Cpu() {};
 
     void tick();
 
 private:
     Register reg;
-    Mmu* mmu;
     InterruptManager* interrupt_manager;
+    Mmu* mmu;
 
     // Opcode dictionaries
     std::unordered_map<uint8_t, Opcode> opcodes;

@@ -6,6 +6,7 @@
 #include "interrupt_manager.hpp"
 #include "timer.hpp"
 #include "mmu.hpp"
+#include "cpu/cpu.hpp"
 
 class GameBoy {
 public:
@@ -17,6 +18,7 @@ private:
     InterruptManager interrupt_manager;
     Timer timer = Timer(&interrupt_manager);
     Mmu mmu = Mmu(&cartridge, &interrupt_manager, &timer);
+    Cpu cpu = Cpu(&interrupt_manager, &mmu);
 };
 
 #endif
