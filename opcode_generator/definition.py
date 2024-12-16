@@ -22,6 +22,10 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
                     f.write(ld(opcode))
                 case "LDH":
                     f.write(ldh(opcode))
+                case "PUSH":
+                    f.write(push(opcode))
+                case "POP":
+                    f.write(pop(opcode))
                 case "ADD":
                     if opcode.operand1 != "HL":
                         f.write(add(opcode))
@@ -55,7 +59,7 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
                     f.write(ccf(opcode))
                 case "SCF":
                     f.write(scf(opcode))
-                case "NOP" | "HALT" | "STOP":
+                case "NOP" | "HALT" | "STOP" | "PREFIX":
                     f.write(nop(opcode))
                 case "DI":
                     f.write(di(opcode))
@@ -101,11 +105,7 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
                     f.write(ret(opcode))
                 case "RETI":
                     f.write(reti(opcode))
-                
-                case _:
-                    print(opcode.mnemonic)
-                
-            
+       
             f.write("\n")
 
 
@@ -305,6 +305,32 @@ def ldh(opcode: Opcode) -> str:
                         step("z8 = mmu->read((uint16_t) (0xFF00 + reg.c))") +
                         step("reg.a = z8")
                     )
+                
+@wrap_function_definition()
+def push(opcode: Opcode) -> str:
+    
+    if opcode.operand1 == "AF":
+
+        return (
+            step("reg.sp--") + 
+            step("mmu->write(reg.sp--, reg.a)") + 
+            step("mmu->write(reg.sp, reg.f())")
+        )
+
+    return (
+        step("reg.sp--") + 
+        step(f"mmu->write(reg.sp--, reg.{opcode.operand1.lower()[0]})") + 
+        step(f"mmu->write(reg.sp, reg.{opcode.operand1.lower()[1]})")
+    )
+
+@wrap_function_definition()
+def pop(opcode: Opcode) -> str:
+    
+    return (
+        step("z8 = mmu->read(reg.sp++)") +
+        step("z16 = (mmu->read(reg.sp++) << 8) | z8") +
+        step(f"reg.set_{opcode.operand1.lower()}(z16)")
+    )
 
 @wrap_function_definition()
 def add(opcode: Opcode) -> str:
