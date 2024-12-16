@@ -17,6 +17,9 @@ public:
     uint16_t sp;    // Stack Pointer
     uint16_t pc;    // Program Counter
 
+    // Flags register
+    uint8_t f();
+    void set_f(uint8_t);
     bool flag_z;  // Zero flag
     bool flag_n;  // Subtract flag
     bool flag_h;  // Half-carry flag
@@ -35,11 +38,6 @@ public:
     void set_bc(uint16_t value);
     void set_de(uint16_t value);
     void set_hl(uint16_t value);
-
-private:
-    // Flags register
-    uint8_t f();
-    void set_f(uint8_t);
 };
 
 #endif
