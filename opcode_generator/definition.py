@@ -77,6 +77,12 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
                     f.write(rrc(opcode))
                 case "RR":
                     f.write(rr(opcode))
+                case "SLA":
+                    f.write(sla(opcode))
+                case "SRA":
+                    f.write(sra(opcode))
+                case "SRL":
+                    f.write(srl(opcode))
                 case "BIT":
                     f.write(bit(opcode))
                 case "SET":
@@ -278,14 +284,14 @@ def ldh(opcode: Opcode) -> str:
                 case "(a8)":
                     return(
                         step("z8 = mmu->read(reg.pc++)") +
-                        step("z8 = (mmu->read((uint16_t) (0xFF00 + z8))") +
-                        step("reg.a = z8)")
+                        step("z8 = mmu->read((uint16_t) (0xFF00 + z8))") +
+                        step("reg.a = z8")
                     )
                 
                 case "(C)":
                     return(
-                        step("z8 = (mmu->read((uint16_t) (0xFF00 + reg.c))") +
-                        step("reg.a = z8)")
+                        step("z8 = mmu->read((uint16_t) (0xFF00 + reg.c))") +
+                        step("reg.a = z8")
                     )
 
 @wrap_function_definition()
@@ -692,6 +698,51 @@ def rr(opcode: Opcode) -> str:
             return (
                 step(f"reg.{register} = rotate_right(reg.{register})")  
             )
+        
+@wrap_function_definition()
+def sla(opcode: Opcode) -> str:
+
+    match opcode.operand1:
+
+        case "(HL)":
+            return (
+                step("z8 = mmu->read(reg.hl())") +
+                step("mmu->write(reg.hl(), shift_left_arithmetic(z8))")
+            )
+        
+        case _:
+            register = opcode.operand1.lower()
+            return step(f"reg.{register} = shift_left_arithmetic(reg.{register})")
+        
+@wrap_function_definition()
+def sra(opcode: Opcode) -> str:
+
+    match opcode.operand1:
+
+        case "(HL)":
+            return (
+                step("z8 = mmu->read(reg.hl())") +
+                step("mmu->write(reg.hl(), shift_right_arithmetic(z8))")
+            )
+        
+        case _:
+            register = opcode.operand1.lower()
+            return step(f"reg.{register} = shift_right_arithmetic(reg.{register})")
+        
+@wrap_function_definition()
+def srl(opcode: Opcode) -> str:
+
+    match opcode.operand1:
+
+        case "(HL)":
+            return (
+                step("z8 = mmu->read(reg.hl())") +
+                step("mmu->write(reg.hl(), shift_right_logical(z8))")
+            )
+        
+        case _:
+            register = opcode.operand1.lower()
+            return step(f"reg.{register} = shift_right_logical(reg.{register})")
         
 @wrap_function_definition()
 def bit(opcode: Opcode) -> str:
