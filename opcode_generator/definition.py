@@ -93,6 +93,14 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
                     f.write(jp(opcode))
                 case "JR":
                     f.write(jr(opcode))
+                case "CALL":
+                    f.write(call(opcode))
+                case "RST":
+                    f.write(rst(opcode))
+                case "RET":
+                    f.write(ret(opcode))
+                case "RETI":
+                    f.write(reti(opcode))
                 
                 case _:
                     print(opcode.mnemonic)
@@ -840,30 +848,118 @@ def jp(opcode: Opcode) -> str:
 @wrap_function_definition()
 def jr(opcode: Opcode) -> str:
 
-    match opcode.operand1:
+    if opcode.operand1 == "r8":
     
-        case "r8":
-            return (
-                step("z8 = mmu->read(reg.pc++)") +
-                step("reg.pc = (uint16_t) (reg.pc + (int8_t) z8)")
-            )
+        return (
+            step("z8 = mmu->read(reg.pc++)") +
+            step("reg.pc = (uint16_t) (reg.pc + (int8_t) z8)")
+        )
+
+    flag_condition = ""
+    match opcode.operand1:
+        case "NZ":
+            flag_condition = "reg.flag_z"
+        case "Z":
+            flag_condition = "!reg.flag_z"
+        case "NC":
+            flag_condition = "reg.flag_c"
+        case "C":
+            flag_condition = "!reg.flag_c"
+
+    return (
+        step("z8 = mmu->read(reg.pc++);\n"
+            f"{INDENT}{INDENT}if ({flag_condition}) early_exit = true"
+        ) +
+        step("reg.pc = (uint16_t) (reg.pc + (int8_t) z8)")
+    )
         
-        case _:
+@wrap_function_definition()
+def call(opcode: Opcode) -> str:
 
-            flag_condition = ""
-            match opcode.operand1:
-                case "NZ":
-                    flag_condition = "reg.flag_z"
-                case "Z":
-                    flag_condition = "!reg.flag_z"
-                case "NC":
-                    flag_condition = "reg.flag_c"
-                case "C":
-                    flag_condition = "!reg.flag_c"
-
-            return (
-                step("z8 = mmu->read(reg.pc++);\n"
-                    f"{INDENT}{INDENT}if ({flag_condition}) early_exit = true"
-                ) +
-                step("reg.pc = (uint16_t) (reg.pc + (int8_t) z8)")
+    if opcode.operand1 == "a16":
+    
+        return (
+            step("z8 = mmu->read(reg.pc++)") +
+            step("z16 = (mmu->read(reg.pc++) << 8) | z8") +
+            step("reg.sp--") + 
+            step("mmu->write(reg.sp--, reg.pc >> 8)") +
+            step(
+                "mmu->write(reg.sp, reg.pc & 0xFF);\n"
+                f"{INDENT}{INDENT}reg.pc = z16"
             )
+        )
+    
+    flag_condition = ""
+    match opcode.operand1:
+        case "NZ":
+            flag_condition = "reg.flag_z"
+        case "Z":
+            flag_condition = "!reg.flag_z"
+        case "NC":
+            flag_condition = "reg.flag_c"
+        case "C":
+            flag_condition = "!reg.flag_c"
+
+    return (
+        step("z8 = mmu->read(reg.pc++)") +
+        step(
+            "z16 = (mmu->read(reg.pc++) << 8) | z8;\n"
+            f"{INDENT}{INDENT}if ({flag_condition}) early_exit = true"
+        ) +
+        step("reg.sp--") + 
+        step("mmu->write(reg.sp--, reg.pc >> 8)") +
+        step(
+            "mmu->write(reg.sp, reg.pc & 0xFF);\n"
+            f"{INDENT}{INDENT}reg.pc = z16"
+        )
+    )
+
+@wrap_function_definition()
+def rst(opcode: Opcode) -> str:
+
+    return (
+        step("reg.sp--") + 
+        step("mmu->write(reg.sp--, reg.pc >> 8)") + 
+        step(
+            "mmu->write(reg.sp, reg.pc & 0xFF);\n"
+            f"{INDENT}{INDENT}reg.pc = 0x{opcode.operand1[:2]}"
+        ) 
+    )
+
+@wrap_function_definition()
+def ret(opcode: Opcode) -> str:
+
+    if opcode.operand1 is None:
+
+        return (
+            step("z8 = mmu->read(reg.sp++)") +
+            step("z16 = (mmu->read(reg.sp++) << 8) | z8") +
+            step("reg.pc = z16")
+        )
+    
+    flag_condition = ""
+    match opcode.operand1:
+        case "NZ":
+            flag_condition = "reg.flag_z"
+        case "Z":
+            flag_condition = "!reg.flag_z"
+        case "NC":
+            flag_condition = "reg.flag_c"
+        case "C":
+            flag_condition = "!reg.flag_c"
+
+    return (
+        step(f"if ({flag_condition}) early_exit = true") + 
+        step("z8 = mmu->read(reg.sp++)") +
+        step("z16 = (mmu->read(reg.sp++) << 8) | z8") +
+        step("reg.pc = z16")
+    )
+
+@wrap_function_definition()
+def reti(opcode: Opcode) -> str:
+
+    return (
+        step("z8 = mmu->read(reg.sp++)") +
+        step("z16 = (mmu->read(reg.sp++) << 8) | z8") +
+        step("reg.pc = z16; interrupt_manager->ime = true")
+    )
