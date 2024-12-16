@@ -27,10 +27,7 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
                 case "POP":
                     f.write(pop(opcode))
                 case "ADD":
-                    if opcode.operand1 != "HL":
-                        f.write(add(opcode))
-                    else:
-                        f.write(add_hl(opcode))
+                    f.write(add(opcode))
                 case "ADC":
                     f.write(adc(opcode))
                 case "SUB":
@@ -335,31 +332,38 @@ def pop(opcode: Opcode) -> str:
 @wrap_function_definition()
 def add(opcode: Opcode) -> str:
 
-    match opcode.operand2:
+    if opcode.operand1 != "HL":
 
-        case "(HL)":
-            return (
-                step("z8 = mmu->read(reg.hl())") +
-                step("add(z8)")  
-            )
-        
-        case "d8":
-            return (
-                step("z8 = mmu->read(reg.pc++)") +
-                step("add(z8)")  
-            )
-        
-        case "r8":
-            return (
-                step("z8 = mmu->read(reg.pc++)") +
-                step("z16 = add_signed8(reg.sp, (int8_t) z8)") +
-                step("reg.sp = z16")
-            )
+        match opcode.operand2:
 
-        case _:
-            return (
-                step(f"add(reg.{opcode.operand2.lower()})")  
-            )
+            case "(HL)":
+                return (
+                    step("z8 = mmu->read(reg.hl())") +
+                    step("add(z8)")  
+                )
+            
+            case "d8":
+                return (
+                    step("z8 = mmu->read(reg.pc++)") +
+                    step("add(z8)")  
+                )
+            
+            case "r8":
+                return (
+                    step("z8 = mmu->read(reg.pc++)") +
+                    step("z16 = add_signed8(reg.sp, (int8_t) z8)") +
+                    step("reg.sp = z16")
+                )
+
+            case _:
+                return (
+                    step(f"add(reg.{opcode.operand2.lower()})")  
+                )
+            
+    if opcode.operand2 != "SP":
+        return step(f"add_hl(reg.{opcode.operand2.lower()}())")
+    
+    return step("add_hl(reg.sp)")
         
 @wrap_function_definition()
 def adc(opcode: Opcode) -> str:
@@ -570,15 +574,6 @@ def dec(opcode: Opcode) -> str:
             return (
                 step(f"decrement(reg.{opcode.operand1.lower()})")  
             )
-        
-@wrap_function_definition()
-def add_hl(opcode: Opcode) -> str:
-
-    if opcode.operand2 != "SP":
-        return step(f"add_hl(reg.{opcode.operand2.lower()}())")
-
-    else:
-        return step("add_hl(reg.sp)")
     
 @wrap_function_definition()
 def swap(opcode: Opcode) -> str:
