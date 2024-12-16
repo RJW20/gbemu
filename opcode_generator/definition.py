@@ -40,7 +40,7 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
                 case "XOR":
                     f.write(xor_(opcode))
                 case "CP":
-                    f.write(compare(opcode))
+                    f.write(cp(opcode))
                 case "INC":
                     f.write(inc(opcode))
                 case "DEC":
@@ -88,7 +88,11 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
                 case "SET":
                     f.write(set_(opcode))
                 case "RES":
-                    f.write(reset(opcode))
+                    f.write(res(opcode))
+                case "JP":
+                    f.write(jp(opcode))
+                case "JR":
+                    f.write(jr(opcode))
                 
                 case _:
                     print(opcode.mnemonic)
@@ -456,7 +460,7 @@ def xor_(opcode: Opcode) -> str:
             )
         
 @wrap_function_definition()
-def compare(opcode: Opcode) -> str:
+def cp(opcode: Opcode) -> str:
 
     match opcode.operand1:
 
@@ -779,7 +783,7 @@ def set_(opcode: Opcode) -> str:
             )
         
 @wrap_function_definition()
-def reset(opcode: Opcode) -> str:
+def res(opcode: Opcode) -> str:
 
     match opcode.operand2:
 
@@ -794,4 +798,72 @@ def reset(opcode: Opcode) -> str:
             register = opcode.operand2.lower()
             return (
                 step(f"reg.{register} = reset(reg.{register}, {int(opcode.operand1)})")  
+            )
+        
+@wrap_function_definition()
+def jp(opcode: Opcode) -> str:
+
+    match opcode.operand1:
+
+        case "a16":
+            return (
+                step("z8 = mmu->read(reg.pc++)") +
+                step("z16 = (mmu->read(reg.pc++) << 8) | z8") +
+                step("reg.pc = z16")
+            )
+        
+        case "HL":
+            return step("reg.pc = reg.hl()")
+        
+        case _:
+
+            flag_condition = ""
+            match opcode.operand1:
+                case "NZ":
+                    flag_condition = "reg.flag_z"
+                case "Z":
+                    flag_condition = "!reg.flag_z"
+                case "NC":
+                    flag_condition = "reg.flag_c"
+                case "C":
+                    flag_condition = "!reg.flag_c"
+
+            return (
+                step("z8 = mmu->read(reg.pc++)") +
+                step(
+                    "z16 = (mmu->read(reg.pc++) << 8) | z8;\n"
+                    f"{INDENT}{INDENT}if ({flag_condition}) early_exit = true"
+                ) +
+                step("reg.pc = z16")
+            )
+        
+@wrap_function_definition()
+def jr(opcode: Opcode) -> str:
+
+    match opcode.operand1:
+    
+        case "r8":
+            return (
+                step("z8 = mmu->read(reg.pc++)") +
+                step("reg.pc = (uint16_t) (reg.pc + (int8_t) z8)")
+            )
+        
+        case _:
+
+            flag_condition = ""
+            match opcode.operand1:
+                case "NZ":
+                    flag_condition = "reg.flag_z"
+                case "Z":
+                    flag_condition = "!reg.flag_z"
+                case "NC":
+                    flag_condition = "reg.flag_c"
+                case "C":
+                    flag_condition = "!reg.flag_c"
+
+            return (
+                step("z8 = mmu->read(reg.pc++);\n"
+                    f"{INDENT}{INDENT}if ({flag_condition}) early_exit = true"
+                ) +
+                step("reg.pc = (uint16_t) (reg.pc + (int8_t) z8)")
             )
