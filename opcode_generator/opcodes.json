@@ -1453,10 +1453,7 @@
     "0xc0": {
       "mnemonic": "RET",
       "length": 1,
-      "cycles": [
-        20,
-        8
-      ],
+      "cycles": 20,
       "addr": "0xc0",
       "operand1": "NZ"
     },
@@ -1515,10 +1512,7 @@
     "0xc8": {
       "mnemonic": "RET",
       "length": 1,
-      "cycles": [
-        20,
-        8
-      ],
+      "cycles": 20,
       "addr": "0xc8",
       "operand1": "Z"
     },
@@ -1576,10 +1570,7 @@
     "0xd0": {
       "mnemonic": "RET",
       "length": 1,
-      "cycles": [
-        20,
-        8
-      ],
+      "cycles": 20,
       "addr": "0xd0",
       "operand1": "NC"
     },
@@ -1630,10 +1621,7 @@
     "0xd8": {
       "mnemonic": "RET",
       "length": 1,
-      "cycles": [
-        20,
-        8
-      ],
+      "cycles": 20,
       "addr": "0xd8",
       "operand1": "C"
     },
