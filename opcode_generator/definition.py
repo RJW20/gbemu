@@ -20,6 +20,8 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
 
                 case "LD":
                     f.write(ld(opcode))
+                case "LDH":
+                    f.write(ldh(opcode))
                 case "ADD":
                     if opcode.operand1 != "HL":
                         f.write(add(opcode))
@@ -128,7 +130,7 @@ def ld(opcode: Opcode) -> str:
                 case "A":
                     return(
                         step("z8 = mmu->read(reg.pc++)") +
-                        step("z16 = (uint16_t) (0xFF00 + z8)") +
+                        step("z16 = (mmu->read(reg.pc++) << 8) | z8") +
                         step("mmu->write(z16, reg.a)")
                     )
         
@@ -196,7 +198,7 @@ def ld(opcode: Opcode) -> str:
                 case "(a16)":
                     return(
                         step("z8 = mmu->read(reg.pc++)") +
-                        step("z16 = (uint16_t) (0xFF00 + z8)") +
+                        step("z16 = (mmu->read(reg.pc++) << 8) | z8") +
                         step("reg.a = mmu->read(z16)")
                     )
                 
@@ -254,7 +256,37 @@ def ld(opcode: Opcode) -> str:
                     from_reg = opcode.operand2.lower()
                     return step(f"reg.{to_reg} = reg.{from_reg}")
 
+@wrap_function_definition()
+def ldh(opcode: Opcode) -> str:
 
+    match opcode.operand1:
+
+        case "(a8)":
+            return(
+                step("z8 = mmu->read(reg.pc++)") +
+                step("mmu->write((uint16_t) (0xFF00 + z8), reg.a)")
+            )
+
+        case "(C)":
+            return(
+                step("mmu->write((uint16_t) (0xFF00 + reg.c), reg.a)")
+            )
+
+        case "A":
+            match opcode.operand2:
+
+                case "(a8)":
+                    return(
+                        step("z8 = mmu->read(reg.pc++)") +
+                        step("z8 = (mmu->read((uint16_t) (0xFF00 + z8))") +
+                        step("reg.a = z8)")
+                    )
+                
+                case "(C)":
+                    return(
+                        step("z8 = (mmu->read((uint16_t) (0xFF00 + reg.c))") +
+                        step("reg.a = z8)")
+                    )
 
 @wrap_function_definition()
 def add(opcode: Opcode) -> str:
