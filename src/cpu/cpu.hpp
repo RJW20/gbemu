@@ -3,11 +3,9 @@
 
 #include <cstdint>
 #include <unordered_map>
+#include "../interrupt_manager.hpp"
+#include "../mmu.hpp"
 #include "register.hpp"
-#include "interrupt_manager.hpp"
-#include "timer.hpp"
-#include "mmu.hpp"
-#include "interrupt_manager.hpp"
 #include "opcode.hpp"
 
 class Cpu {
