@@ -18,6 +18,8 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
         for opcode in opcodes + cb_opcodes:
             match opcode.mnemonic:
 
+                case "LD":
+                    f.write(ld(opcode))
                 case "ADD":
                     if opcode.operand1 != "HL":
                         f.write(add(opcode))
@@ -80,6 +82,9 @@ def definitions(opcodes: list[Opcode], cb_opcodes: list[Opcode]) -> None:
                 case "RES":
                     f.write(reset(opcode))
                 
+                case _:
+                    print(opcode.mnemonic)
+                
             
             f.write("\n")
 
@@ -93,9 +98,9 @@ def wrap_function_definition() -> Callable[
     def decorator(func: Callable[[Opcode], str]) -> Callable[[Opcode], str]:
         def wrapped(opcode: Opcode) -> str:
             return (
-                f"{opcode.function_start}"
-                f"{func(opcode)}"
-                f"{opcode.function_end}"
+                opcode.function_start + 
+                func(opcode) +
+                opcode.function_end  
             )
         return wrapped
     return decorator
@@ -105,33 +110,179 @@ def step(operation: str) -> str:
     return f"{INDENT}steps.push_back([this]() {{ {operation}; }});\n"
 
 @wrap_function_definition()
+def ld(opcode: Opcode) -> str:
+
+    match opcode.operand1:
+
+        case "(a16)":
+            match opcode.operand2:
+
+                case "SP":
+                    return (
+                        step("z8 = mmu->read(reg.pc++)") +
+                        step("z16 = (mmu->read(reg.pc++) << 8) | z8") +
+                        step("mmu->write(z16, reg.sp & 0xF)") +
+                        step("mmu->write((uint16_t) (z16 + 1), reg.sp >> 8)")
+                    )
+                
+                case "A":
+                    return(
+                        step("z8 = mmu->read(reg.pc++)") +
+                        step("z16 = (uint16_t) (0xFF00 + z8)") +
+                        step("mmu->write(z16, reg.a)")
+                    )
+        
+        case "(HL+)":
+            return step(
+                "mmu->write(reg.hl(), reg.a);\n"
+                f"{INDENT}{INDENT}reg.set_hl(reg.hl() + 1)"
+            )
+        
+        case "(HL-)":
+            return step(
+                "mmu->write(reg.hl(), reg.a);\n"
+                f"{INDENT}{INDENT}reg.set_hl(reg.hl() - 1)"
+            )
+        
+        case "(HL)":
+            match opcode.operand2:
+
+                case "d8":
+                    return (
+                        step("z8 = mmu->read(reg.pc++)") +
+                        step("mmu->write(reg.hl(), z8)")
+                    )
+                
+                case _:
+                    return step(f"mmu->write(reg.hl(), reg.{opcode.operand2.lower()})")
+        
+        case "(BC)" | "(DE)":
+            register = opcode.operand1[1:3].lower()
+            return step(f"mmu->write(reg.{register}(), reg.a)")
+    
+        case "BC" | "DE" | "HL":
+            match opcode.operand2:
+
+                case "SP+r8":
+                    return (
+                        step("z8 = mmu->read(reg.pc++)") + 
+                        step("reg.set_hl(add_signed8(reg.sp, (int8_t) z8))")
+                    )
+                
+                case _:
+                    return (
+                        step("z8 = mmu->read(reg.pc++)") + 
+                        step("z16 = (mmu->read(reg.pc++) << 8) | z8") +
+                        step(f"reg.set_{opcode.operand1.lower()}(z16)")
+                    )
+
+        
+        case "SP":
+            match opcode.operand2:
+                
+                case "d16":
+                    return (
+                        step("z8 = mmu->read(reg.pc++)") + 
+                        step("z16 = (mmu->read(reg.pc++) << 8) | z8") +
+                        step("reg.sp = z16")
+                    )
+            
+                case "HL":
+                    return step("reg.sp = reg.hl()")
+        
+        case "A":
+            match opcode.operand2:
+
+                case "(a16)":
+                    return(
+                        step("z8 = mmu->read(reg.pc++)") +
+                        step("z16 = (uint16_t) (0xFF00 + z8)") +
+                        step("reg.a = mmu->read(z16)")
+                    )
+                
+                case "(HL+)":
+                    return (
+                        step(
+                            "z8 = mmu->read(reg.hl());\n"
+                            f"{INDENT}{INDENT}reg.set_hl(reg.hl() + 1)"
+                        ) +
+                        step("reg.a = z8")
+                    )
+                
+                case "(HL-)":
+                    return (
+                        step(
+                            "z8 = mmu->read(reg.hl());\n"
+                            f"{INDENT}{INDENT}reg.set_hl(reg.hl() - 1)"
+                        ) +
+                        step("reg.a = z8")
+                    )
+                
+                case "(BC)" | "(DE)" | "(HL)":
+                    register = opcode.operand2[1:3].lower()
+                    return (
+                        step(f"z8 = mmu->read(reg.{register}())") + 
+                        step("reg.a = z8")
+                    )
+                
+                case "d8":
+                    return (
+                        step("z8 = mmu->read(reg.pc++)") + 
+                        step("reg.a = z8")
+                    )
+                
+                case _:
+                    return step(f"reg.a = reg.{opcode.operand2.lower()}")
+
+        case _:
+            match opcode.operand2:
+                
+                case "(HL)":
+                    return (
+                        step("z8 = mmu->read(reg.hl())") + 
+                        step(f"reg.{opcode.operand1.lower()} = z8")
+                    )
+                
+                case "d8":
+                    return (
+                        step("z8 = mmu->read(reg.pc++)") + 
+                        step(f"reg.{opcode.operand1.lower()} = z8")
+                    )
+                
+                case _:
+                    to_reg = opcode.operand1.lower()
+                    from_reg = opcode.operand2.lower()
+                    return step(f"reg.{to_reg} = reg.{from_reg}")
+
+
+
+@wrap_function_definition()
 def add(opcode: Opcode) -> str:
 
     match opcode.operand2:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("add(z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("add(z8)")  
             )
         
         case "d8":
             return (
-                f"{step("z8 = mmu->read(reg.pc++)")}"
-                f"{step("add(z8)")}"
+                step("z8 = mmu->read(reg.pc++)") +
+                step("add(z8)")  
             )
         
         case "r8":
             return (
-                f"{step("z8 = mmu->read(reg.pc++)")}"
-                f"{step("z16 = add_signed8(reg.sp, z8)")}"
-                f"{step("reg.sp = z16")}"
-                f"{step("")}"
+                step("z8 = mmu->read(reg.pc++)") +
+                step("z16 = add_signed8(reg.sp, (int8_t) z8)") +
+                step("reg.sp = z16")
             )
 
         case _:
             return (
-                f"{step(f"add(reg.{opcode.operand2.lower()})")}"
+                step(f"add(reg.{opcode.operand2.lower()})")  
             )
         
 @wrap_function_definition()
@@ -141,19 +292,19 @@ def adc(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("add_with_carry(z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("add_with_carry(z8)")  
             )
         
         case "d8":
             return (
-                f"{step("z8 = mmu->read(reg.pc++)")}"
-                f"{step("add_with_carry(z8)")}"
+                step("z8 = mmu->read(reg.pc++)") +
+                step("add_with_carry(z8)")  
             )
 
         case _:
             return (
-                f"{step(f"add_with_carry(reg.{opcode.operand2.lower()})")}"
+                step(f"add_with_carry(reg.{opcode.operand2.lower()})")  
             )
 
 @wrap_function_definition()
@@ -163,19 +314,19 @@ def sub(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("subtract(z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("subtract(z8)")  
             )
         
         case "d8":
             return (
-                f"{step("z8 = mmu->read(reg.pc++)")}"
-                f"{step("subtract(z8)")}"
+                step("z8 = mmu->read(reg.pc++)") +
+                step("subtract(z8)")  
             )
 
         case _:
             return (
-                f"{step(f"subtract(reg.{opcode.operand1.lower()})")}"
+                step(f"subtract(reg.{opcode.operand1.lower()})")  
             )
         
 @wrap_function_definition()
@@ -185,19 +336,19 @@ def sbc(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("subtract_with_carry(z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("subtract_with_carry(z8)")  
             )
         
         case "d8":
             return (
-                f"{step("z8 = mmu->read(reg.pc++)")}"
-                f"{step("subtract_with_carry(z8)")}"
+                step("z8 = mmu->read(reg.pc++)") +
+                step("subtract_with_carry(z8)")  
             )
 
         case _:
             return (
-                f"{step(f"subtract_with_carry(reg.{opcode.operand2.lower()})")}"
+                step(f"subtract_with_carry(reg.{opcode.operand2.lower()})")  
             )
         
 @wrap_function_definition()
@@ -207,19 +358,19 @@ def and_(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("and_(z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("and_(z8)")  
             )
         
         case "d8":
             return (
-                f"{step("z8 = mmu->read(reg.pc++)")}"
-                f"{step("and_(z8)")}"
+                step("z8 = mmu->read(reg.pc++)") +
+                step("and_(z8)")  
             )
 
         case _:
             return (
-                f"{step(f"and_(reg.{opcode.operand1.lower()})")}"
+                step(f"and_(reg.{opcode.operand1.lower()})")  
             )
 
 @wrap_function_definition()
@@ -229,19 +380,19 @@ def or_(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("or_(z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("or_(z8)")  
             )
         
         case "d8":
             return (
-                f"{step("z8 = mmu->read(reg.pc++)")}"
-                f"{step("or_(z8)")}"
+                step("z8 = mmu->read(reg.pc++)") +
+                step("or_(z8)")  
             )
 
         case _:
             return (
-                f"{step(f"or_(reg.{opcode.operand1.lower()})")}"
+                step(f"or_(reg.{opcode.operand1.lower()})")  
             )
         
 @wrap_function_definition()
@@ -251,19 +402,19 @@ def xor_(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("xor_(z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("xor_(z8)")  
             )
         
         case "d8":
             return (
-                f"{step("z8 = mmu->read(reg.pc++)")}"
-                f"{step("xor_(z8)")}"
+                step("z8 = mmu->read(reg.pc++)") +
+                step("xor_(z8)")  
             )
 
         case _:
             return (
-                f"{step(f"xor_(reg.{opcode.operand1.lower()})")}"
+                step(f"xor_(reg.{opcode.operand1.lower()})")  
             )
         
 @wrap_function_definition()
@@ -273,19 +424,19 @@ def compare(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("compare(z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("compare(z8)")  
             )
         
         case "d8":
             return (
-                f"{step("z8 = mmu->read(reg.pc++)")}"
-                f"{step("compare(z8)")}"
+                step("z8 = mmu->read(reg.pc++)") +
+                step("compare(z8)")  
             )
 
         case _:
             return (
-                f"{step(f"compare(reg.{opcode.operand1.lower()})")}"
+                step(f"compare(reg.{opcode.operand1.lower()})")  
             )
         
 @wrap_function_definition()
@@ -295,25 +446,25 @@ def inc(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("z8 = increment(z8)")}"
-                f"{step("mmu->write(reg.hl(), z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("z8 = increment(z8)") +
+                step("mmu->write(reg.hl(), z8)")  
             )
         
         case "BC" | "DE" | "HL":
             register = opcode.operand1.lower()
             return (
-                f"{step(f"reg.set_{register}(reg.{register}() + 1)")}"
+                step(f"reg.set_{register}(reg.{register}() + 1)")  
             )
         
         case "SP":
             return (
-                f"{step("reg.sp++")}"
+                step("reg.sp++")  
             )
 
         case _:
             return (
-                f"{step(f"increment(reg.{opcode.operand1.lower()})")}"
+                step(f"increment(reg.{opcode.operand1.lower()})")  
             )
 
 @wrap_function_definition()
@@ -323,40 +474,35 @@ def dec(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("z8 = decrement(z8)")}"
-                f"{step("mmu->write(reg.hl(), z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("z8 = decrement(z8)") +
+                step("mmu->write(reg.hl(), z8)")  
             )
         
         case "BC" | "DE" | "HL":
             register = opcode.operand1.lower()
             return (
-                f"{step(f"reg.set_{register}(reg.{register}() - 1)")}"
+                step(f"reg.set_{register}(reg.{register}() - 1)")  
             )
 
         case "SP":
             return (
-                f"{step("reg.sp--")}"
+                step("reg.sp--")  
             )
 
         case _:
             return (
-                f"{step(f"decrement(reg.{opcode.operand1.lower()})")}"
+                step(f"decrement(reg.{opcode.operand1.lower()})")  
             )
         
 @wrap_function_definition()
 def add_hl(opcode: Opcode) -> str:
 
     if opcode.operand2 != "SP":
-        return (
-            f"{step(f"add_hl(reg.{opcode.operand2.lower()}())")}"
-        )
+        return step(f"add_hl(reg.{opcode.operand2.lower()}())")
 
     else:
-        return (
-            f"{step("add_hl(reg.sp)")}"
-            f"{step("")}"
-        )
+        return step("add_hl(reg.sp)")
     
 @wrap_function_definition()
 def swap(opcode: Opcode) -> str:
@@ -365,86 +511,82 @@ def swap(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("z8 = swap(z8)")}"
-                f"{step("mmu->write(reg.hl(), z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("z8 = swap(z8)") +
+                step("mmu->write(reg.hl(), z8)")  
             )
         
         case _:
             register = opcode.operand1.lower()
             return (
-                f"{step(f"reg.{register} = swap(reg.{register})")}"
+                step(f"reg.{register} = swap(reg.{register})")  
             )
         
 @wrap_function_definition()
 def daa(opcode: Opcode) -> str:
 
-    return f"{step("decimal_adjust_accumulator()")}"
+    return step("decimal_adjust_accumulator()")
 
 @wrap_function_definition()
 def cpl(opcode: Opcode) -> str:
 
-    return f"{step("complement_accumulator()")}"
+    return step("complement_accumulator()")
 
 @wrap_function_definition()
 def ccf(opcode: Opcode) -> str:
 
-    return f"{step("complement_carry_flag()")}"
+    return step("complement_carry_flag()")
 
 @wrap_function_definition()
 def scf(opcode: Opcode) -> str:
 
-    return f"{step("set_carry_flag()")}"
+    return step("set_carry_flag()")
 
 @wrap_function_definition()
 def nop(opcode: Opcode) -> str:
 
-    return f"{step("")}"
+    return step("")
 
 @wrap_function_definition()
 def di(opcode: Opcode) -> str:
 
-    return f"{step("disable_interrupts()")}"
+    return step("disable_interrupts()")
 
 @wrap_function_definition()
 def ei(opcode: Opcode) -> str:
 
-    return f"{step("enable_interrupts()")}"
+    return step("enable_interrupts()")
 
 @wrap_function_definition()
 def rlca(opcode: Opcode) -> str:
 
-    return (
-        f"{step("reg.a = rotate_left_circular(reg.a);\n"
-            f"{INDENT}{INDENT}reg.flag_z = false"
-        )}"
+    return step(
+        "reg.a = rotate_left_circular(reg.a);\n"
+        f"{INDENT}{INDENT}reg.flag_z = false"
     )
 
 @wrap_function_definition()
 def rla(opcode: Opcode) -> str:
 
-    return (
-        f"{step("reg.a = rotate_left(reg.a);\n"
-            f"{INDENT}{INDENT}reg.flag_z = false"
-        )}"
+    return step(
+        "reg.a = rotate_left(reg.a);\n"
+        f"{INDENT}{INDENT}reg.flag_z = false"
     )
 
 @wrap_function_definition()
 def rrca(opcode: Opcode) -> str:
 
-    return (
-        f"{step("reg.a = rotate_right_circular(reg.a);\n"
-            f"{INDENT}{INDENT}reg.flag_z = false"
-        )}"
+    return step(
+        "reg.a = rotate_right_circular(reg.a);\n"
+        f"{INDENT}{INDENT}reg.flag_z = false"
     )
 
 @wrap_function_definition()
 def rra(opcode: Opcode) -> str:
 
-    return (
-        f"{step("reg.a = rotate_right(reg.a);\n"
-            f"{INDENT}{INDENT}reg.flag_z = false"
-        )}"
+    return step(
+        "reg.a = rotate_right(reg.a);\n"
+        f"{INDENT}{INDENT}reg.flag_z = false"
     )
 
 @wrap_function_definition()
@@ -454,15 +596,15 @@ def rlc(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("z8 = rotate_left_circular(z8)")}"
-                f"{step("mmu->write(reg.hl(), z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("z8 = rotate_left_circular(z8)") +
+                step("mmu->write(reg.hl(), z8)")  
             )
 
         case _:
             register = opcode.operand1.lower()
             return (
-                f"{step(f"reg.{register} = rotate_left_circular(reg.{register})")}"
+                step(f"reg.{register} = rotate_left_circular(reg.{register})")  
             )
         
 @wrap_function_definition()
@@ -472,15 +614,15 @@ def rl(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("z8 = rotate_left(z8)")}"
-                f"{step("mmu->write(reg.hl(), z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("z8 = rotate_left(z8)") +
+                step("mmu->write(reg.hl(), z8)")  
             )
 
         case _:
             register = opcode.operand1.lower()
             return (
-                f"{step(f"reg.{register} = rotate_left(reg.{register})")}"
+                step(f"reg.{register} = rotate_left(reg.{register})")  
             )
         
 @wrap_function_definition()
@@ -490,15 +632,15 @@ def rrc(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("z8 = rotate_right_circular(z8)")}"
-                f"{step("mmu->write(reg.hl(), z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("z8 = rotate_right_circular(z8)") +
+                step("mmu->write(reg.hl(), z8)")  
             )
 
         case _:
             register = opcode.operand1.lower()
             return (
-                f"{step(f"reg.{register} = rotate_right_circular(reg.{register})")}"
+                step(f"reg.{register} = rotate_right_circular(reg.{register})")  
             )
         
 @wrap_function_definition()
@@ -508,15 +650,15 @@ def rr(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step("z8 = rotate_right(z8)")}"
-                f"{step("mmu->write(reg.hl(), z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step("z8 = rotate_right(z8)") +
+                step("mmu->write(reg.hl(), z8)")  
             )
 
         case _:
             register = opcode.operand1.lower()
             return (
-                f"{step(f"reg.{register} = rotate_right(reg.{register})")}"
+                step(f"reg.{register} = rotate_right(reg.{register})")  
             )
         
 @wrap_function_definition()
@@ -526,13 +668,13 @@ def bit(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step(f"bit(z8, {int(opcode.operand1)})")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step(f"bit(z8, {int(opcode.operand1)})")  
             )
         
         case _:
             return (
-                f"{step(f"bit(reg.{opcode.operand2.lower()}, {int(opcode.operand1)})")}"
+                step(f"bit(reg.{opcode.operand2.lower()}, {int(opcode.operand1)})")  
             )
         
 @wrap_function_definition()
@@ -542,15 +684,15 @@ def set_(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step(f"z8 = set(z8, {int(opcode.operand1)})")}"
-                f"{step("mmu->write(reg.hl(), z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step(f"z8 = set(z8, {int(opcode.operand1)})") +
+                step("mmu->write(reg.hl(), z8)")  
             )
         
         case _:
             register = opcode.operand2.lower()
             return (
-                f"{step(f"reg.{register} = set(reg.{register}, {int(opcode.operand1)})")}"
+                step(f"reg.{register} = set(reg.{register}, {int(opcode.operand1)})")  
             )
         
 @wrap_function_definition()
@@ -560,13 +702,13 @@ def reset(opcode: Opcode) -> str:
 
         case "(HL)":
             return (
-                f"{step("z8 = mmu->read(reg.hl())")}"
-                f"{step(f"z8 = reset(z8, {int(opcode.operand1)})")}"
-                f"{step("mmu->write(reg.hl(), z8)")}"
+                step("z8 = mmu->read(reg.hl())") +
+                step(f"z8 = reset(z8, {int(opcode.operand1)})") +
+                step("mmu->write(reg.hl(), z8)")  
             )
         
         case _:
             register = opcode.operand2.lower()
             return (
-                f"{step(f"reg.{register} = reset(reg.{register}, {int(opcode.operand1)})")}"
+                step(f"reg.{register} = reset(reg.{register}, {int(opcode.operand1)})")  
             )
