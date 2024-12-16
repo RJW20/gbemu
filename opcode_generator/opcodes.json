@@ -1470,10 +1470,7 @@
     "0xc2": {
       "mnemonic": "JP",
       "length": 3,
-      "cycles": [
-        16,
-        12
-      ],
+      "cycles": 16,
       "addr": "0xc2",
       "operand1": "NZ",
       "operand2": "a16"
@@ -1537,10 +1534,7 @@
     "0xca": {
       "mnemonic": "JP",
       "length": 3,
-      "cycles": [
-        16,
-        12
-      ],
+      "cycles": 16,
       "addr": "0xca",
       "operand1": "Z",
       "operand2": "a16"
@@ -1605,10 +1599,7 @@
     "0xd2": {
       "mnemonic": "JP",
       "length": 3,
-      "cycles": [
-        16,
-        12
-      ],
+      "cycles": 16,
       "addr": "0xd2",
       "operand1": "NC",
       "operand2": "a16"
@@ -1664,10 +1655,7 @@
     "0xda": {
       "mnemonic": "JP",
       "length": 3,
-      "cycles": [
-        16,
-        12
-      ],
+      "cycles": 16,
       "addr": "0xda",
       "operand1": "C",
       "operand2": "a16"
