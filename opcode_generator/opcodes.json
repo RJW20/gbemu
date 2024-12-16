@@ -1485,10 +1485,7 @@
     "0xc4": {
       "mnemonic": "CALL",
       "length": 3,
-      "cycles": [
-        24,
-        12
-      ],
+      "cycles": 24,
       "addr": "0xc4",
       "operand1": "NZ",
       "operand2": "a16"
@@ -1549,10 +1546,7 @@
     "0xcc": {
       "mnemonic": "CALL",
       "length": 3,
-      "cycles": [
-        24,
-        12
-      ],
+      "cycles": 24,
       "addr": "0xcc",
       "operand1": "Z",
       "operand2": "a16"
@@ -1607,10 +1601,7 @@
     "0xd4": {
       "mnemonic": "CALL",
       "length": 3,
-      "cycles": [
-        24,
-        12
-      ],
+      "cycles": 24,
       "addr": "0xd4",
       "operand1": "NC",
       "operand2": "a16"
@@ -1663,10 +1654,7 @@
     "0xdc": {
       "mnemonic": "CALL",
       "length": 3,
-      "cycles": [
-        24,
-        12
-      ],
+      "cycles": 24,
       "addr": "0xdc",
       "operand1": "C",
       "operand2": "a16"
