@@ -8,6 +8,9 @@
 #include "register.hpp"
 #include "opcode.hpp"
 
+/* Central Processing Unit 
+ * Executes instructions, manages registers, handles flags, and coordinates 
+ * interactions with the InterruptManager and Mmu. */
 class Cpu {
 public:
     Cpu(InterruptManager* interrupt_manager, Mmu* mmu) :
@@ -21,10 +24,23 @@ private:
     InterruptManager* interrupt_manager;
     Mmu* mmu;
 
+    // Cpu state
+    enum State {Fetching, Working, Halted, Stopped};
+    void set_fetching_state();
+    void set_working_state();
+
     // Main loop variables
-    Opcode opcode;
+    uint8_t locked = 0;
+    State state = Fetching;
+    bool cb_prefix = false;
+    Opcode opcode = opcode_0x00();
+    uint8_t current_m_cycles;
     bool early_exit;
-    bool interrupt_enable_scheduled;
+    bool interrupt_enable_scheduled = false;
+
+    // Main loop functions
+    void fetch_cycle();
+    void work_cycle();
 
     // Opcode dictionaries
     std::unordered_map<uint8_t, Opcode> opcodes;

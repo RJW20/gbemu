@@ -1,8 +1,100 @@
+#include <stdexcept>
 #include "cpu.hpp"
 
-// Carry out 4 t-cycles.
+// Carry out 1 t-cycle.
 void Cpu::tick() {
 
+    // Only act every 4 t-cycles
+    if (++locked < 4) {
+        return;
+    }
+    locked = 0;
+
+    // Must check for interrupts before enabling as per below schedule
+
+    if (interrupt_enable_scheduled) {
+        interrupt_manager->ime = true;
+    }
+
+    switch(state) {
+
+        case Fetching:
+            fetch_cycle();
+            break;
+
+        case Working:
+            work_cycle();
+
+
+        case Halted:
+        case Stopped:
+            return;
+    }
+
+}
+
+/* Set the Cpu state to fetching.
+ * Resets cb_prefix. */
+void Cpu::set_fetching_state() {
+    state = Fetching;
+    cb_prefix = false;
+}
+
+/* Set the Cpu state to working.
+ * Resets current_m_cycles and early_exit. */
+void Cpu::set_working_state() {
+    state = Working;
+    current_m_cycles = 0;
+    early_exit = false;
+}
+
+/* Carry out 1 fetch m-cycle.
+ * Reads the address at the current reg.pc and increments it.
+ * Sets cb_prefix or the current opcode and state as necessary. */
+void Cpu::fetch_cycle() {
+
+    uint8_t opcode_address = mmu->read(reg.pc++);
+
+    if (!cb_prefix){
+        switch(opcode_address) {
+            case 0xCB:
+                cb_prefix = true;
+                return;
+            case 0x76:
+                state = Halted;
+                return;
+            case 0x10:
+                state = Stopped;
+                return;
+        }
+    }
+
+    opcode = cb_prefix ? cb_opcodes[opcode_address] : opcodes[opcode_address];
+    set_working_state();
+}
+
+/* Carry out 1 work m-cycle.
+ * Exectutes the opcode.step at the current_m_cycle and increments it.
+ * Sets to fetching state if exits early.
+ * Carries out an additional fetch_cycle if on the last step of the opcode. */
+void Cpu::work_cycle() {
+
+    // Opcodes sometimes do nothing in last m-cycle
+    try {
+        opcode.steps.at(current_m_cycles++)();
+    }
+    catch(const std::out_of_range& ex) {}
+
+    if (early_exit) {
+        set_fetching_state();
+        return;
+    }
+
+    if (current_m_cycles * 4 == opcode.t_cycles) {
+        set_fetching_state();
+        fetch_cycle(); // Fetch in same m-cycle as last working m-cycle
+        return;
+    }
 }
 
 // Initialise both opcode dictionaries.
