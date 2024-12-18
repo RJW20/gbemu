@@ -21,6 +21,11 @@ private:
     InterruptManager* interrupt_manager;
     Mmu* mmu;
 
+    // Main loop variables
+    Opcode opcode;
+    bool early_exit;
+    bool interrupt_enable_scheduled;
+
     // Opcode dictionaries
     std::unordered_map<uint8_t, Opcode> opcodes;
     std::unordered_map<uint8_t, Opcode> cb_opcodes;
@@ -30,8 +35,6 @@ private:
     // Variables for the opcodes to manipulate
     uint8_t z8;
     uint16_t z16;
-    bool early_exit;
-    bool interrupt_enable_scheduled;
 
     // Basis of cpu functionality
     void add(uint8_t value);
