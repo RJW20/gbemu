@@ -11,8 +11,6 @@ typedef std::function<void()> Step;
 /* Contains all relevant information about an Opcode.
  * Should be passed lambdas from the cpu as steps. */
 struct Opcode {
-    Opcode() : address(0x00), name("NOP"), length(1), t_cycles(4),
-        steps({[]() {;}}) {};
     Opcode(
         uint8_t address,
         std::string name,
