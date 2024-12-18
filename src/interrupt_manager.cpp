@@ -19,13 +19,3 @@ InterruptManager::InterruptManager() {
 void InterruptManager::request_interrupt(uint8_t bit) {
     ix |= (1 << bit);
 }
-
-/* Set ime to false. */
-void InterruptManager::disable_interrupts() {
-    ime = false;
-}
-
-/* Set ime to true. */
-void InterruptManager::enable_interrupts() {
-    ime = true;
-}

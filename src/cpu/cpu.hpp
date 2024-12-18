@@ -31,6 +31,7 @@ private:
     uint8_t z8;
     uint16_t z16;
     bool early_exit;
+    bool interrupt_enable_scheduled;
 
     // Basis of cpu functionality
     void add(uint8_t value);
@@ -52,8 +53,6 @@ private:
     void complement_accumulator();
     void complement_carry_flag();
     void set_carry_flag();
-    void disable_interrupts();
-    void enable_interrupts();
 
     uint8_t rotate_left_circular(uint8_t value);
     uint8_t rotate_left(uint8_t value);

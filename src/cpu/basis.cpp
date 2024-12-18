@@ -205,14 +205,6 @@ void Cpu::set_carry_flag() {
     reg.flag_h = false;
 }
 
-void Cpu::disable_interrupts() {
-    interrupt_manager->disable_interrupts();
-}
-
-void Cpu::enable_interrupts() {
-    interrupt_manager->enable_interrupts();
-}
-
 // ----------------------------------------------------------------------------
 // Rotates and Shifts
 // ----------------------------------------------------------------------------

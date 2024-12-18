@@ -621,12 +621,12 @@ def nop(opcode: Opcode) -> str:
 @wrap_function_definition()
 def di(opcode: Opcode) -> str:
 
-    return step("disable_interrupts()")
+    return step("interrupt_manager->ime = false")
 
 @wrap_function_definition()
 def ei(opcode: Opcode) -> str:
 
-    return step("enable_interrupts()")
+    return step("interrupt_enable_scheduled = true")
 
 @wrap_function_definition()
 def rlca(opcode: Opcode) -> str:

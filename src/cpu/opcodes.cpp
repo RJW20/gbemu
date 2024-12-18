@@ -1817,7 +1817,7 @@ Opcode Cpu::opcode_0xf2() {
 // DI
 Opcode Cpu::opcode_0xf3() {
     std::vector<Step> steps;
-    steps.push_back([this]() { disable_interrupts(); });
+    steps.push_back([this]() { interrupt_manager->ime = false; });
     return Opcode(0xf3, "DI", 1, 4, steps);
 }
 
@@ -1875,7 +1875,7 @@ Opcode Cpu::opcode_0xfa() {
 // EI
 Opcode Cpu::opcode_0xfb() {
     std::vector<Step> steps;
-    steps.push_back([this]() { enable_interrupts(); });
+    steps.push_back([this]() { interrupt_enable_scheduled = true; });
     return Opcode(0xfb, "EI", 1, 4, steps);
 }
 
