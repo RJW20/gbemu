@@ -23,7 +23,7 @@ struct Opcode {
 
     uint8_t address;            // Hex address of opcode
     std::string name;           // Common name for opcode
-    int length;                 // The number of steps in the execution
+    int length;                 // Number of bytes read in the fetch/execution
     int t_cycles;               // t-cycles required to execute
     std::vector<Step> steps;    // Functions carried out during the execution
 };
