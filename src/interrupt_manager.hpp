@@ -13,6 +13,8 @@ public:
     ~InterruptManager() {};
 
     void request_interrupt(uint8_t bit);
+    bool is_interrupt_requested();
+    int get_enabled_interrupt();
 };
 
 #endif
