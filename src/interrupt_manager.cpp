@@ -1,3 +1,4 @@
+#include <cstdint>
 #include "interrupt_manager.hpp"
 
 // Reset all attributes.
@@ -28,4 +29,9 @@ int InterruptManager::get_enabled_interrupt() const {
         }
     }
     return -1;
+}
+
+// Return the program counter address corresponding to the given interrupt.
+uint8_t InterruptManager::get_handler_address(InterruptType interruption) {
+    return handler_addresses[interruption];
 }
