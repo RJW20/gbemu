@@ -5,11 +5,16 @@
 
 /* There are 5 types of interrupt, whose values correspond to their bit
  * position in ie and ix, as well as the index in the handler_addresses
- * array. */
+ * array:
+ * - 0 - Vblank 
+ * - 1 - LCD
+ * - 2 - Timer 
+ * - 3 - Serial Link 
+ * - 4 - Joypad */
 enum InterruptType {
     Vblank = 0,
     Lcd = 1,
-    Timer = 2,
+    Timer_ = 2,
     Serial = 3,
     Joypad = 4,
     None = -1
