@@ -3,6 +3,18 @@
 
 #include <cstdint>
 
+/* There are 5 types of interrupt, whose values correspond to their bit
+ * position in ie and ix, as well as the index in the handler_addresses
+ * array. */
+enum InterruptType {
+    Vblank = 0,
+    Lcd = 1,
+    Timer = 2,
+    Serial = 3,
+    Joypad = 4,
+    None = -1
+};
+
 // Handles enabling and disabling of hardware interrupts.
 class InterruptManager {
 public:
@@ -13,22 +25,11 @@ public:
     uint8_t ie;  // Interrupt Enable Register
     uint8_t ix;  // Interrupt Flag Register
 
-    /* There are 5 types of interrupt, whose values correspond to their bit
-     * position in ie and ix, as well as the index in the handler_addresses
-     * array. */
-    enum InterruptType {
-        Vblank = 0,
-        Lcd = 1,
-        Timer = 2,
-        Serial = 3,
-        Joypad = 4
-    };
-
     void reset();
-    void request_interrupt(InterruptType interruption);
-    void acknowledge_interrupt(InterruptType interruption);
+    void request(InterruptType interruption);
+    void acknowledge(InterruptType interruption);
     bool is_interrupt_requested()const;
-    int get_enabled_interrupt() const;
+    InterruptType get_enabled() const;
     uint8_t get_handler_address(InterruptType interruption);
 
 private:

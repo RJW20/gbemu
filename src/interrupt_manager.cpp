@@ -8,13 +8,21 @@ void InterruptManager::reset() {
     ix = 0;
 }
 
-// Request an interrupt of the given type.
-void InterruptManager::request_interrupt(InterruptType interruption) {
+/* Request an interrupt of the given type.
+ * Sets the corresponding bit in ix. */
+void InterruptManager::request(InterruptType interruption) {
+    if (interruption == InterruptType::None) {
+        return;
+    }
     ix |= (1 << interruption);
 }
 
-// Acknowledge an interrupt of the given type.
-void InterruptManager::acknowledge_interrupt(InterruptType interruption) {
+/* Acknowledge an interrupt of the given type.
+ * Resets the corresponding bit in ix. */
+void InterruptManager::acknowledge(InterruptType interruption) {
+    if (interruption == InterruptType::None) {
+        return;
+    }
     ix &= ~(1 << interruption);
 }
 
@@ -27,13 +35,13 @@ bool InterruptManager::is_interrupt_requested() const {
 /* Return the bit corresponding to the enabled interrupt.
  * Interrupts with lower bit value have higher priority.
  * Returns -1 if no interrupts are enabled. */
-int InterruptManager::get_enabled_interrupt() const {
+InterruptType InterruptManager::get_enabled() const {
     for (int bit_pos = 0; bit_pos < 5; bit_pos++) {
         if (((ie & ix) >> bit_pos) & 1) {
-            return bit_pos;
+            return InterruptType(bit_pos);
         }
     }
-    return -1;
+    return InterruptType::None;
 }
 
 // Return the program counter address corresponding to the given interrupt.
