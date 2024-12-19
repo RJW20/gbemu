@@ -13,6 +13,11 @@ void InterruptManager::request_interrupt(InterruptType interruption) {
     ix |= (1 << interruption);
 }
 
+// Acknowledge an interrupt of the given type.
+void InterruptManager::acknowledge_interrupt(InterruptType interruption) {
+    ix &= ~(1 << interruption);
+}
+
 /* Return true if interrupts are enabled and a specific interrupt is
  * requested. */
 bool InterruptManager::is_interrupt_requested() const {

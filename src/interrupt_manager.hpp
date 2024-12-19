@@ -26,6 +26,7 @@ public:
 
     void reset();
     void request_interrupt(InterruptType interruption);
+    void acknowledge_interrupt(InterruptType interruption);
     bool is_interrupt_requested()const;
     int get_enabled_interrupt() const;
     uint8_t get_handler_address(InterruptType interruption);
