@@ -5,14 +5,10 @@
 #include "interrupt_manager.hpp"
 #include "timer.hpp"
 
-/* Store the values of the given pointers and initialise wram and hram to their
- * respective sizes. */
-Mmu::Mmu(Cartridge* cart, InterruptManager* inter_manag, Timer* t) {
-    cartridge = cart;
-    wram.resize(0x2000);
-    interrupt_manager = inter_manag;
-    timer = t;
-    hram.resize(0x7F);
+/* Set wram and hram to their respective sizes and fill them with zeros. */
+void Mmu::reset() {
+    wram.resize(0x2000, 0);
+    hram.resize(0x7F, 0);
 }
 
 /* Return the 8 bit value stored at the given address.

@@ -3,9 +3,9 @@
 
 #include <cstdint>
 #include <vector>
+#include "cartridge/cartridge.hpp"
 #include "interrupt_manager.hpp"
 #include "timer.hpp"
-#include "cartridge/cartridge.hpp"
 
 /* Memory Management Unit
  * Simulates an array with the following contents:
@@ -26,9 +26,11 @@ public:
         Cartridge* cartridge,
         InterruptManager* interrupt_manager,
         Timer* timer
-    );
+    ) : cartridge(cartridge), interrupt_manager(interrupt_manager),
+        timer(timer) {reset();}
     ~Mmu() {};
 
+    void reset();
     uint8_t read(uint16_t address) const;
     void write(uint16_t address, uint8_t value);
 
