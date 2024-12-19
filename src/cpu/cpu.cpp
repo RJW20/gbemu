@@ -10,8 +10,13 @@ void Cpu::tick() {
     }
     locked = 0;
 
-    // Must check for interrupts before enabling as per below schedule
+    // Check for interrupts
+    if (state != Interrupting && interrupt_manager->is_interrupt_requested()) {
+        set_interrupting_state();
+    }
 
+    /* Set master interrupt enable if scheduled - done here since EI opcode
+     * delays one instruction. */
     if (interrupt_enable_scheduled) {
         interrupt_manager->ime = true;
     }
@@ -24,7 +29,11 @@ void Cpu::tick() {
 
         case Working:
             work_cycle();
+            break;
 
+        case Interrupting:
+            interrupt_cycle();
+            break;
 
         case Halted:
         case Stopped:
@@ -46,6 +55,13 @@ void Cpu::set_working_state() {
     state = Working;
     current_m_cycles = 0;
     early_exit = false;
+}
+
+/* Set the Cpu state to working.
+ * Resets current_m_cycles. */
+void Cpu::set_interrupting_state() {
+    state = Interrupting;
+    current_m_cycles = 0;
 }
 
 /* Carry out 1 fetch m-cycle.
@@ -95,6 +111,47 @@ void Cpu::work_cycle() {
         fetch_cycle(); // Fetch in same m-cycle as last working m-cycle
         return;
     }
+}
+
+/* Carry out one cycle of the interrupt loop. 
+ * - First cycle - wait.
+ * - Second cycle - acknowledge interrupt.
+ * - Third and fourth cycles - push reg.pc onto the stack.
+ * - Final cycle - set reg.pc to corresponding handler address. */
+void Cpu::interrupt_cycle() {
+
+    switch(current_m_cycles) {
+        
+        case 0:
+            break;
+        
+        case 1:
+            interrupt_type = interrupt_manager->get_enabled();
+            if (interrupt_type == InterruptType::None) {
+                set_fetching_state();
+                return;
+            }
+            interrupt_manager->acknowledge(interrupt_type);
+            interrupt_manager->ime = false;
+            break;
+
+        case 2:
+            reg.sp--;
+            mmu->write(reg.sp--, reg.pc >> 8);
+            break;
+
+        case 3:
+            mmu->write(reg.sp, reg.pc & 0xFF);
+            break;
+
+        case 4:
+            reg.pc = interrupt_manager->get_handler_address(interrupt_type);
+            set_fetching_state();
+            return;
+
+    }
+
+    current_m_cycles += 1;
 }
 
 // Initialise both opcode dictionaries.

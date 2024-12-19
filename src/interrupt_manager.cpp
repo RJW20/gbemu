@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstdint>
 #include "interrupt_manager.hpp"
 
@@ -44,7 +45,13 @@ InterruptType InterruptManager::get_enabled() const {
     return InterruptType::None;
 }
 
-// Return the program counter address corresponding to the given interrupt.
+/* Return the program counter address corresponding to the given interrupt.
+ * Should never be called when interruption is InterruptType::None. */
 uint8_t InterruptManager::get_handler_address(InterruptType interruption) {
+    if (interruption == InterruptType::None) {
+        std::cout << "Do not call InterruptManager.get_handler_address with" <<
+            " argument: " << interruption << std::endl;
+        exit(10);
+    } 
     return handler_addresses[interruption];
 }

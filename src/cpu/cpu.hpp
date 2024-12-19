@@ -25,9 +25,10 @@ private:
     Mmu* mmu;
 
     // Cpu state
-    enum State {Fetching, Working, Halted, Stopped};
+    enum State {Fetching, Working, Interrupting, Halted, Stopped};
     void set_fetching_state();
     void set_working_state();
+    void set_interrupting_state();
 
     // Main loop variables
     uint8_t locked = 0;
@@ -37,10 +38,12 @@ private:
     uint8_t current_m_cycles;
     bool early_exit;
     bool interrupt_enable_scheduled = false;
+    InterruptType interrupt_type;
 
     // Main loop functions
     void fetch_cycle();
     void work_cycle();
+    void interrupt_cycle();
 
     // Opcode dictionaries
     std::unordered_map<uint8_t, Opcode> opcodes;
@@ -63,16 +66,13 @@ private:
     void compare(uint8_t value);
     uint8_t increment(uint8_t value);
     uint8_t decrement(uint8_t value);
-
     void add_hl(uint16_t value);
     uint16_t add_signed8(uint16_t value16, int8_t value8);
-
     uint8_t swap(uint8_t value);
     void decimal_adjust_accumulator();
     void complement_accumulator();
     void complement_carry_flag();
     void set_carry_flag();
-
     uint8_t rotate_left_circular(uint8_t value);
     uint8_t rotate_left(uint8_t value);
     uint8_t rotate_right_circular(uint8_t value);
@@ -80,7 +80,6 @@ private:
     uint8_t shift_left_arithmetic(uint8_t value);
     uint8_t shift_right_arithmetic(uint8_t value);
     uint8_t shift_right_logical(uint8_t value);
-
     void bit(uint8_t value, int position);
     uint8_t set(uint8_t value, int position);
     uint8_t reset(uint8_t value, int position);
