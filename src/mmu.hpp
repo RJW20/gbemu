@@ -6,6 +6,7 @@
 #include "cartridge/cartridge.hpp"
 #include "interrupt_manager.hpp"
 #include "timer.hpp"
+#include "serial.hpp"
 
 /* Memory Management Unit
  * Simulates an array with the following contents:
@@ -25,9 +26,10 @@ public:
     Mmu(
         Cartridge* cartridge,
         InterruptManager* interrupt_manager,
-        Timer* timer
+        Timer* timer,
+        Serial* serial
     ) : cartridge(cartridge), interrupt_manager(interrupt_manager),
-        timer(timer) {reset();}
+        timer(timer), serial(serial) {reset();}
     ~Mmu() {};
 
     void reset();
@@ -39,6 +41,7 @@ private:
     std::vector<uint8_t> wram;              // Work RAM
     InterruptManager* interrupt_manager;
     Timer* timer;
+    Serial* serial;
     std::vector<uint8_t> hram;              // High RAM
 };
 

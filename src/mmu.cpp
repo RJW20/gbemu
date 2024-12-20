@@ -1,9 +1,6 @@
 #include <iostream>
 #include <cstdint>
 #include "mmu.hpp"
-#include "cartridge/cartridge.hpp"
-#include "interrupt_manager.hpp"
-#include "timer.hpp"
 
 /* Set wram and hram to their respective sizes and fill them with zeros. */
 void Mmu::reset() {
@@ -57,6 +54,10 @@ uint8_t Mmu::read(uint16_t address) const {
 
     else {
         switch (address) {
+            case 0xFF01:
+                return serial->sb;
+            case 0xFF02:
+                return serial->sc;
             case 0xFF04:
                 return timer->div();
             case 0xFF05:
@@ -120,6 +121,10 @@ void Mmu::write(uint16_t address, uint8_t value) {
 
     else {
         switch (address) {
+            case 0xFF01:
+                serial->sb = value;
+            case 0xFF02:
+                serial->sc = value;
             case 0xFF04:
                 timer->set_div();
             case 0xFF05:

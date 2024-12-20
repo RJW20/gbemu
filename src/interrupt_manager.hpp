@@ -15,7 +15,7 @@ enum InterruptType {
     Vblank = 0,
     Lcd = 1,
     Timer_ = 2,
-    Serial = 3,
+    Serial_ = 3,
     Joypad = 4,
     None = -1
 };
