@@ -58,7 +58,7 @@ uint8_t Mmu::read(uint16_t address) const {
     else {
         switch (address) {
             case 0xFF04:
-                return timer->exposed_div();
+                return timer->div();
             case 0xFF05:
                 return timer->tima;
             case 0xFF06:
@@ -121,7 +121,7 @@ void Mmu::write(uint16_t address, uint8_t value) {
     else {
         switch (address) {
             case 0xFF04:
-                timer->reset_div();
+                timer->set_div();
             case 0xFF05:
                 timer->tima = value;
             case 0xFF06:

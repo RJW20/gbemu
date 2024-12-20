@@ -18,26 +18,24 @@ public:
 
     void reset();
     void tick();
-    uint8_t exposed_div() const;
-    void reset_div();
+    uint8_t div() const;    // Divider Register
+    void set_div();
     void set_tac(uint8_t value);
 
 private:
     InterruptManager* interrupt_manager;
 
-    uint16_t div;   // Divider Register (only upper 8 bits are exposed)
+    uint16_t system_counter;    // Divider register exposes upper 8 bits
+    bool previous_sc_bit; // Previous value of selected bit in system_counter
 
-    // Counters for t-cycles
-    uint16_t div_counter;
-    uint16_t tima_counter;
-
-    /* The number of t-cycles per tima tick dependent on the trailing 2 bits of
-     * tac (used as index of the array):
+    /* tima is updated based on the system_counter bit transitions - the bit
+     * that is monitored is dependent on the trailing 2 bits of tac (used as
+     * index of the array):
      * - 00 - 1024 (4096 Hz)
      * - 01 - 16 (262144 Hz)
      * - 10 - 64 (65536 Hz)
      * - 11 - 256 (16384 Hz) */
-    const uint16_t tima_t_cycles[4] = {0x400, 0x10, 0x40, 0x100};
+    const uint8_t tac_bit_select[4] = {9, 3, 5, 7};
 
     bool timer_is_enabled() const;
 };

@@ -4,47 +4,41 @@
 
 // Initialise all components to zero.
 void Timer::reset() {
-    div = 0;
+    system_counter = 0;
     tima = 0;
     tma = 0;
     tac = 0;
-
-    div_counter = 0;
-    tima_counter = 0;
+    previous_sc_bit = 0;
 }
 
 // Carry out 1 t-cycle.
 void Timer::tick() {
 
-    // Increment div every 256 = 2^8 t-cycles
-    div_counter += 1;
-    div += (div_counter >> 8);
-    div_counter &= 0xFF;
+    system_counter += 1;
 
-    // Increment tima at the frequency specified in tac
-    if (timer_is_enabled()) {
-        tima_counter += 1;
+    if (!timer_is_enabled()) {
+        return;
+    }
 
-        if (tima_counter == tima_t_cycles[tac & 0x03]) {
-            tima_counter = 0;
-            
-            if (++tima == 0) {
-                tima = tma;
-                interrupt_manager->request(InterruptType(2));
-            }
-            
+    // Increment tima based on the system_counter bit specified in tac
+    bool current_sc_bit = (system_counter >> tac_bit_select[tac & 0x03]) & 1;
+    if (previous_sc_bit && !current_sc_bit) {   // falling edge
+        if (++tima == 0) {
+            tima = tma;
+            interrupt_manager->request(InterruptType(2));
         }
     }
+    previous_sc_bit = current_sc_bit;
 }
 
-// Return the upper 8 bits of the divider register.
-uint8_t Timer::exposed_div() const {
-    return div >> 8;
+// Return the upper 8 bits of the system_counter.
+uint8_t Timer::div() const {
+    return system_counter >> 8;
 }
 
-// Set the divider register to zero.
-void Timer::reset_div() {
-    div = 0;
+// Set the system_counter to zero.
+void Timer::set_div() {
+    system_counter = 0;
 }
 
 // Set the timer control to the lower 3 bits of the given value.
