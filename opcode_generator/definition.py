@@ -543,8 +543,9 @@ def inc(opcode: Opcode) -> str:
             )
 
         case _:
+            register = opcode.operand1.lower()
             return (
-                step(f"increment(reg.{opcode.operand1.lower()})")  
+                step(f"reg.{register} = increment(reg.{register})")  
             )
 
 @wrap_function_definition()
@@ -571,8 +572,9 @@ def dec(opcode: Opcode) -> str:
             )
 
         case _:
+            register = opcode.operand1.lower()
             return (
-                step(f"decrement(reg.{opcode.operand1.lower()})")  
+                step(f"reg.{register} = decrement(reg.{register})")  
             )
     
 @wrap_function_definition()

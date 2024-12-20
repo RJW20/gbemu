@@ -38,14 +38,14 @@ Opcode Cpu::opcode_0x03_generator() {
 // INC B
 Opcode Cpu::opcode_0x04_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { increment(reg.b); });
+    steps.push_back([this]() { reg.b = increment(reg.b); });
     return Opcode(0x04, "INC B", 1, 4, steps);
 }
 
 // DEC B
 Opcode Cpu::opcode_0x05_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { decrement(reg.b); });
+    steps.push_back([this]() { reg.b = decrement(reg.b); });
     return Opcode(0x05, "DEC B", 1, 4, steps);
 }
 
@@ -100,14 +100,14 @@ Opcode Cpu::opcode_0x0b_generator() {
 // INC C
 Opcode Cpu::opcode_0x0c_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { increment(reg.c); });
+    steps.push_back([this]() { reg.c = increment(reg.c); });
     return Opcode(0x0c, "INC C", 1, 4, steps);
 }
 
 // DEC C
 Opcode Cpu::opcode_0x0d_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { decrement(reg.c); });
+    steps.push_back([this]() { reg.c = decrement(reg.c); });
     return Opcode(0x0d, "DEC C", 1, 4, steps);
 }
 
@@ -160,14 +160,14 @@ Opcode Cpu::opcode_0x13_generator() {
 // INC D
 Opcode Cpu::opcode_0x14_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { increment(reg.d); });
+    steps.push_back([this]() { reg.d = increment(reg.d); });
     return Opcode(0x14, "INC D", 1, 4, steps);
 }
 
 // DEC D
 Opcode Cpu::opcode_0x15_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { decrement(reg.d); });
+    steps.push_back([this]() { reg.d = decrement(reg.d); });
     return Opcode(0x15, "DEC D", 1, 4, steps);
 }
 
@@ -220,14 +220,14 @@ Opcode Cpu::opcode_0x1b_generator() {
 // INC E
 Opcode Cpu::opcode_0x1c_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { increment(reg.e); });
+    steps.push_back([this]() { reg.e = increment(reg.e); });
     return Opcode(0x1c, "INC E", 1, 4, steps);
 }
 
 // DEC E
 Opcode Cpu::opcode_0x1d_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { decrement(reg.e); });
+    steps.push_back([this]() { reg.e = decrement(reg.e); });
     return Opcode(0x1d, "DEC E", 1, 4, steps);
 }
 
@@ -283,14 +283,14 @@ Opcode Cpu::opcode_0x23_generator() {
 // INC H
 Opcode Cpu::opcode_0x24_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { increment(reg.h); });
+    steps.push_back([this]() { reg.h = increment(reg.h); });
     return Opcode(0x24, "INC H", 1, 4, steps);
 }
 
 // DEC H
 Opcode Cpu::opcode_0x25_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { decrement(reg.h); });
+    steps.push_back([this]() { reg.h = decrement(reg.h); });
     return Opcode(0x25, "DEC H", 1, 4, steps);
 }
 
@@ -344,14 +344,14 @@ Opcode Cpu::opcode_0x2b_generator() {
 // INC L
 Opcode Cpu::opcode_0x2c_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { increment(reg.l); });
+    steps.push_back([this]() { reg.l = increment(reg.l); });
     return Opcode(0x2c, "INC L", 1, 4, steps);
 }
 
 // DEC L
 Opcode Cpu::opcode_0x2d_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { decrement(reg.l); });
+    steps.push_back([this]() { reg.l = decrement(reg.l); });
     return Opcode(0x2d, "DEC L", 1, 4, steps);
 }
 
@@ -471,14 +471,14 @@ Opcode Cpu::opcode_0x3b_generator() {
 // INC A
 Opcode Cpu::opcode_0x3c_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { increment(reg.a); });
+    steps.push_back([this]() { reg.a = increment(reg.a); });
     return Opcode(0x3c, "INC A", 1, 4, steps);
 }
 
 // DEC A
 Opcode Cpu::opcode_0x3d_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { decrement(reg.a); });
+    steps.push_back([this]() { reg.a = decrement(reg.a); });
     return Opcode(0x3d, "DEC A", 1, 4, steps);
 }
 
