@@ -29,13 +29,19 @@ class Opcode:
             self.operand2 = None
 
     @property
-    def function_handle(self) -> str:
-        """Return this opcodes function handle."""
+    def variable_name(self) -> str:
+        """Return this opcodes variable name."""
 
         if not self.prefixed:
             return f"opcode_{self.address}"
         else:
             return f"opcode_cb_{self.address}"
+
+    @property
+    def function_handle(self) -> str:
+        """Return this opcodes function handle."""
+
+        return self.variable_name + "_generator"
     
     @property
     def full_name(self) -> str:

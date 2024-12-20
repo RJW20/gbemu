@@ -14,7 +14,7 @@ def dictionary_initialisations(
         for opcode in opcodes:
             f.write(
                 "    "
-                f"{{{opcode.address}, {opcode.function_handle}()}},\n"
+                f"{{{opcode.address}, &{opcode.variable_name}}},\n"
             )
         f.write("};\n\n")
 
@@ -22,6 +22,6 @@ def dictionary_initialisations(
         for cb_opcode in cb_opcodes:
             f.write(
                 "    "
-                f"{{{cb_opcode.address}, {cb_opcode.function_handle}()}},\n"
+                f"{{{cb_opcode.address}, &{cb_opcode.variable_name}}},\n"
             )
         f.write("};")
