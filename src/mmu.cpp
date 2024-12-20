@@ -123,9 +123,9 @@ void Mmu::write(uint16_t address, uint8_t value) {
             case 0xFF04:
                 timer->set_div();
             case 0xFF05:
-                timer->tima = value;
+                timer->set_tima(value);
             case 0xFF06:
-                timer->tma = value;
+                timer->set_tma(value);
             case 0xFF07:
                 timer->set_tac(value);
             case 0xFF0F:
