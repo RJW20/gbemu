@@ -64,27 +64,27 @@ uint16_t Register::hl() {
 /* Write the first byte of the given value to register a and the first 4 bits
  * of the second byte to register f. */
 void Register::set_af(uint16_t value) {
-    a = (uint8_t) value >> 8;
+    a = value >> 8;
     set_f((uint8_t) value);
 }
 
 /* Write the first byte of the given value to register b and the second byte to
  * register c. */
 void Register::set_bc(uint16_t value) {
-    b = (uint8_t) value >> 8;
-    c = (uint8_t) value & 0xFF;
+    b = value >> 8;
+    c = value & 0xFF;
 }
 
 /* Write the first byte of the given value to register d and the second byte to
  * register e. */
 void Register::set_de(uint16_t value) {
-    d = (uint8_t) value >> 8;
-    e = (uint8_t) value & 0xFF;
+    d = value >> 8;
+    e = value & 0xFF;
 }
 
 /* Write the first byte of the given value to register h and the second byte to
  * register l. */
 void Register::set_hl(uint16_t value) {
-    h = (uint8_t) value >> 8;
-    l = (uint8_t) value & 0xFF;
+    h = value >> 8;
+    l = value & 0xFF;
 }
