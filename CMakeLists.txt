@@ -10,6 +10,7 @@ set(SOURCES
     src/cartridge/cartridge.cpp
     src/interrupt_manager.cpp
     src/timer.cpp
+    src/serial.cpp
     src/mmu.cpp
     src/cpu/cpu.cpp
     src/cpu/register.cpp
