@@ -31,9 +31,7 @@ uint8_t Mmu::read(uint16_t address) const {
     }
 
     else if (0xE000 <= address && address < 0xFE00) {
-        std::cerr << "Failed to read from address: " << std::hex << address <<
-            ". Echo RAM should not be accessed." << std::endl;
-        return 0xFF;
+        return wram[address - 0xE000];
     }
 
     else if (0xFE00 <= address && address < 0xFEA0) {
@@ -123,20 +121,28 @@ void Mmu::write(uint16_t address, uint8_t value) {
         switch (address) {
             case 0xFF01:
                 serial->sb = value;
+                break;
             case 0xFF02:
                 serial->sc = value;
+                break;
             case 0xFF04:
                 timer->set_div();
+                break;
             case 0xFF05:
                 timer->set_tima(value);
+                break;
             case 0xFF06:
                 timer->set_tma(value);
+                break;
             case 0xFF07:
                 timer->set_tac(value);
+                break;
             case 0xFF0F:
                 interrupt_manager->ix = value;
+                break;
             case 0xFFFF:
                 interrupt_manager->ie = value;
+                break;
             default:
                 std::cerr << "Failed to write to address: " << std::hex <<
                     address << ". I/O registers not fully implemented." <<
