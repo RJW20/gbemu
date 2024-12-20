@@ -2,7 +2,7 @@
 #include "timer.hpp"
 #include "interrupt_manager.hpp"
 
-// Initialise all components to zero.
+// Reset all components to zero.
 void Timer::reset() {
     system_counter = 0;
     tima = 0;
@@ -37,7 +37,7 @@ void Timer::tick() {
         ticks_since_overflow += 1;
         if (ticks_since_overflow == 4) {
             tima = tma;
-            interrupt_manager->request(InterruptType(2));
+            interrupt_manager->request(InterruptType::Timer_);
             tima_overflow = false;
         }
     }
