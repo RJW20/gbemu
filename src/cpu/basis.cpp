@@ -19,15 +19,13 @@ void Cpu::add(uint8_t value) {
 /* Set a to a + value + the current value of the carry flag.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 void Cpu::add_with_carry(uint8_t value) {
-    if (value != 0xFF || !reg.flag_c) {
-        add(value + (uint8_t) reg.flag_c);
-    }
-    else {      // value + reg.flagc = 0x100
-        reg.flag_z = (reg.a == 0);
-        reg.flag_n = false;
-        reg.flag_h = true;
-        reg.flag_c = true;
-    }
+    uint8_t carry = (uint8_t) reg.flag_c;
+    int result = reg.a + value + carry;
+    reg.flag_z = ((result & 0xFF) == 0);
+    reg.flag_n = false;
+    reg.flag_h = ((reg.a & 0xF) + (value & 0xF) + carry > 0xF); // Bits 3 and 4
+    reg.flag_c = (result > 0xFF);
+    reg.a = (uint8_t) result;
 }
 
 /* Set a to a - value.
@@ -91,7 +89,7 @@ void Cpu::compare(uint8_t value) {
     int result = reg.a - value;
     reg.flag_z = (result == 0);
     reg.flag_n = true;
-    reg.flag_h = (reg.a & 0xF < value & 0xF); // Bits 3 and 4
+    reg.flag_h = ((reg.a & 0xF) < (value & 0xF)); // Bits 3 and 4
     reg.flag_c = (result < 0);
 }
 
