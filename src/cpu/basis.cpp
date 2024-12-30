@@ -158,13 +158,12 @@ uint8_t Cpu::swap(uint8_t value) {
  * Assumes to have taken place after bcd addition or subtraction operations.
  * Sets the zero, half-carry and carry flags as necessary. */
 void Cpu::decimal_adjust_accumulator() {
-    reg.flag_z = (reg.a == 0);
     if (!reg.flag_n) {  // just carried out addition
         if (reg.flag_c || reg.a > 0x99) {
             reg.a += 0x60;
             reg.flag_c = true;
         }
-        if (reg.flag_h || reg.a & 0xF > 0x9) {
+        if (reg.flag_h || (reg.a & 0xF) > 0x9) {
             reg.a += 0x6;
         }
     }
@@ -176,6 +175,7 @@ void Cpu::decimal_adjust_accumulator() {
             reg.a -= 0x6;
         }
     }
+    reg.flag_z = (reg.a == 0);
     reg.flag_h = false;
 }
 
