@@ -46,7 +46,7 @@ void Cpu::subtract(uint8_t value) {
 void Cpu::subtract_with_carry(uint8_t value) {
     uint8_t carry = (uint8_t) reg.flag_c;
     int result = reg.a - value - carry;
-    reg.flag_z = (result == 0);
+    reg.flag_z = ((result & 0xFF) == 0);
     reg.flag_n = true;
     reg.flag_h = ((reg.a & 0xF) - (value & 0xF) - carry < 0); // Bits 3 and 4
     reg.flag_c = (result < 0);
