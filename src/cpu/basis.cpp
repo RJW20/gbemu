@@ -210,29 +210,47 @@ void Cpu::set_carry_flag() {
 /* Return the given 8-bit value rotated once (circularly) to the left.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 uint8_t Cpu::rotate_left_circular(uint8_t value) {
-    return shift_left_arithmetic(value) | value >> 7;
+    uint8_t result = (value << 1) | (value >> 7);
+    reg.flag_z = (result == 0);
+    reg.flag_n = false;
+    reg.flag_h = false;
+    reg.flag_c = (bool) (value >> 7);
+    return result;
 }
 
 /* Return the given 8-bit value shifted once to the left.
  * The 0th bit is set to the current value of the carry flag.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 uint8_t Cpu::rotate_left(uint8_t value) {
-    bool carry = reg.flag_c;
-    return shift_left_arithmetic(value) | (uint8_t) carry;
+    uint8_t result = (value << 1) | (uint8_t) reg.flag_c;
+    reg.flag_z = (result == 0);
+    reg.flag_n = false;
+    reg.flag_h = false;
+    reg.flag_c = (bool) (value >> 7);
+    return result;
 }
 
 /* Return the given 8-bit value rotated once (circularly) to the right.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 uint8_t Cpu::rotate_right_circular(uint8_t value) {
-    return shift_right_logical(value) | (uint8_t) (value << 7);
+    uint8_t result = (value >> 1) | (uint8_t) (value << 7);
+    reg.flag_z = (result == 0);
+    reg.flag_n = false;
+    reg.flag_h = false;
+    reg.flag_c = (bool) (value & 1);
+    return result;
 }
 
 /* Return the given 8-bit value shifted once to the right.
  * The 7th bit is set to the current value of the carry flag.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 uint8_t Cpu::rotate_right(uint8_t value) {
-    bool carry = reg.flag_c;
-    return shift_right_logical(value) | (uint8_t) (carry << 7);
+    uint8_t result = (value >> 1) | (uint8_t) (reg.flag_c << 7);
+    reg.flag_z = (result == 0);
+    reg.flag_n = false;
+    reg.flag_h = false;
+    reg.flag_c = (bool) (value & 1);
+    return result;
 }
 
 /* Return the given 8-bit value shifted once to the left.
@@ -251,7 +269,12 @@ uint8_t Cpu::shift_left_arithmetic(uint8_t value) {
  * The 7th bit is retained.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 uint8_t Cpu::shift_right_arithmetic(uint8_t value) {
-    return shift_right_logical(value) | (value & 0x80);
+    uint8_t result = (value >> 1) | (value & 0x80);
+    reg.flag_z = (result == 0);
+    reg.flag_n = false;
+    reg.flag_h = false;
+    reg.flag_c = (bool) (value & 1);
+    return result;
 }
 
 /* Return the given 8-bit value rotated once to the right.
