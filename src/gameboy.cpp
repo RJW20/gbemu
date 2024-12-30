@@ -1,5 +1,15 @@
 #include "gameboy.hpp"
-#include "cartridge/cartridge.hpp"
-#include "interrupt_manager.hpp"
-#include "timer.hpp"
-#include "mmu.hpp"
+
+void GameBoy::run() {
+
+    while (true) {
+        tick();
+    }
+}
+
+// Carry out 1 t-cycle.
+void GameBoy::tick() {
+    timer.tick();
+    cpu.tick();
+    serial.tick();
+}
