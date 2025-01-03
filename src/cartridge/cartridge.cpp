@@ -1,36 +1,38 @@
 #include <iostream>
+#include <cstdint>
 #include <string>
 #include <fstream>
 #include "cartridge.hpp"
+#include "mbc/lookup.hpp"
 
-// Load the ROM into rom and initialise the ram.
+// Load the ROM at the given path and pass it to the required MBC.
 Cartridge::Cartridge(std::string rom_path) {
     
     std::cout << "Loading ROM: " << rom_path << std::endl;
 
     // Open the file in binary mode
-    std::ifstream file(rom_path, std::ios::binary | std::ios::ate);
-    if (!file) {
+    std::ifstream rom_file(rom_path, std::ios::binary | std::ios::ate);
+    if (!rom_file) {
         std::cerr << "Failed to open ROM: " << rom_path << std::endl;
         exit(0);
     }
 
-    // Get the file size
-    std::streamsize size = file.tellg();
-    rom_size = (int) size;
-    file.seekg(0, std::ios::beg);
-    rom.resize(size);
+    // Set the ROM title
+    rom_file.seekg(TITLE_START_ADDRESS, std::ios::beg);
+    char title_buffer[TITLE_LENGTH] = {};
+    rom_file.read(title_buffer, TITLE_LENGTH);
+    title = std::string(title_buffer, TITLE_LENGTH);
 
-    // Read the file into the rom vector
-    if (!file.read(reinterpret_cast<char*>(rom.data()), size)) {
-        std::cerr << "Failed to read ROM: " << rom_path << std::endl;
-        exit(0);
+    // Instantiate the correct MBC
+    rom_file.seekg(MBC_CODE_ADDRESS, std::ios::beg);
+    uint8_t mbc_code = rom_file.get();
+    try {
+        mbc = mbc_lookup.at(mbc_code)(rom_file);
     }
-    file.close();
-
-    // Initialise the ram
-    ram_size = 0x2000;  // 8 KB
-    ram.resize(ram_size);
+    catch(const std::out_of_range& ex) {
+        std::cerr << "Unimplemented ROM type with MBC code: " << mbc_code <<
+            std::endl;
+    }
 }
 
 // Return the 8 bit value in the rom at the given address.
@@ -73,5 +75,4 @@ void Cartridge::write_ram(uint16_t address, uint8_t value) {
     }
 
     ram[address] = value;
-
 }
