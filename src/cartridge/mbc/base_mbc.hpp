@@ -32,8 +32,8 @@ protected:
 
 private:
     // Cartridge header constants
-    static constexpr uint8_t ROM_SIZE_ADDRESS = 0x148;
-    static constexpr uint8_t RAM_SIZE_ADDRESS = 0x149;
+    static constexpr uint16_t ROM_SIZE_ADDRESS = 0x148;
+    static constexpr uint16_t RAM_SIZE_ADDRESS = 0x149;
 };
 
 #endif

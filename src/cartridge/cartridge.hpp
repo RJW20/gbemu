@@ -24,9 +24,9 @@ private:
     std::unique_ptr<BaseMbc> mbc;   // Memory bank controller
 
     // Cartridge header constants
-    static constexpr uint8_t TITLE_START_ADDRESS = 0x134;
+    static constexpr uint16_t TITLE_START_ADDRESS = 0x134;
     static constexpr uint8_t TITLE_LENGTH = 0x10;
-    static constexpr uint8_t MBC_CODE_ADDRESS = 0x147;
+    static constexpr uint16_t MBC_CODE_ADDRESS = 0x147;
 };
 
 #endif

@@ -8,6 +8,10 @@ set(SOURCES
     src/main.cpp
     src/gameboy.cpp
     src/cartridge/cartridge.cpp
+    src/cartridge/mbc/base_mbc.cpp
+    src/cartridge/mbc/no_mbc.cpp
+    src/cartridge/mbc/mbc1.cpp
+    src/cartridge/mbc/mbc2.cpp
     src/interrupt_manager.cpp
     src/timer.cpp
     src/serial.cpp
