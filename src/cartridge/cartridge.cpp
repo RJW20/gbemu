@@ -35,44 +35,23 @@ Cartridge::Cartridge(std::string rom_path) {
     }
 }
 
-// Return the 8 bit value in the rom at the given address.
+// Return the 8 bit value the MBC reads from its ROM at the given address.
 uint8_t Cartridge::read_rom(uint16_t address) const {
-
-    if (address >= rom_size) {
-        std::cerr << "Invalid cartridge ROM read at address: " << std::hex <<
-            address << std::endl;
-        return 0xFF;
-    }
-
-    return rom[address];
+    return mbc->read_rom(address);
 }
 
-/* Write the given 8 bit value to the rom at the given address.
+/* Write the given 8 bit value to the MBC's ROM at the given address.
  * Interpreted as an opcode by the MBC. */
 void Cartridge::write_rom(uint16_t address, uint8_t value) {
-    std::cerr << "ROM \'writes\' currently not implemented." << std::endl;
+    mbc->write_rom(address, value);
 }
 
-// Return the 8 bit value in the ram at the given address.
+// Return the 8 bit value the MBC reads from its RAM at the given address.
 uint8_t Cartridge::read_ram(uint16_t address) const {
-
-    if (address >= ram_size) {
-        std::cerr << "Invalid cartridge RAM read at address: " << std::hex <<
-            address << std::endl;
-        return 0xFF;
-    }
-
-    return ram[address];
+    return mbc->read_ram(address);
 }
 
-// Write the given 8 bit value to the ram at the given address.
+// Write the given 8 bit value to the MBC's RAM at the given address.
 void Cartridge::write_ram(uint16_t address, uint8_t value) {
-
-    if (address >= ram_size) {
-        std::cerr << "Invalid cartridge RAM write at address: " << std::hex <<
-            address << std::endl;
-        return;
-    }
-
-    ram[address] = value;
+    mbc->write_ram(address, value);
 }
