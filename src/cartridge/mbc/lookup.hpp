@@ -34,10 +34,10 @@ std::unordered_map<
 
     // MBC2
     {0x5, [](std::ifstream& rom_file) {
-        return std::make_unique<Mbc2>(rom_file, true);
+        return std::make_unique<Mbc2>(rom_file);
     }},
     {0x6, [](std::ifstream& rom_file) {
-        return std::make_unique<Mbc2>(rom_file, true);
+        return std::make_unique<Mbc2>(rom_file);
     }},
 };
 
