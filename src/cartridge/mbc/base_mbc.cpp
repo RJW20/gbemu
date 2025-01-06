@@ -1,51 +1,49 @@
 #include <iostream>
 #include <cstdint>
+#include <cstddef>
 #include <fstream>
 #include <vector>
 #include "base_mbc.hpp"
 #include "lookup.hpp"
 
-/* Load the given rom_file into the rom vector and read the cartridge header to
- * initialise all other class members.
+/* Load the given rom_file into the rom vector and read the cartridge header.
+ * Initialises the external ram if required.
  * Does not take ownership of the given std::ifstream. */
-BaseMbc::BaseMbc(std::ifstream& rom_file) {
+BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
 
     // Read the rom into 16 KB banks
     rom_file.seekg(0, std::ios::beg);
     while (!rom_file.eof()) {
         std::vector<uint8_t> bank(ROM_BANK_SIZE, 0);
         rom_file.read(reinterpret_cast<char*>(bank.data()), ROM_BANK_SIZE);
-        size_t bytesRead = rom_file.gcount();
+        size_t bytes_read = rom_file.gcount();
 
-        if (bytesRead > 0) {
-            bank.resize(bytesRead);
+        if (bytes_read > 0) {
+            bank.resize(bytes_read);
             rom.push_back(std::move(bank));
         }
     }
 
     // ROM bank handling
-    rom_banks = 1 << rom[0][ROM_SIZE_ADDRESS];
-    if (rom_banks != rom.size()) {
+    rom_size = rom[0][ROM_SIZE_ADDRESS];
+    if (rom.size() != (1 << rom_size)) {
         std::cerr << "Cartridge header has incorrect ROM size value at "
-            << "address " << std::hex << (uint16_t) ROM_SIZE_ADDRESS
+            << "address: " << std::hex << (uint16_t) ROM_SIZE_ADDRESS
             << std::endl;
         exit(20);
     }
-    selected_rom_bank = 1;
 
     // RAM bank handling
     try {
-        ram_banks = external_ram_lookup.at(rom[0][RAM_SIZE_ADDRESS]);
+        ram_size = has_external_ram ?
+            external_ram_lookup.at(rom[0][RAM_SIZE_ADDRESS]) : 0;
     }
     catch(const std::out_of_range& ex) {
         std::cerr << "Cartridge header has invalid RAM size value at "
-            << "address " << std::hex << (uint16_t) RAM_SIZE_ADDRESS
+            << "address: " << std::hex << (uint16_t) RAM_SIZE_ADDRESS
             << std::endl;
         exit(21);
     }
-    if (ram_banks) {
-        ram_banks_enabled = true;
-        ram.resize(ram_banks, std::vector<uint8_t>(RAM_BANK_SIZE));
-        selected_ram_bank = 0;
-    }
+    ram.resize(ram_size, std::vector<uint8_t>(RAM_BANK_SIZE));
+
 }
