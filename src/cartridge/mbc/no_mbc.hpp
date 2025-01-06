@@ -13,8 +13,6 @@ public:
     NoMbc(std::ifstream& rom_file) : BaseMbc(rom_file, false) {};
     ~NoMbc() override {};
 
-    virtual void reset();
-
     uint8_t read_rom(uint16_t address) const override;
     void write_rom(uint16_t address, uint8_t value) override;
     uint8_t read_ram(uint16_t address) const override;

@@ -12,7 +12,7 @@
 #include "mbc2.hpp"
 
 // Maps to constructor for MBC in the cartridge
-std::unordered_map<
+const std::unordered_map<
     uint8_t,
     std::function<std::unique_ptr<BaseMbc>(std::ifstream&)>
 > mbc_lookup = {
@@ -42,7 +42,7 @@ std::unordered_map<
 };
 
 // Number of external 8KB banks in the cartridge
-std::unordered_map<uint8_t, uint8_t> external_ram_lookup = {
+const std::unordered_map<uint8_t, uint8_t> external_ram_lookup = {
     {0x00, 0}, 
     {0x01, 1}, // Only supposed to be 2KB but allocate 8KB
     {0x02, 1},
