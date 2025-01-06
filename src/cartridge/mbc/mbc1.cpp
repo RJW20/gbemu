@@ -36,8 +36,8 @@ uint8_t Mbc1::read_rom(uint16_t address) const {
     }
     
     else {
-        std::cerr << "Invalid MBC ROM read at address " << std::hex << address
-            << " - out of bounds." << std::endl;
+        std::cerr << "Invalid MBC1 ROM read at address " << std::hex
+            << address << " - out of bounds." << std::endl;
         return 0xFF;
     }
 }
@@ -72,8 +72,8 @@ void Mbc1::write_rom(uint16_t address, uint8_t value) {
     }
     
     else {
-        std::cerr << "Invalid MBC ROM write at address " << std::hex << address
-            << " - out of bounds." << std::endl;
+        std::cerr << "Invalid MBC1 ROM write at address " << std::hex 
+            << address << " - out of bounds." << std::endl;
     }
 }
 
@@ -84,20 +84,21 @@ void Mbc1::write_rom(uint16_t address, uint8_t value) {
 uint8_t Mbc1::read_ram(uint16_t address) const {
 
     if (!ram_size) {
-        std::cerr << "Invalid MBC RAM read - there are no external RAM banks."
-            << std::endl;
+        std::cerr << "Invalid MBC1 RAM read - there are no external RAM "
+            << "banks." << std::endl;
         return 0xFF;
     }
 
     if (!is_ram_enabled) {
-        std::cerr << "Invalid MBC RAM read - external RAM is currently not "
+        std::cerr << "Invalid MBC1 RAM read - external RAM is currently not "
             << "accessible." << std::endl;
         return 0xFF;
     }
 
-    if (address < RAM_BANK_LOWER || address >= RAM_BANK_LOWER + RAM_BANK_SIZE) {
-        std::cerr << "Invalid MBC RAM read at address " << std::hex << address
-            << " - out of bounds." << std::endl;
+    if (address < RAM_BANK_LOWER || address >= RAM_BANK_LOWER + RAM_BANK_SIZE)
+    {
+        std::cerr << "Invalid MBC1 RAM read at address " << std::hex
+            << address << " - out of bounds." << std::endl;
         return 0xFF;
     }
 
@@ -112,20 +113,21 @@ uint8_t Mbc1::read_ram(uint16_t address) const {
 void Mbc1::write_ram(uint16_t address, uint8_t value) {
 
     if (!ram_size) {
-        std::cerr << "Invalid MBC RAM write - there are no external RAM banks."
-            << std::endl;
+        std::cerr << "Invalid MBC1 RAM write - there are no external RAM "
+            << "banks." << std::endl;
         return;
     }
 
     if (!is_ram_enabled) {
-        std::cerr << "Invalid MBC RAM write - external RAM is currently not "
+        std::cerr << "Invalid MBC1 RAM write - external RAM is currently not "
             << "accessible." << std::endl;
         return;
     }
 
-    if (address < RAM_BANK_LOWER || address >= RAM_BANK_LOWER + RAM_BANK_SIZE) {
-        std::cerr << "Invalid MBC RAM write at address " << std::hex << address
-            << " - out of bounds." << std::endl;
+    if (address < RAM_BANK_LOWER || address >= RAM_BANK_LOWER + RAM_BANK_SIZE)
+    {
+        std::cerr << "Invalid MBC1 RAM write at address " << std::hex
+            << address << " - out of bounds." << std::endl;
         return;
     }
 
