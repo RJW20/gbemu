@@ -20,14 +20,13 @@ void Mbc1::reset() {
 
 /* Return the 8 bit value in the currently selected ROM bank at the given
  * address.
- * Only uses the trailing 14 bits of the address.
  * Returns 0xFF if the address is invalid. */
 uint8_t Mbc1::read_rom(uint16_t address) const {
 
     if (address < ROM_BANK_SIZE) {
         uint8_t selected_rom_bank = advanced_banking ? 
             (ram_bank_number << 5) & (rom_size - 1) : 0;
-        return rom[selected_rom_bank][address & (ROM_BANK_SIZE - 1)];
+        return rom[selected_rom_bank][address];
     }
 
     else if (address < 2 * ROM_BANK_SIZE) {
@@ -80,7 +79,6 @@ void Mbc1::write_rom(uint16_t address, uint8_t value) {
 
 /* Return the 8 bit value in the currently selected RAM bank at the given
  * address.
- * Only uses the trailing 13 bits of the address.
  * Returns 0xFF if there are no external RAM banks, if RAM is not accessible or
  * if the address is invalid. */
 uint8_t Mbc1::read_ram(uint16_t address) const {
@@ -109,7 +107,6 @@ uint8_t Mbc1::read_ram(uint16_t address) const {
 
 /* Write the given 8 bit value to the given address in the currently selected
  * RAM bank.
- * Only uses the trailing 13 bits of the address.
  * Fails if there are no external RAM banks, if RAM is not accessible or if the
  * address is invalid. */
 void Mbc1::write_ram(uint16_t address, uint8_t value) {
