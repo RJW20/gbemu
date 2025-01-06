@@ -17,7 +17,7 @@ const std::unordered_map<
     std::function<std::unique_ptr<BaseMbc>(std::ifstream&)>
 > mbc_lookup = {
     // No MBC
-    {0x1, [](std::ifstream& rom_file) {
+    {0x0, [](std::ifstream& rom_file) {
         return std::make_unique<NoMbc>(rom_file);
     }},
 

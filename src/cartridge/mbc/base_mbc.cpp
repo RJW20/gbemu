@@ -25,7 +25,7 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
 
     // ROM bank handling
     rom_size = rom[0][ROM_SIZE_ADDRESS];
-    if (rom.size() != (1 << rom_size)) {
+    if (rom.size() != (1 << (rom_size + 1))) {
         std::cerr << "Cartridge header has incorrect ROM size value at "
             << "address: " << std::hex << (uint16_t) ROM_SIZE_ADDRESS
             << std::endl;
