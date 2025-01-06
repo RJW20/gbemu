@@ -80,7 +80,7 @@ void Mbc1::write_rom(uint16_t address, uint8_t value) {
 
 /* Return the 8 bit value in the currently selected RAM bank at the given
  * address.
- * Only uses the trailing 14 bits of the address.
+ * Only uses the trailing 13 bits of the address.
  * Returns 0xFF if there are no external RAM banks, if RAM is not accessible or
  * if the address is invalid. */
 uint8_t Mbc1::read_ram(uint16_t address) const {
@@ -109,7 +109,7 @@ uint8_t Mbc1::read_ram(uint16_t address) const {
 
 /* Write the given 8 bit value to the given address in the currently selected
  * RAM bank.
- * Only uses the trailing 14 bits of the address.
+ * Only uses the trailing 13 bits of the address.
  * Fails if there are no external RAM banks, if RAM is not accessible or if the
  * address is invalid. */
 void Mbc1::write_ram(uint16_t address, uint8_t value) {
