@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include "cpu.hpp"
+#include "../interrupt_manager.hpp"
 
 Cpu::Cpu(InterruptManager* interrupt_manager, Mmu* mmu) :
     interrupt_manager(interrupt_manager), mmu(mmu) {
@@ -18,8 +19,8 @@ void Cpu::tick() {
     locked = 0;
 
     // Check for interrupts
-    if (state != Interrupting && interrupt_manager->is_interrupt_requested()) {
-        set_interrupting_state();
+    if (state != INTERRUPT && interrupt_manager->is_interrupt_requested()) {
+        set_interrupt_state();
     }
 
     /* Set master interrupt enable if scheduled - done here since EI opcode
@@ -30,44 +31,44 @@ void Cpu::tick() {
 
     switch(state) {
 
-        case Fetching:
+        case FETCH:
             fetch_cycle();
             break;
 
-        case Working:
+        case WORK:
             work_cycle();
             break;
 
-        case Interrupting:
+        case INTERRUPT:
             interrupt_cycle();
             break;
 
-        case Halted:
-        case Stopped:
+        case HALT:
+        case STOP:
             return;
     }
 
 }
 
-/* Set the Cpu state to fetching.
+/* Set the Cpu state to FETCH.
  * Resets cb_prefix. */
-void Cpu::set_fetching_state() {
-    state = Fetching;
+void Cpu::set_fetch_state() {
+    state = FETCH;
     cb_prefix = false;
 }
 
-/* Set the Cpu state to working.
+/* Set the Cpu state to WORK.
  * Resets current_m_cycles and early_exit. */
-void Cpu::set_working_state() {
-    state = Working;
+void Cpu::set_work_state() {
+    state = WORK;
     current_m_cycles = 0;
     early_exit = false;
 }
 
-/* Set the Cpu state to working.
+/* Set the Cpu state to INTERRUPT.
  * Resets current_m_cycles. */
-void Cpu::set_interrupting_state() {
-    state = Interrupting;
+void Cpu::set_interrupt_state() {
+    state = INTERRUPT;
     current_m_cycles = 0;
 }
 
@@ -84,16 +85,16 @@ void Cpu::fetch_cycle() {
                 cb_prefix = true;
                 return;
             case 0x76:
-                state = Halted;
+                state = HALT;
                 return;
             case 0x10:
-                state = Stopped;
+                state = STOP;
                 return;
         }
     }
 
     opcode = cb_prefix ? cb_opcodes[opcode_address] : opcodes[opcode_address];
-    set_working_state();
+    set_work_state();
 }
 
 /* Carry out 1 work m-cycle.
@@ -109,18 +110,18 @@ void Cpu::work_cycle() {
     catch(const std::out_of_range& ex) {}
 
     if (early_exit) {
-        set_fetching_state();
+        set_fetch_state();
         return;
     }
 
     if (current_m_cycles * 4 == opcode->t_cycles) {
-        set_fetching_state();
+        set_fetch_state();
         fetch_cycle(); // Fetch in same m-cycle as last working m-cycle
         return;
     }
 }
 
-/* Carry out one cycle of the interrupt loop. 
+/* Carry out 1 m-cycle of the interrupt loop. 
  * - First cycle - wait.
  * - Second cycle - acknowledge interrupt.
  * - Third and fourth cycles - push reg.pc onto the stack.
@@ -134,8 +135,8 @@ void Cpu::interrupt_cycle() {
         
         case 1:
             interrupt_type = interrupt_manager->get_enabled();
-            if (interrupt_type == InterruptType::None) {
-                set_fetching_state();
+            if (interrupt_type == InterruptType::NONE) {
+                set_fetch_state();
                 return;
             }
             interrupt_manager->acknowledge(interrupt_type);
@@ -153,7 +154,7 @@ void Cpu::interrupt_cycle() {
 
         case 4:
             reg.pc = interrupt_manager->get_handler_address(interrupt_type);
-            set_fetching_state();
+            set_fetch_state();
             return;
     }
 

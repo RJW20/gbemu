@@ -12,12 +12,12 @@
  * - 3 - Serial Link 
  * - 4 - Joypad */
 enum InterruptType {
-    Vblank = 0,
-    Lcd = 1,
-    Timer_ = 2,
-    Serial_ = 3,
-    Joypad = 4,
-    None = -1
+    VBLANK = 0,
+    LCD = 1,
+    TIMER = 2,
+    SERIAL = 3,
+    JOYPAD = 4,
+    NONE = -1
 };
 
 // Handles enabling and disabling of hardware interrupts.

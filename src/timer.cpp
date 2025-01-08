@@ -37,7 +37,7 @@ void Timer::tick() {
         ticks_since_overflow += 1;
         if (ticks_since_overflow == 4) {
             tima = tma;
-            interrupt_manager->request(InterruptType::Timer_);
+            interrupt_manager->request(InterruptType::TIMER);
             tima_overflow = false;
         }
     }

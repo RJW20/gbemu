@@ -24,14 +24,14 @@ private:
     Mmu* mmu;
 
     // Cpu state
-    enum State {Fetching, Working, Interrupting, Halted, Stopped};
+    enum State {FETCH, WORK, INTERRUPT, HALT, Stopped};
     void set_fetching_state();
     void set_working_state();
     void set_interrupting_state();
 
     // Main loop variables
     uint8_t locked = 0;
-    State state = Fetching;
+    State state = FETCH;
     bool cb_prefix = false;
     Opcode* opcode;
     uint8_t current_m_cycles;

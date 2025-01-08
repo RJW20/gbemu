@@ -12,7 +12,7 @@ void InterruptManager::reset() {
 /* Request an interrupt of the given type.
  * Sets the corresponding bit in ix. */
 void InterruptManager::request(InterruptType interruption) {
-    if (interruption == InterruptType::None) {
+    if (interruption == InterruptType::NONE) {
         return;
     }
     ix |= (1 << interruption);
@@ -21,7 +21,7 @@ void InterruptManager::request(InterruptType interruption) {
 /* Acknowledge an interrupt of the given type.
  * Resets the corresponding bit in ix. */
 void InterruptManager::acknowledge(InterruptType interruption) {
-    if (interruption == InterruptType::None) {
+    if (interruption == InterruptType::NONE) {
         return;
     }
     ix &= ~(1 << interruption);
@@ -42,13 +42,13 @@ InterruptType InterruptManager::get_enabled() const {
             return InterruptType(bit_pos);
         }
     }
-    return InterruptType::None;
+    return InterruptType::NONE;
 }
 
 /* Return the program counter address corresponding to the given interrupt.
  * Should never be called when interruption is InterruptType::None. */
 uint8_t InterruptManager::get_handler_address(InterruptType interruption) {
-    if (interruption == InterruptType::None) {
+    if (interruption == InterruptType::NONE) {
         std::cout << "Do not call InterruptManager.get_handler_address with" <<
             " argument: " << interruption << std::endl;
         exit(10);
