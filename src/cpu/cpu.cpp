@@ -72,7 +72,7 @@ void Cpu::set_interrupt_state() {
     current_m_cycles = 0;
 }
 
-/* Carry out 1 fetch m-cycle.
+/* Carry out 1 FETCH m-cycle.
  * Reads the address at the current reg.pc and increments it.
  * Sets cb_prefix or the current opcode and state as necessary. */
 void Cpu::fetch_cycle() {
@@ -97,9 +97,9 @@ void Cpu::fetch_cycle() {
     set_work_state();
 }
 
-/* Carry out 1 work m-cycle.
+/* Carry out 1 WORK m-cycle.
  * Executes the opcode.step at the current_m_cycle and increments it.
- * Sets to fetching state if exits early.
+ * Sets to FETCH state if exits early.
  * Carries out an additional fetch_cycle if on the last step of the opcode. */
 void Cpu::work_cycle() {
 
@@ -121,7 +121,7 @@ void Cpu::work_cycle() {
     }
 }
 
-/* Carry out 1 m-cycle of the interrupt loop. 
+/* Carry out 1 m-cycle of the INTERRUPT state. 
  * - First cycle - wait.
  * - Second cycle - acknowledge interrupt.
  * - Third and fourth cycles - push reg.pc onto the stack.
