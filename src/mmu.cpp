@@ -59,18 +59,18 @@ uint8_t Mmu::read(uint16_t address) const {
             case 0xFF04:
                 return timer->div();
             case 0xFF05:
-                return timer->tima;
+                return timer->tima();
             case 0xFF06:
-                return timer->tma;
+                return timer->tma();
             case 0xFF07:
-                return timer->tac;
+                return timer->tac();
             case 0xFF0F:
                 return interrupt_manager->ix;
             case 0xFFFF:
                 return interrupt_manager->ie;
             default:
                 std::cerr << "Failed to read from address: " << std::hex <<
-                    address << ". I/O registers not fully implemented." <<
+                    address << //". I/O registers not fully implemented." <<
                     std::endl;
                 return 0xFF;
         }

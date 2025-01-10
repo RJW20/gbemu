@@ -12,13 +12,12 @@ public:
         interrupt_manager(interrupt_manager) {reset();};
     ~Timer() {};
 
-    uint8_t tima;   // Timer Counter
-    uint8_t tma;    // Timer Modulo
-    uint8_t tac;    // Timer Control
-
     void reset();
     void tick();
-    uint8_t div() const;    // Divider Register
+    uint8_t div() const;    // Divider register
+    uint8_t tima();
+    uint8_t tma();
+    uint8_t tac();
     void set_div();
     void set_tima(uint8_t value);
     void set_tma(uint8_t value);
@@ -29,6 +28,10 @@ private:
 
     uint16_t system_counter;    // Divider register exposes upper 8 bits
     bool previous_sc_bit;   // Previous value of selected bit in system_counter
+
+    uint8_t tima_;   // Timer counter
+    uint8_t tma_;    // Timer modulo
+    uint8_t tac_;    // Timer control
 
     /* tima is updated based on the system_counter bit transitions - the bit
      * that is monitored is dependent on the trailing 2 bits of tac (used as
