@@ -24,14 +24,14 @@ private:
     Mmu* mmu;
 
     // Cpu state
-    enum State {FETCH, WORK, INTERRUPT, HALT, STOP};
+    enum class State {FETCH, WORK, INTERRUPT, HALT, STOP};
     void set_fetch_state();
     void set_work_state();
     void set_interrupt_state();
 
     // Main loop variables
     uint8_t locked = 0;
-    State state = FETCH;
+    State state = State::FETCH;
     bool cb_prefix = false;
     Opcode* opcode;
     uint8_t current_m_cycles;

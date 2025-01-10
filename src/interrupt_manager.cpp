@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdint>
+#include <utility>
 #include "interrupt_manager.hpp"
 
 // Reset all attributes.
@@ -15,7 +16,7 @@ void InterruptManager::request(InterruptType interruption) {
     if (interruption == InterruptType::NONE) {
         return;
     }
-    ix |= (1 << interruption);
+    ix |= (1 << std::to_underlying(interruption));
 }
 
 /* Acknowledge an interrupt of the given type.
@@ -24,7 +25,7 @@ void InterruptManager::acknowledge(InterruptType interruption) {
     if (interruption == InterruptType::NONE) {
         return;
     }
-    ix &= ~(1 << interruption);
+    ix &= ~(1 << std::to_underlying(interruption));
 }
 
 /* Return true if interrupts are enabled and a specific interrupt is
@@ -50,8 +51,8 @@ InterruptType InterruptManager::get_enabled() const {
 uint8_t InterruptManager::get_handler_address(InterruptType interruption) {
     if (interruption == InterruptType::NONE) {
         std::cout << "Do not call InterruptManager.get_handler_address with" <<
-            " argument: " << interruption << std::endl;
+            " argument: InterruptType::NONE" << std::endl;
         exit(10);
     } 
-    return handler_addresses[interruption];
+    return handler_addresses[std::to_underlying(interruption)];
 }

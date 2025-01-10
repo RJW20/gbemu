@@ -11,7 +11,7 @@
  * - 2 - Timer 
  * - 3 - Serial Link 
  * - 4 - Joypad */
-enum InterruptType {
+enum class InterruptType : int {
     VBLANK = 0,
     LCD = 1,
     TIMER = 2,

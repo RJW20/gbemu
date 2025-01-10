@@ -19,7 +19,8 @@ void Cpu::tick() {
     locked = 0;
 
     // Check for interrupts
-    if (state != INTERRUPT && interrupt_manager->is_interrupt_requested()) {
+    if (state != State::INTERRUPT &&
+        interrupt_manager->is_interrupt_requested()) {
         set_interrupt_state();
     }
 
@@ -31,20 +32,20 @@ void Cpu::tick() {
 
     switch(state) {
 
-        case FETCH:
+        case State::FETCH:
             fetch_cycle();
             break;
 
-        case WORK:
+        case State::WORK:
             work_cycle();
             break;
 
-        case INTERRUPT:
+        case State::INTERRUPT:
             interrupt_cycle();
             break;
 
-        case HALT:
-        case STOP:
+        case State::HALT:
+        case State::STOP:
             return;
     }
 
@@ -53,14 +54,14 @@ void Cpu::tick() {
 /* Set the Cpu state to FETCH.
  * Resets cb_prefix. */
 void Cpu::set_fetch_state() {
-    state = FETCH;
+    state = State::FETCH;
     cb_prefix = false;
 }
 
 /* Set the Cpu state to WORK.
  * Resets current_m_cycles and early_exit. */
 void Cpu::set_work_state() {
-    state = WORK;
+    state = State::WORK;
     current_m_cycles = 0;
     early_exit = false;
 }
@@ -68,7 +69,7 @@ void Cpu::set_work_state() {
 /* Set the Cpu state to INTERRUPT.
  * Resets current_m_cycles. */
 void Cpu::set_interrupt_state() {
-    state = INTERRUPT;
+    state = State::INTERRUPT;
     current_m_cycles = 0;
 }
 
@@ -85,10 +86,10 @@ void Cpu::fetch_cycle() {
                 cb_prefix = true;
                 return;
             case 0x76:
-                state = HALT;
+                state = State::HALT;
                 return;
             case 0x10:
-                state = STOP;
+                state = State::STOP;
                 return;
         }
     }
