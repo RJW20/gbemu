@@ -2,6 +2,7 @@
 #define INTERRUPT_MANAGER_HPP
 
 #include <cstdint>
+#include <array>
 
 /* There are 5 types of interrupt, whose values correspond to their bit
  * position in ie and ix, as well as the index in the handler_addresses
@@ -23,7 +24,7 @@ enum class InterruptType : int {
 // Handles enabling and disabling of hardware interrupts.
 class InterruptManager {
 public:
-    InterruptManager() {reset();};
+    InterruptManager() { reset(); };
     ~InterruptManager() {};
 
     bool ime;    // Interrupt Master Enable
@@ -39,7 +40,9 @@ public:
 
 private:
     // Addresses to set reg.pc to for each corresponding interrupt
-    const uint8_t handler_addresses[5] = {0x40, 0x48, 0x50, 0x58, 0x60};
+    static constexpr std::array<uint8_t, 5> handler_addresses = {
+        0x40, 0x48, 0x50, 0x58, 0x60
+    };
 };
 
 #endif

@@ -23,7 +23,8 @@ void Timer::tick() {
     }
 
     // Increment tima_ based on the system_counter bit specified in tac_
-    bool current_sc_bit = (system_counter >> tac_clock_select[tac_ & 0x03]) & 1;
+    bool current_sc_bit = (system_counter >>
+                           tac_clock_select.at(tac_ & 0x3)) & 1;
     if (previous_sc_bit && !current_sc_bit) {   // falling edge
         if (++tima_ == 0) {
             tima_overflow = true;
@@ -94,10 +95,10 @@ void Timer::set_tma(uint8_t value) {
 
 // Set tac_ to the lower 3 bits of the given value.
 void Timer::set_tac(uint8_t value) {
-    tac_ = value & 0x07;
+    tac_ = value & 0x7;
 }
 
-// Check if the timer is enabled.
+// Return true if bit 2 of tac_ is set.
 bool Timer::timer_is_enabled() const {
-    return tac_ & 0x04; // Bit 2 of tac
+    return (tac_ >> 2) & 1;
 }
