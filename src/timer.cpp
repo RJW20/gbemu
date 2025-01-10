@@ -49,17 +49,17 @@ uint8_t Timer::div() const {
 }
 
 // Return tima_.
-uint8_t Timer::tima() {
+uint8_t Timer::tima() const {
     return tima_;
 }
 
 // Return tma_.
-uint8_t Timer::tma() {
+uint8_t Timer::tma() const {
     return tma_;
 }
 
 // Return tac_.
-uint8_t Timer::tac() {
+uint8_t Timer::tac() const {
     return tac_;
 }
 

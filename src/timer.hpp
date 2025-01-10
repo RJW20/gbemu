@@ -14,10 +14,10 @@ public:
 
     void reset();
     void tick();
-    uint8_t div() const;    // Divider register
-    uint8_t tima();
-    uint8_t tma();
-    uint8_t tac();
+    uint8_t div() const;
+    uint8_t tima() const;
+    uint8_t tma() const;
+    uint8_t tac() const;
     void set_div();
     void set_tima(uint8_t value);
     void set_tma(uint8_t value);
