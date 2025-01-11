@@ -8,13 +8,13 @@
  * position in ie and ix, as well as the index in the handler_addresses
  * array:
  * - 0 - Vblank 
- * - 1 - LCD
+ * - 1 - STAT
  * - 2 - Timer 
  * - 3 - Serial Link 
  * - 4 - Joypad */
 enum class InterruptType : int {
     VBLANK = 0,
-    LCD = 1,
+    STAT = 1,
     TIMER = 2,
     SERIAL = 3,
     JOYPAD = 4,
