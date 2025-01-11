@@ -3,8 +3,8 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <array>
 #include <vector>
-#include <deque>
 #include "interrupt_manager.hpp"
 #include "mmu.hpp"
 
@@ -12,8 +12,8 @@
  * */
 class Ppu {
 public:
-    Ppu(InterruptManager* interrupt_manager, Mmu* mmu) :
-        interrupt_manager(interrupt_manager), mmu(mmu) { reset(); };
+    Ppu(InterruptManager* interrupt_manager) :
+        interrupt_manager(interrupt_manager) { reset(); };
     ~Ppu() {};
 
     void reset();
@@ -35,25 +35,47 @@ public:
     uint8_t stat() const;
     void set_stat(uint8_t value);
 
+    // Pixel buffer
+    static constexpr uint8_t SCREEN_WIDTH = 160;
+    static constexpr uint8_t SCREEN_HEIGHT = 144;
+    std::array<uint32_t, SCREEN_WIDTH * SCREEN_HEIGHT> pixel_buffer;
+
 private:
     InterruptManager* interrupt_manager;
-    Mmu* mmu;
 
     static constexpr std::size_t VRAM_SIZE = 0x2000;    // 8 KB
-    static constexpr std::size_t OAM_SIZE = 0x100;      // 256 B
+    static constexpr std::size_t OAM_SIZE = 0x9F;       // 160 B
+    std::array<uint8_t, VRAM_SIZE> vram;    // Video RAM
+    std::array<uint8_t, OAM_SIZE> oam;      // Object attribute memory
 
-    std::vector<uint8_t> vram;  // Video RAM
-    std::vector<uint8_t> oam;   // Object attribute memory
-
-    // Ppu mode
+    // Ppu modes
     enum class Mode : int {
         OAM_SCAN = 2, PIXEL_TRANSFER = 3, HBLANK = 0, VBLANK = 1
     };
     void set_mode(Mode mode);
+    static constexpr uint8_t OAM_T_CYCLES = 80;
+    //enum class PixelFetcherSource {BACKGROUND, WINDOW, OBJECT};
+    enum class PixelFetcherMode {PUSH, TILE_ID, TILE_ROW_LOW, TILE_ROW_HIGH};
+    static constexpr uint8_t SCANLINE_T_CYCLES = 456;
+    static constexpr uint8_t VBLANK_SCANLINES = 10;
 
     // Main loop variables
     Mode mode;
-    uint16_t current_t_cycles;
+    uint8_t current_t_cycles;
+    //uint8_t oam_scan_index;
+    //std::vector<uint8_t> scanline_object_indexes;
+    //PixelFetcherSource pixel_fetcher_source;
+    //uint8_t wly;
+    PixelFetcherMode pixel_fetcher_mode;
+    uint8_t fetcher_cycles;
+    uint8_t lx;
+    uint8_t current_scanline_tile;
+    uint8_t tile_id;
+    uint16_t tile_row;
+    uint32_t bgwin_fifo;    // 16x2 bit pixels
+    //uint32_t sprite_fifo;
+    uint8_t bgwin_fifo_pointer;
+    //uint8_t sprite_fifo_pointer;
 
     // Tick methods for each mode
     void oam_scan_tick();
@@ -61,18 +83,20 @@ private:
     void hblank_tick();
     void vblank_tick();
 
+    // Pixel transfer mode and helper methods
+    void reset_fetcher();
+    uint8_t fetch_background_tile_id(uint8_t x_offset);
+    //uint8_t fetch_window_tile_id();
+    uint8_t fetch_tile_row(uint8_t tile_id, uint8_t row, bool low);
+
     /* RGBA colour values, indexed by 2 bit pixel colour ID
      * 0 - Light-green
      * 1 - Green
      * 2 - Dark-green
      * 3 - Black */
-    const uint32_t palette[4] = {
+    static constexpr std::array<uint32_t,4> palette = {
         0xE0F8D0FF, 0x88C070FF, 0x346856FF, 0x081820FF
     };
-
-    // FIFO's
-    uint32_t bgwin_fifo;
-    uint32_t sprite_fifo; 
 
     // Underlying registers that are (partially) read-only
     uint8_t ly_;

@@ -1,13 +1,15 @@
 #include <iostream>
+#include <cstdint>
 #include <utility>
 #include "ppu.hpp"
+#include "interrupt_manager.hpp"
 
 /* Resize and clear the memory vectors.
  * Set the registers to their default values. 
  * Set mode to Mode::VBLANK. */
 void Ppu::reset() {
-    vram.resize(VRAM_SIZE);
-    oam.resize(OAM_SIZE);
+    vram.fill(0);
+    oam.fill(0);
 
     lcdc = 0x91;
     ly_ = 0;
@@ -54,34 +56,206 @@ void Ppu::tick() {
 }
 
 /* Set the Ppu mode to the given mode. 
- * */
+ * Resets all variables in preparation for the new mode. */
 void Ppu::set_mode(Mode new_mode) {
+    
     mode = new_mode;
-    current_t_cycles = 0;
+    switch (mode) {
+
+        case Mode::OAM_SCAN:
+            ly_ = 0;
+            current_t_cycles = 0;
+            //oam_scan_index = 0;
+            //scanline_object_indexes.resize(0);
+            break;
+
+        case Mode::PIXEL_TRANSFER:
+            current_t_cycles = 0;
+            //pixel_fetcher_source = PixelFetcherSource::BACKGROUND;
+            reset_fetcher();
+            lx = 0;
+            current_scanline_tile = 0;
+            bgwin_fifo = 0;
+            //sprite_fifo = 0;
+            bgwin_fifo_pointer = 0;
+            //sprite_fifo_pointer = 0;
+            break;
+
+        case Mode::VBLANK:
+            current_t_cycles = 0;
+            break;
+    }
 }
 
-//
+/* Carry out 1 OAM_SCAN t-cycle.
+ * Reads 2 bytes from the OAM, . 
+ * */
 void Ppu::oam_scan_tick() {
 
-    // Request interrupts in here
+    // Reads objects as off screen if DMA is active
+
+    // Fully identify an object every 2nd call
+
+    if (lyc_interrupt_requested() && (ly_ == lyc) ||
+        oam_scan_interrupt_requested()) {
+        interrupt_manager->request(InterruptType::STAT);
+    }
+
+    if (current_t_cycles++ == OAM_T_CYCLES) {
+        set_mode(Mode::PIXEL_TRANSFER);
+    }
 }
 
-//
+/* Carry out 1 PIXEL_TRANSFER t-cycle. 
+ * */
 void Ppu::pixel_transfer_tick() {
 
-    // Request interrupts in here
+    current_t_cycles++;
+    fetcher_cycles++;
+    
+    // Push tile_row pixels to fifo if space
+    if (pixel_fetcher_mode == PixelFetcherMode::PUSH && bgwin_fifo_pointer < 9) {
+
+        // Interleave the tile_row bits to make colour IDs
+        uint16_t pixel_row = 0;
+        for (int i = 0; i < 8; i++) {
+            uint16_t lsb = (tile_row >> (i + 8)) & 1;
+            uint16_t msb = (tile_row >> i) & 1;
+            pixel_row |= (lsb << (2 * i));
+            pixel_row |= (msb << (2 * i + 1));
+        }
+
+        // Push to fifo
+        bgwin_fifo &= (pixel_row << (8 - bgwin_fifo_pointer) * 2);
+        bgwin_fifo_pointer += 8;
+
+        reset_fetcher();
+        current_scanline_tile += 1;
+    }
+
+    switch(pixel_fetcher_mode) {
+
+        case PixelFetcherMode::TILE_ID:
+            // Get tile_id during 2nd fetcher_cycle
+            if (fetcher_cycles & 0x1) {
+                tile_id = fetch_background_tile_id(current_scanline_tile++);
+                pixel_fetcher_mode = PixelFetcherMode::TILE_ROW_LOW;
+            }
+            break;
+
+        case PixelFetcherMode::TILE_ROW_LOW:
+            // Get leading byte of tile_row during 4th fetcher_cycle
+            if (fetcher_cycles & 0x1) {
+                uint8_t row = (scy + ly_) & 0x7;
+                tile_row = fetch_tile_row(tile_id, row, true) << 8;
+                pixel_fetcher_mode = PixelFetcherMode::TILE_ROW_HIGH;
+            }
+            break;
+
+        case PixelFetcherMode::TILE_ROW_HIGH:
+            // Get trailing byte of tile_row during 6th fetcher_cycle
+            if (fetcher_cycles & 0x1) {
+                uint8_t row = (scy + ly_) & 0x7;
+                tile_row = tile_row & (tile_id, row, false);
+                pixel_fetcher_mode = PixelFetcherMode::PUSH;
+            }
+            break;
+    }
+
+    // Push a pixel to pixel_buffer (or discard) if fifo full enough
+    if (bgwin_fifo_pointer > 8) {
+        if (!(scx & 0x7)) {
+            pixel_buffer[ly_ * SCREEN_WIDTH + lx] = palette[bgwin_fifo >> 30];
+        }
+        else {
+            scx -= 1; // scx bits 0-3 only used to discard first pixels
+        }
+        bgwin_fifo <<= 2;
+        bgwin_fifo_pointer -= 1;
+    }
+
+    // Change to HBLANK if reached end of scanline
+    if (++lx == 160) {
+        set_mode(Mode::HBLANK);
+    }
 }
 
-//
+/* Reset the pixel fetcher mode to TILE_ID. 
+ * Resets fetcher_cycles.0. */
+void Ppu::reset_fetcher() {
+    pixel_fetcher_mode = PixelFetcherMode::TILE_ID;
+    fetcher_cycles = 0;
+}
+
+/* Return the tile ID of the background tile at (scx/8+x_offset,(scy+ly_)/8).
+ * Coordinates larger than 31 will wrap around. */
+uint8_t Ppu::fetch_background_tile_id(uint8_t x_offset) {
+    uint8_t tile_x = (scx & 0xF8) + x_offset;
+    uint8_t tile_y = (scy + ly_) & 0xF8;
+    return vram[background_tile_map_address() + (tile_y << 5) + tile_x];
+}
+
+/* Return the tile ID of the window tile at (x-(wx-7),ly_-wy). 
+uint8_t Ppu::fetch_window_tile_id() {
+    uint8_t tile_x = (x - (wx - 7)) / 8;
+    uint8_t tile_y = (ly_ - wy) / 8;
+    return vram[window_tile_map_address() + (tile_y << 5) + tile_x];
+}
+*/
+
+/* Fetch half of the given row of the tile with given tile_id.
+ * Fetches the first byte if the given boolean is true. */
+uint8_t Ppu::fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) {
+    uint16_t start_of_tile_address = bgwin_unsigned_addressing() ? 
+        tile_id * 16 : 0x1000 + static_cast<int8_t>(tile_id) * 16;
+    return low ? vram[start_of_tile_address + 2 * row] :
+        vram[start_of_tile_address + 2 * row + 1];
+}
+
+/* Carry out 1 HBLANK t-cycle.
+ * Checks for relevant STAT interrupts.
+ * Increments ly_ and sets mode to VBLANK or OAM_SCAN at the end of the
+ * scanline. */
 void Ppu::hblank_tick() {
 
-    // Request interrupts in here
+    if (lyc_interrupt_requested() && (ly_ == lyc) ||
+        hblank_interrupt_requested()) {
+        interrupt_manager->request(InterruptType::STAT);
+    }
+
+    if (current_t_cycles++ == SCANLINE_T_CYCLES) {
+        if (++ly_== SCREEN_HEIGHT) {
+            set_mode(Mode::VBLANK);
+        }
+        else {
+            set_mode(Mode::OAM_SCAN);
+        }
+    }
 }
 
-//
+/* Carry out 1 VBLANK t-cycle.
+ * Requests VBLANK interrupt if the first t-cycle.
+ * Checks for relevant STAT interrupts.
+ * Increments ly_ and sets to OAM_SCAN at the end of the 10 scanlines. */
 void Ppu::vblank_tick() {
 
-    // Request interrupts in here
+    if (current_t_cycles == 0 && ly_ == SCREEN_HEIGHT) {
+        interrupt_manager->request(InterruptType::VBLANK);
+    }
+
+    if (lyc_interrupt_requested() && (ly_ == lyc) ||
+        vblank_interrupt_requested()) {
+        interrupt_manager->request(InterruptType::STAT);
+    }
+
+    if (current_t_cycles++ == SCANLINE_T_CYCLES) {
+        if (++ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES) {
+            set_mode(Mode::OAM_SCAN);
+        }
+        else {
+            current_t_cycles = 0;
+        }
+    }
 }
 
 // Return ly_.
