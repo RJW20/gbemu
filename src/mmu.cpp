@@ -2,55 +2,47 @@
 #include <cstdint>
 #include "mmu.hpp"
 
-/* Set wram and hram to their respective sizes and fill them with zeros. */
+// Clear WRAM and HRAM.
 void Mmu::reset() {
-    wram.resize(0x2000, 0);
-    hram.resize(0x7F, 0);
+    wram.fill(0);
+    hram.fill(0);
 }
 
 /* Return the 8 bit value stored at the given address.
  * Directs the address to its corresponding component. */
 uint8_t Mmu::read(uint16_t address) const {
 
-    if (address < 0x8000) {
+    if (address < ROM_UPPER) {
         return cartridge->read_rom(address);
     }
 
-    else if (0x8000 <= address && address < 0xA000) {
-        std::cerr << "Failed to read from address: " << std::hex << address <<
-            ". Video RAM currently not implemented." << std::endl;
-        return 0xFF;
+    else if (address < VRAM_UPPER) {
+        return ppu->read_vram(address);
     }
 
-    else if (0xA000 <= address && address < 0xC000) {
-        return cartridge->read_ram(address - 0xA000);
+    else if (address < EXTERNAL_RAM_UPPER) {
+        return cartridge->read_ram(address);
     }
     
-    else if (0xC000 <= address && address < 0xE000) {
-        return wram[address - 0xC000];
+    else if (address < WRAM_UPPER) {
+        return wram[address - EXTERNAL_RAM_UPPER];
     }
 
-    else if (0xE000 <= address && address < 0xFE00) {
-        return wram[address - 0xE000];
+    else if (address < ECHO_RAM_UPPER) {
+        return wram[address - EXTERNAL_RAM_UPPER];
     }
 
-    else if (0xFE00 <= address && address < 0xFEA0) {
-        std::cerr << "Failed to read from address: " << std::hex << address <<
-            ". OAM currently not implemented." << std::endl;
+    else if (address < OAM_UPPER) {
+        return ppu->read_oam(address);
+    }
+
+    else if (address < UNUSABLE_MEMORY_UPPER) {
+        std::cerr << "Invalid MMU read at address " << std::hex << address
+            << " - this section of RAM is unusable." << std::endl;
         return 0xFF;
     }
 
-    else if (0xFEA0 <= address && address < 0xFEFF) {
-        std::cerr << "Failed to read from address: " << std::hex << address <<
-            ". This section of RAM is unusable." << std::endl;
-        return 0xFF;
-    }
-
-    else if (0xFF80 <= address && address < 0xFFFE) {
-        return hram[address - 0xFF80];
-    }
-
-    else {
+    else if (address < IO_REGISTERS_UPPER) {
         switch (address) {
             case 0xFF01:
                 return serial->sb;
@@ -66,14 +58,44 @@ uint8_t Mmu::read(uint16_t address) const {
                 return timer->tac();
             case 0xFF0F:
                 return interrupt_manager->ix;
-            case 0xFFFF:
-                return interrupt_manager->ie;
+            case 0xFF40:
+                return ppu->lcdc;
+            case 0xFF41:
+                return ppu->stat();
+            case 0xFF42:
+                return ppu->scy;
+            case 0xFF43:
+                return ppu->scx;
+            case 0xFF44:
+                return ppu->ly();
+            case 0xFF45:
+                return ppu->lyc;
+            case 0xFF46:
+                return dma->source_address();
+            case 0xFF47:
+                return ppu->bgp;
+            case 0xFF48:
+                return ppu->obp0;
+            case 0xFF49:
+                return ppu->obp1;
+            case 0xFF4A:
+                return ppu->wy;
+            case 0xFF4B:
+                return ppu->wx;
             default:
-                std::cerr << "Failed to read from address: " << std::hex <<
-                    address << //". I/O registers not fully implemented." <<
-                    std::endl;
+                std::cerr << "Invalid MMU read at address " << std::hex
+                    << address << " - this I/O register does not exist."
+                    << std::endl;
                 return 0xFF;
         }
+    }
+
+    else if (address < HRAM_UPPER) {
+        return hram[address - IO_REGISTERS_UPPER];
+    }
+
+    else {
+        return interrupt_manager->ie;
     }
 }
 
@@ -81,43 +103,37 @@ uint8_t Mmu::read(uint16_t address) const {
  * Directs the address to its corresponding component. */
 void Mmu::write(uint16_t address, uint8_t value) {
 
-    if (address < 0x8000) {
+    if (address < ROM_UPPER) {
         cartridge->write_rom(address, value);
     }
 
-    else if (0x8000 <= address && address < 0xA000) {
-        std::cerr << "Failed to write to address: " << std::hex << address <<
-            ". Video RAM currently not implemented." << std::endl;
+    else if (address < VRAM_UPPER) {
+        ppu->write_vram(address, value);
     }
 
-    else if (0xA000 <= address && address < 0xC000) {
-        cartridge->write_ram(address - 0xA000, value);
+    else if (address < EXTERNAL_RAM_UPPER) {
+        cartridge->write_ram(address, value);
     }
     
-    else if (0xC000 <= address && address < 0xE000) {
-        wram[address - 0xC000] = value;
+    else if (address < WRAM_UPPER) {
+        wram[address - EXTERNAL_RAM_UPPER] = value;
     }
 
-    else if (0xE000 <= address && address < 0xFE00) {
-        std::cerr << "Failed to write to address: " << std::hex << address <<
-            ". Echo RAM should not be accessed." << std::endl;
+    else if (address < ECHO_RAM_UPPER) {
+        std::cerr << "Invalid MMU write at address " << std::hex << address
+            << " - echo RAM cannot be written to." << std::endl;
     }
 
-    else if (0xFE00 <= address && address < 0xFEA0) {
-        std::cerr << "Failed to write to address: " << std::hex << address <<
-            ". OAM currently not implemented." << std::endl;
+    else if (address < OAM_UPPER) {
+        ppu->write_oam(address, value);
     }
 
-    else if (0xFEA0 <= address && address < 0xFEFF) {
-        std::cerr << "Failed to write to address: " << std::hex << address <<
-            ". This section of RAM is unusable." << std::endl;
+    else if (address < UNUSABLE_MEMORY_UPPER) {
+        std::cerr << "Invalid MMU write at address " << std::hex << address
+            << " - this section of RAM is unusable." << std::endl;
     }
 
-    else if (0xFF80 <= address && address < 0xFFFE) {
-        hram[address - 0xFF80] = value;
-    }
-
-    else {
+    else if (address < IO_REGISTERS_UPPER) {
         switch (address) {
             case 0xFF01:
                 serial->sb = value;
@@ -143,10 +159,44 @@ void Mmu::write(uint16_t address, uint8_t value) {
             case 0xFFFF:
                 interrupt_manager->ie = value;
                 break;
+            case 0xFF40:
+                ppu->lcdc = value;
+            case 0xFF41:
+                ppu->set_stat(value);
+            case 0xFF42:
+                ppu->scy = value;
+            case 0xFF43:
+                ppu->scx = value;
+            case 0xFF44:
+                std::cerr << "Invalid MMU write at address: " << std::hex
+                    << address << "- LY register is read-only."
+                    << std::endl;
+            case 0xFF45:
+                ppu->lyc = value;
+            case 0xFF46:
+                dma->set_source_address(value);
+            case 0xFF47:
+                ppu->bgp = value;
+            case 0xFF48:
+                ppu->obp0 = value;
+            case 0xFF49:
+                ppu->obp1 = value;
+            case 0xFF4A:
+                ppu->wy = value;
+            case 0xFF4B:
+                ppu->wx = value;
             default:
-                std::cerr << "Failed to write to address: " << std::hex <<
-                    address << ". I/O registers not fully implemented." <<
-                    std::endl;
+                std::cerr << "Invalid MMU write at address " << std::hex
+                    << address << " - this I/O register does not exist."
+                    << std::endl;
         }
+    }
+
+    else if (address < HRAM_UPPER) {
+        hram[address - IO_REGISTERS_UPPER] = value;
+    }
+
+    else {
+        interrupt_manager->ie = value;
     }
 }
