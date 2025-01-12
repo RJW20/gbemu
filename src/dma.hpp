@@ -12,7 +12,7 @@ public:
     Dma(Mmu* mmu) { reset(); };
     ~Dma() {};
 
-    void set_mmu(Mmu* mmu);
+    void set_mmu(Mmu* _mmu);
     void reset();
     void tick();
 

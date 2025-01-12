@@ -3,8 +3,8 @@
 #include "mmu.hpp"
 
 // Set the mmu pointer.
-void Dma::set_mmu(Mmu* mmu) {
-    mmu = mmu;
+void Dma::set_mmu(Mmu* _mmu) {
+    mmu = _mmu;
 }
 
 // Set _source_address to it's power-on value. 
