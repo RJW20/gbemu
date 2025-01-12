@@ -17,11 +17,11 @@ uint8_t Mmu::read(uint16_t address) const {
     }
 
     else if (address < VRAM_UPPER) {
-        return ppu->read_vram(address);
+        return ppu->read_vram(address - ROM_UPPER);
     }
 
     else if (address < EXTERNAL_RAM_UPPER) {
-        return cartridge->read_ram(address);
+        return cartridge->read_ram(address - VRAM_UPPER);
     }
     
     else if (address < WRAM_UPPER) {
@@ -33,7 +33,7 @@ uint8_t Mmu::read(uint16_t address) const {
     }
 
     else if (address < OAM_UPPER) {
-        return ppu->read_oam(address);
+        return ppu->read_oam(address - ECHO_RAM_UPPER);
     }
 
     else if (address < UNUSABLE_MEMORY_UPPER) {
@@ -108,11 +108,11 @@ void Mmu::write(uint16_t address, uint8_t value) {
     }
 
     else if (address < VRAM_UPPER) {
-        ppu->write_vram(address, value);
+        ppu->write_vram(address - ROM_UPPER, value);
     }
 
     else if (address < EXTERNAL_RAM_UPPER) {
-        cartridge->write_ram(address, value);
+        cartridge->write_ram(address - VRAM_UPPER, value);
     }
     
     else if (address < WRAM_UPPER) {
@@ -125,7 +125,7 @@ void Mmu::write(uint16_t address, uint8_t value) {
     }
 
     else if (address < OAM_UPPER) {
-        ppu->write_oam(address, value);
+        ppu->write_oam(address - ECHO_RAM_UPPER, value);
     }
 
     else if (address < UNUSABLE_MEMORY_UPPER) {

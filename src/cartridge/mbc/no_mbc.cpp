@@ -25,18 +25,19 @@ uint8_t NoMbc::read_rom(uint16_t address) const {
 
 // Does nothing.
 void NoMbc::write_rom(uint16_t address, uint8_t value) {
-    std::cerr << "Invalid NoMBC ROM write." << std::endl;
+    std::cerr << "Invalid NoMBC ROM write at address" << std::hex 
+        << address << "." << std::endl;
 }
 
 // Return 0xFF.
 uint8_t NoMbc::read_ram(uint16_t address) const {
-    std::cerr << "Invalid NoMBC RAM read - there are no external RAM banks."
-        << std::endl;
+    std::cerr << "Invalid NoMBC RAM read at address " << std::hex
+        << address << " - there are no external RAM banks." << std::endl;
     return 0xFF;
 }
 
 // Does nothing.
 void NoMbc::write_ram(uint16_t address, uint8_t value) {
-    std::cerr << "Invalid NoMBC RAM write - there are no external RAM banks."
-        << std::endl;
+    std::cerr << "Invalid NoMBC RAM write at address " << std::hex
+        << address << " - there are no external RAM banks." << std::endl;
 }

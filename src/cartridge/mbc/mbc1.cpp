@@ -15,7 +15,7 @@ void Mbc1::reset() {
 
 /* Return the 8 bit value in the currently selected ROM bank at the given
  * address.
- * Returns 0xFF if the address is invalid. */
+ * Returns 0xFF if the address is out of bounds. */
 uint8_t Mbc1::read_rom(uint16_t address) const {
 
     if (address < ROM_BANK_SIZE) {
@@ -75,7 +75,7 @@ void Mbc1::write_rom(uint16_t address, uint8_t value) {
 /* Return the 8 bit value in the currently selected RAM bank at the given
  * address.
  * Returns 0xFF if there are no external RAM banks, if RAM is not accessible or
- * if the address is invalid. */
+ * if the address is out of bounds. */
 uint8_t Mbc1::read_ram(uint16_t address) const {
 
     if (!ram_size) {
@@ -91,8 +91,7 @@ uint8_t Mbc1::read_ram(uint16_t address) const {
         return 0xFF;
     }
 
-    if (address < RAM_BANK_LOWER || address >= RAM_BANK_LOWER + RAM_BANK_SIZE)
-    {
+    if (address >= RAM_BANK_SIZE) {
         std::cerr << "Invalid MBC1 RAM read at address " << std::hex
             << address << " - out of bounds." << std::endl;
         return 0xFF;
@@ -105,7 +104,7 @@ uint8_t Mbc1::read_ram(uint16_t address) const {
 /* Write the given 8 bit value to the given address in the currently selected
  * RAM bank.
  * Fails if there are no external RAM banks, if RAM is not accessible or if the
- * address is invalid. */
+ * address is out of bounds. */
 void Mbc1::write_ram(uint16_t address, uint8_t value) {
 
     if (!ram_size) {
@@ -121,8 +120,7 @@ void Mbc1::write_ram(uint16_t address, uint8_t value) {
         return;
     }
 
-    if (address < RAM_BANK_LOWER || address >= RAM_BANK_LOWER + RAM_BANK_SIZE)
-    {
+    if (address >= RAM_BANK_SIZE) {
         std::cerr << "Invalid MBC1 RAM write at address " << std::hex
             << address << " - out of bounds." << std::endl;
         return;

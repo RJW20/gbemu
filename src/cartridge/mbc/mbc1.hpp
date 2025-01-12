@@ -29,7 +29,6 @@ private:
     // Write regions
     static constexpr uint16_t IS_RAM_ENABLED_UPPER = 0x2000;
     static constexpr uint16_t RAM_BANK_NUMBER_UPPER = 0x6000;
-    static constexpr uint16_t RAM_BANK_LOWER = 0xA000;
 };
 
 #endif
