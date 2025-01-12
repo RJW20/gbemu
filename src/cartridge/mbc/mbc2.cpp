@@ -58,7 +58,7 @@ void Mbc2::write_rom(uint16_t address, uint8_t value) {
     }
 
     if (address >= 2 * ROM_BANK_SIZE) {
-        std::cerr << "Invalid MBC1 ROM write at address " << std::hex 
+        std::cerr << "Invalid MBC2 ROM write at address " << std::hex 
             << address << " - out of bounds." << std::endl;
     }
 }
@@ -71,8 +71,9 @@ void Mbc2::write_rom(uint16_t address, uint8_t value) {
 uint8_t Mbc2::read_ram(uint16_t address) const {
 
     if (!is_ram_enabled) {
-        std::cerr << "Invalid MBC2 RAM read - built-in RAM is currently not "
-            << "accessible." << std::endl;
+        std::cerr << "Invalid MBC2 RAM read at address " << std::hex
+            << address << " - built-in RAM is currently not accessible."
+            << std::endl;
         return 0xFF;
     }
 
@@ -91,8 +92,9 @@ uint8_t Mbc2::read_ram(uint16_t address) const {
 void Mbc2::write_ram(uint16_t address, uint8_t value) {
 
     if (!is_ram_enabled) {
-        std::cerr << "Invalid MBC2 RAM write - built-in RAM is currently not "
-            << "accessible." << std::endl;
+        std::cerr << "Invalid MBC2 RAM write at address " << std::hex
+            << address << " - built-in RAM is currently not accessible."
+            << std::endl;
         return;
     }
 
