@@ -101,7 +101,7 @@ private:
 
     // Underlying registers that are (partially) read-only
     uint8_t _ly;
-    uint8_t _stat;
+    uint8_t _stat_;
 
     // Methods for reading register flags
     bool lcd_enabled() const;

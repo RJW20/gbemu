@@ -14,7 +14,7 @@ void Ppu::reset() {
     lcdc = 0x91;
     _ly = 0;
     lyc = 0;
-    _stat = 0x80;
+    _stat_ = 0x80;
     scy = 0;
     scx = 0;
     wy = 0;
@@ -267,14 +267,14 @@ uint8_t Ppu::ly() const {
 }
 
 /* Return the LCD status.
- * Bits 7-3 are the leading 5 bits of _stat.
+ * Bits 7-3 are the leading 5 bits of _stat_.
  * Bit 2 is set if _ly = lyc or clear otherwise.
  * Bits 1-0 represent the current mode. */
 uint8_t Ppu::stat() const {
-    return (_stat & 0xF8) | ((_ly == lyc) << 2) | std::to_underlying(mode);
+    return (_stat_ & 0xF8) | ((_ly == lyc) << 2) | std::to_underlying(mode);
 }
 
-/* Set bits 7-3 of _stat to the leading 5 bits of the given value.
+/* Set bits 7-3 of _stat_ to the leading 5 bits of the given value.
  * Outputs to std::cerr if the trailing 3 bits in the given value are non-
  * zero. */
 void Ppu::set_stat(uint8_t value) {
@@ -283,7 +283,7 @@ void Ppu::set_stat(uint8_t value) {
             << "ignoring them in value: " << std::hex << (uint16_t) value
             << std::endl;
     }
-    _stat = value & 0xF8;
+    _stat_ = value & 0xF8;
 }
 
 // Return true if bit 7 of lcdc is set.
@@ -328,22 +328,22 @@ bool Ppu::bgwin_enabled() const {
     return lcdc & 1;
 }
 
-// Return true if bit 6 of _stat is set.
+// Return true if bit 6 of _stat_ is set.
 bool Ppu::lyc_interrupt_requested() const {
-    return (_stat >> 6) & 1;
+    return (_stat_ >> 6) & 1;
 }
 
-// Return true if bit 5 of _stat is set.
+// Return true if bit 5 of _stat_ is set.
 bool Ppu::oam_scan_interrupt_requested() const {
-    return (_stat >> 5) & 1;
+    return (_stat_ >> 5) & 1;
 }
 
-// Return true if bit 4 of _stat is set.
+// Return true if bit 4 of _stat_ is set.
 bool Ppu::vblank_interrupt_requested() const {
-    return (_stat >> 4) & 1;
+    return (_stat_ >> 4) & 1;
 }
 
-// Return true if bit 3 of _stat is set.
+// Return true if bit 3 of _stat_ is set.
 bool Ppu::hblank_interrupt_requested() const {
-    return (_stat >> 3) & 1;
+    return (_stat_ >> 3) & 1;
 }
