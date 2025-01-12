@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <string>
 #include <memory>
-#include <vector>
 #include "mbc/base_mbc.hpp"
 
 // Simulates a physical cartridge with ROM and (external) RAM.
@@ -12,6 +11,8 @@ class Cartridge {
 public:
     Cartridge(std::string rom_path);
     ~Cartridge() {};
+
+    void reset();
 
     std::string title;  // ROM title
 

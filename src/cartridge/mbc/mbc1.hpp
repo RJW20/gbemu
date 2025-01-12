@@ -8,7 +8,8 @@
 // Memory Bank Controller version 1.
 class Mbc1 : public BaseMbc {
 public:
-    Mbc1(std::ifstream& rom_file, bool has_external_ram);
+    Mbc1(std::ifstream& rom_file, bool has_external_ram) : 
+        BaseMbc(rom_file, has_external_ram) { reset(); };
     ~Mbc1() override {};
 
     void reset() override;

@@ -36,7 +36,7 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
     try {
         ram_size = has_external_ram ?
             external_ram_lookup.at(rom[0][RAM_SIZE_ADDRESS]) : 0;
-        ram.resize(ram_size, std::vector<uint8_t>(RAM_BANK_SIZE));
+        reset();
     }
     catch(const std::out_of_range& ex) {
         std::cerr << "Cartridge header has invalid RAM size value at "
@@ -44,4 +44,9 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
             << std::endl;
         exit(21);
     }
+}
+
+// Clear RAM.
+void BaseMbc::reset() {
+    ram.resize(ram_size, std::vector<uint8_t>(RAM_BANK_SIZE));
 }

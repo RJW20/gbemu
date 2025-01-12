@@ -4,14 +4,9 @@
 #include "mbc1.hpp"
 #include "base_mbc.hpp"
 
-// Construct BaseMbc and set the registers to their default values.
-Mbc1::Mbc1(std::ifstream& rom_file, bool has_external_ram) : 
-    BaseMbc(rom_file, has_external_ram) {
-    reset();
-}
-
-// Set registers to their default power-on values.
+// Clear RAM and set registers to their default power-on values.
 void Mbc1::reset() {
+    BaseMbc::reset();
     is_ram_enabled = false;
     rom_bank_number = 1;
     ram_bank_number = 0;

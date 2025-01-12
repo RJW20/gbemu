@@ -12,7 +12,7 @@ public:
     BaseMbc(std::ifstream& rom_file, bool has_external_ram);
     virtual ~BaseMbc() {};
 
-    virtual void reset() {};
+    virtual void reset();
 
     virtual uint8_t read_rom(uint16_t address) const = 0;
     virtual void write_rom(uint16_t address, uint8_t value) = 0;

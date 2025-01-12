@@ -8,12 +8,12 @@
  * default values. */
 Mbc2::Mbc2(std::ifstream& rom_file) : BaseMbc(rom_file, false) {
     ram_size = 1;
-    ram.resize(ram_size, std::vector<uint8_t>(RAM_BANK_SIZE / 16));
     reset();
 }
 
-// Set registers to their default power-on values.
+// Clear RAM and set registers to their default power-on values.
 void Mbc2::reset() {
+    ram.resize(ram_size, std::vector<uint8_t>(RAM_BANK_SIZE / 16));
     is_ram_enabled = false;
     rom_bank_number = 1;
 }

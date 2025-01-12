@@ -35,6 +35,11 @@ Cartridge::Cartridge(std::string rom_path) {
     }
 }
 
+// Reset the MBC.
+void Cartridge::reset() {
+    mbc->reset();
+}
+
 // Return the 8 bit value the MBC reads from its ROM at the given address.
 uint8_t Cartridge::read_rom(uint16_t address) const {
     return mbc->read_rom(address);
