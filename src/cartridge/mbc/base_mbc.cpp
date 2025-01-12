@@ -16,7 +16,7 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
     while (!rom_file.eof()) {
         std::vector<uint8_t> bank(ROM_BANK_SIZE, 0);
         rom_file.read(reinterpret_cast<char*>(bank.data()), ROM_BANK_SIZE);
-        size_t bytes_read = rom_file.gcount();
+        std::size_t bytes_read = rom_file.gcount();
         if (bytes_read > 0) {
             bank.resize(bytes_read);
             rom.push_back(std::move(bank));
