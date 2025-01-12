@@ -1,5 +1,11 @@
 #include <cstdint>
 #include "dma.hpp"
+#include "mmu.hpp"
+
+// Set the mmu pointer.
+void Dma::set_mmu(Mmu* mmu) {
+    mmu = mmu;
+}
 
 // Set _source_address to it's power-on value. 
 void Dma::reset() {
