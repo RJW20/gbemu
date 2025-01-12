@@ -67,6 +67,7 @@ void Ppu::set_mode(Mode new_mode) {
             current_t_cycles = 0;
             //oam_scan_index = 0;
             //scanline_object_indexes.resize(0);
+            pixels_to_discard = scx & 0x7;
             break;
 
         case Mode::PIXEL_TRANSFER:
@@ -114,7 +115,8 @@ void Ppu::pixel_transfer_tick() {
     fetcher_cycles++;
     
     // Push tile_row pixels to fifo if space
-    if (pixel_fetcher_mode == PixelFetcherMode::PUSH && bgwin_fifo_pointer < 9) {
+    if (pixel_fetcher_mode == PixelFetcherMode::PUSH &&
+        bgwin_fifo_pointer < 9) {
 
         // Interleave the tile_row bits to make colour IDs
         uint16_t pixel_row = 0;
@@ -129,8 +131,13 @@ void Ppu::pixel_transfer_tick() {
         bgwin_fifo &= (pixel_row << (8 - bgwin_fifo_pointer) * 2);
         bgwin_fifo_pointer += 8;
 
+        // Discard pixels if first tile
+        if (!current_scanline_tile++) {
+            bgwin_fifo <<= (2 * pixels_to_discard);
+            bgwin_fifo_pointer -= pixels_to_discard;
+        }
+
         reset_fetcher();
-        current_scanline_tile += 1;
     }
 
     switch(pixel_fetcher_mode) {
@@ -162,21 +169,17 @@ void Ppu::pixel_transfer_tick() {
             break;
     }
 
-    // Push a pixel to pixel_buffer (or discard) if fifo full enough
+    // Push a pixel to pixel_buffer if fifo full enough
     if (bgwin_fifo_pointer > 8) {
-        if (!(scx & 0x7)) {
-            pixel_buffer[ly_ * SCREEN_WIDTH + lx] = palette[bgwin_fifo >> 30];
-        }
-        else {
-            scx -= 1; // scx bits 0-3 only used to discard first pixels
-        }
+
+        pixel_buffer[ly_ * SCREEN_WIDTH + lx] = palette[bgwin_fifo >> 30];
         bgwin_fifo <<= 2;
         bgwin_fifo_pointer -= 1;
-    }
 
-    // Change to HBLANK if reached end of scanline
-    if (++lx == 160) {
-        set_mode(Mode::HBLANK);
+        // Change to HBLANK if reached end of scanline
+        if (++lx == 160) {
+            set_mode(Mode::HBLANK);
+        }
     }
 }
 

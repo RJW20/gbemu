@@ -64,6 +64,7 @@ private:
     uint8_t current_t_cycles;
     //uint8_t oam_scan_index;
     //std::vector<uint8_t> scanline_object_indexes;
+    uint8_t pixels_to_discard;  // Read at start of scanline
     //PixelFetcherSource pixel_fetcher_source;
     //uint8_t wly;
     PixelFetcherMode pixel_fetcher_mode;
@@ -74,7 +75,7 @@ private:
     uint16_t tile_row;
     uint32_t bgwin_fifo;    // 16x2 bit pixels
     //uint32_t sprite_fifo;
-    uint8_t bgwin_fifo_pointer;
+    uint8_t bgwin_fifo_pointer; // 0 points to bits 31-30
     //uint8_t sprite_fifo_pointer;
 
     // Tick methods for each mode
