@@ -2,7 +2,6 @@
 #define BASE_MBC_HPP
 
 #include <cstdint>
-#include <cstddef>
 #include <fstream>
 #include <vector>
 
@@ -20,8 +19,8 @@ public:
     virtual void write_ram(uint16_t address, uint8_t value) = 0;
 
 protected:
-    static constexpr std::size_t ROM_BANK_SIZE = 0x4000;   // 16 KB
-    static constexpr std::size_t RAM_BANK_SIZE = 0x2000;   // 8 KB
+    static constexpr uint16_t ROM_BANK_SIZE = 0x4000;   // 16 KB
+    static constexpr uint16_t RAM_BANK_SIZE = 0x2000;   // 8 KB
 
     std::vector<std::vector<uint8_t>> rom;  // Vector of ROM banks
     std::vector<std::vector<uint8_t>> ram;  // Vector of RAM banks

@@ -2,7 +2,6 @@
 #define MBC2_HPP
 
 #include <cstdint>
-#include <cstddef>
 #include <fstream>
 #include "base_mbc.hpp"
 
@@ -25,7 +24,7 @@ private:
     uint8_t rom_bank_number;    // Currently selected ROM bank (4 bit)
 
     // Write regions
-    static constexpr std::size_t RAM_BANK_LOWER = 0xA000;
+    static constexpr uint16_t RAM_BANK_LOWER = 0xA000;
 };
 
 #endif
