@@ -4,8 +4,8 @@
 #include "ppu.hpp"
 #include "interrupt_manager.hpp"
 
-/* Resize and clear the memory vectors.
- * Set the registers to their default values. 
+/* Clear VRAM and OAM.
+ * Set the registers to their power-on values. 
  * Set mode to Mode::VBLANK. */
 void Ppu::reset() {
     vram.fill(0);
@@ -172,7 +172,7 @@ void Ppu::pixel_transfer_tick() {
     // Push a pixel to pixel_buffer if fifo full enough
     if (bgwin_fifo_pointer > 8) {
 
-        pixel_buffer[_ly * SCREEN_WIDTH + lx] = palette[bgwin_fifo >> 30];
+        pixel_buffer[_ly * SCREEN_WIDTH + lx] = palette.at(bgwin_fifo >> 30);
         bgwin_fifo <<= 2;
         bgwin_fifo_pointer -= 1;
 
@@ -192,7 +192,7 @@ void Ppu::reset_fetcher() {
 
 /* Return the tile ID of the background tile at (scx/8+x_offset,(scy+_ly)/8).
  * Coordinates larger than 31 will wrap around. */
-uint8_t Ppu::fetch_background_tile_id(uint8_t x_offset) {
+uint8_t Ppu::fetch_background_tile_id(uint8_t x_offset) const {
     uint8_t tile_x = (scx & 0xF8) + x_offset;
     uint8_t tile_y = (scy + _ly) & 0xF8;
     return vram[background_tile_map_address() + (tile_y << 5) + tile_x];
@@ -208,7 +208,7 @@ uint8_t Ppu::fetch_window_tile_id() {
 
 /* Fetch half of the given row of the tile with given tile_id.
  * Fetches the first byte if the given boolean is true. */
-uint8_t Ppu::fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) {
+uint8_t Ppu::fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) const {
     uint16_t start_of_tile_address = bgwin_unsigned_addressing() ? 
         tile_id * 16 : 0x1000 + static_cast<int8_t>(tile_id) * 16;
     return low ? vram[start_of_tile_address + 2 * row] :
@@ -259,31 +259,6 @@ void Ppu::vblank_tick() {
             current_t_cycles = 0;
         }
     }
-}
-
-// Return _ly.
-uint8_t Ppu::ly() const {
-    return _ly;
-}
-
-/* Return the LCD status.
- * Bits 7-3 are the leading 5 bits of _stat_.
- * Bit 2 is set if _ly = lyc or clear otherwise.
- * Bits 1-0 represent the current mode. */
-uint8_t Ppu::stat() const {
-    return (_stat_ & 0xF8) | ((_ly == lyc) << 2) | std::to_underlying(mode);
-}
-
-/* Set bits 7-3 of _stat_ to the leading 5 bits of the given value.
- * Outputs to std::cerr if the trailing 3 bits in the given value are non-
- * zero. */
-void Ppu::set_stat(uint8_t value) {
-    if (value & 0x7) {
-        std::cerr << "The trailing 3 bits in STAT must always be zero, "
-            << "ignoring them in value: " << std::hex << (uint16_t) value
-            << std::endl;
-    }
-    _stat_ = value & 0xF8;
 }
 
 // Return true if bit 7 of lcdc is set.
@@ -346,4 +321,81 @@ bool Ppu::vblank_interrupt_requested() const {
 // Return true if bit 3 of _stat_ is set.
 bool Ppu::hblank_interrupt_requested() const {
     return (_stat_ >> 3) & 1;
+}
+
+// Return _ly.
+uint8_t Ppu::ly() const {
+    return _ly;
+}
+
+/* Return the LCD status.
+ * Bits 7-3 are the leading 5 bits of _stat_.
+ * Bit 2 is set if _ly = lyc or clear otherwise.
+ * Bits 1-0 represent the current mode. */
+uint8_t Ppu::stat() const {
+    return (_stat_ & 0xF8) | ((_ly == lyc) << 2) | std::to_underlying(mode);
+}
+
+/* Set bits 7-3 of _stat_ to the leading 5 bits of the given value.
+ * Outputs to std::cerr if the trailing 3 bits in the given value are non-
+ * zero. */
+void Ppu::set_stat(uint8_t value) {
+    if (value & 0x7) {
+        std::cerr << "The trailing 3 bits in STAT must always be zero, "
+            << "ignoring them in value: " << std::hex << (uint16_t) value
+            << std::endl;
+    }
+    _stat_ = value & 0xF8;
+}
+
+/* Return the 8 bit value in VRAM at the given address.
+ * Returns 0xFF if the address is out of boudns. */
+uint8_t Ppu::read_vram(uint16_t address) const {
+
+    if (address >= VRAM_SIZE) {
+        std::cerr << "Invalid PPU VRAM read at address " << std::hex
+            << address << " - out of bounds." << std::endl;
+        return 0xFF;
+    }
+
+    return vram[address];
+}
+
+/* Write the given 8 bit value to the VRAM at the given address.
+ * Fails if the address is out of bounds. */
+void Ppu::write_vram(uint16_t address, uint8_t value) {
+
+    if (address >= VRAM_SIZE) {
+        std::cerr << "Invalid PPU VRAM write at address " << std::hex
+            << address << " - out of bounds." << std::endl;
+        return;
+    }
+
+    vram[address] = value;
+}
+
+/* Return the 8 bit value in OAM at the given address.
+ * Returns 0xFF if the address is out of bounds. */
+uint8_t Ppu::read_oam(uint16_t address) const {
+    
+    if (address >= OAM_SIZE) {
+        std::cerr << "Invalid PPU OAM read at address " << std::hex
+            << address << " - out of bounds." << std::endl;
+        return 0xFF;
+    }
+
+    return vram[address];
+}
+
+/* Write the given 8 bit value to the OAM at the given address.
+ * Fails if the address is out of bounds. */
+void Ppu::write_oam(uint16_t address, uint8_t value) {
+
+    if (address >= OAM_SIZE) {
+        std::cerr << "Invalid PPU OAM write at address " << std::hex
+            << address << " - out of bounds." << std::endl;
+        return;
+    }
+
+    oam[address] = value;
 }

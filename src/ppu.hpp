@@ -2,7 +2,6 @@
 #define PPU_HPP
 
 #include <cstdint>
-#include <cstddef>
 #include <array>
 #include <vector>
 #include "interrupt_manager.hpp"
@@ -18,6 +17,11 @@ public:
 
     void reset();
     void tick();
+
+    uint8_t read_vram(uint16_t address) const;
+    void write_vram(uint16_t address, uint8_t value);
+    uint8_t read_oam(uint16_t address) const;
+    void write_oam(uint16_t address, uint8_t value);
 
     // Public read/write registers
     uint8_t lcdc;
@@ -43,8 +47,9 @@ public:
 private:
     InterruptManager* interrupt_manager;
 
-    static constexpr std::size_t VRAM_SIZE = 0x2000;    // 8 KB
-    static constexpr std::size_t OAM_SIZE = 0x9F;       // 160 B
+    static constexpr uint16_t VRAM_SIZE = 0x2000;    // 8 KB
+    static constexpr uint16_t OAM_SIZE = 0x100;      // 160 B
+
     std::array<uint8_t, VRAM_SIZE> vram;    // Video RAM
     std::array<uint8_t, OAM_SIZE> oam;      // Object attribute memory
 
@@ -86,9 +91,9 @@ private:
 
     // Pixel transfer mode and helper methods
     void reset_fetcher();
-    uint8_t fetch_background_tile_id(uint8_t x_offset);
+    uint8_t fetch_background_tile_id(uint8_t x_offset) const;
     //uint8_t fetch_window_tile_id();
-    uint8_t fetch_tile_row(uint8_t tile_id, uint8_t row, bool low);
+    uint8_t fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) const;
 
     /* RGBA colour values, indexed by 2 bit pixel colour ID
      * 0 - Light-green
