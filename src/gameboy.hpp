@@ -21,12 +21,12 @@ public:
 private:
     Cartridge cartridge;
     InterruptManager interrupt_manager;
-    Timer timer = Timer(&interrupt_manager);
-    Serial serial = Serial(&interrupt_manager);
-    Dma dma = Dma();
-    Ppu ppu = Ppu(&interrupt_manager);
-    Mmu mmu = Mmu(&cartridge, &interrupt_manager, &timer, &serial, &dma, &ppu);
-    Cpu cpu = Cpu(&interrupt_manager, &mmu);
+    Timer timer{&interrupt_manager};
+    Serial serial{&interrupt_manager};
+    Dma dma{};
+    Ppu ppu{&interrupt_manager};
+    Mmu mmu{&cartridge, &interrupt_manager, &timer, &serial, &dma, &ppu};
+    Cpu cpu{&interrupt_manager, &mmu};
 
     void tick();
 };
