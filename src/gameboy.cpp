@@ -12,4 +12,6 @@ void GameBoy::tick() {
     timer.tick();
     cpu.tick();
     serial.tick();
+    dma.tick();
+    ppu.tick();
 }

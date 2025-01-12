@@ -9,7 +9,7 @@
  * main program. */
 class Dma {
 public:
-    Dma(Mmu* mmu) { reset(); };
+    Dma() { reset(); };
     ~Dma() {};
 
     void set_mmu(Mmu* _mmu);
