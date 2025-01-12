@@ -15,6 +15,8 @@ set(SOURCES
     src/interrupt_manager.cpp
     src/timer.cpp
     src/serial.cpp
+    src/dma.cpp
+    src/ppu.cpp
     src/mmu.cpp
     src/cpu/cpu.cpp
     src/cpu/register.cpp

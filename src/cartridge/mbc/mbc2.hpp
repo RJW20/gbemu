@@ -23,7 +23,7 @@ private:
     bool is_ram_enabled;        // Controls if RAM is accessible
     uint8_t rom_bank_number;    // Currently selected ROM bank (4 bit)
 
-    static constexpr uint8_t BUILT_IN_RAM_SIZE = RAM_BANK_SIZE / 16;
+    static constexpr uint16_t BUILT_IN_RAM_SIZE = RAM_BANK_SIZE / 16;
 };
 
 #endif

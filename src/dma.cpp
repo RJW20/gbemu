@@ -38,7 +38,7 @@ void Dma::tick() {
 }
 
 // Return _source_address >> 8.
-uint8_t Dma::source_address() {
+uint8_t Dma::source_address() const {
     return _source_address >> 8;
 }
 

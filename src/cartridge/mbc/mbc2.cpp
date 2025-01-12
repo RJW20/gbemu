@@ -99,8 +99,7 @@ void Mbc2::write_ram(uint16_t address, uint8_t value) {
         return;
     }
 
-    if (address >= BUILT_IN_RAM_SIZE)
-    {
+    if (address >= BUILT_IN_RAM_SIZE) {
         std::cerr << "Invalid MBC2 RAM write at address " << std::hex
             << address << " - out of bounds." << std::endl;
         return;

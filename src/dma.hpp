@@ -2,7 +2,8 @@
 #define DMA_HPP
 
 #include <cstdint>
-#include "mmu.hpp"
+
+class Mmu;
 
 /* Direct Memory Access (DMA)
  * Enables fast copying of data to the OAM removing responsibility from the
@@ -18,7 +19,7 @@ public:
 
     bool transfer_in_progress;
 
-    uint8_t source_address();
+    uint8_t source_address() const;
     void set_source_address(uint8_t value);
 
 private:

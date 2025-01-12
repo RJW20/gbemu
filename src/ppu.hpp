@@ -5,7 +5,6 @@
 #include <array>
 #include <vector>
 #include "interrupt_manager.hpp"
-#include "mmu.hpp"
 
 /* Pixel Processing Unit 
  * */
@@ -61,7 +60,7 @@ private:
     static constexpr uint8_t OAM_T_CYCLES = 80;
     //enum class PixelFetcherSource {BACKGROUND, WINDOW, OBJECT};
     enum class PixelFetcherMode {PUSH, TILE_ID, TILE_ROW_LOW, TILE_ROW_HIGH};
-    static constexpr uint8_t SCANLINE_T_CYCLES = 456;
+    static constexpr uint16_t SCANLINE_T_CYCLES = 456;
     static constexpr uint8_t VBLANK_SCANLINES = 10;
 
     // Main loop variables
