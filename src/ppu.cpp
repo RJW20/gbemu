@@ -12,9 +12,9 @@ void Ppu::reset() {
     oam.fill(0);
 
     lcdc = 0x91;
-    ly_ = 0;
+    _ly = 0;
     lyc = 0;
-    stat_ = 0x80;
+    _stat = 0x80;
     scy = 0;
     scx = 0;
     wy = 0;
@@ -63,7 +63,7 @@ void Ppu::set_mode(Mode new_mode) {
     switch (mode) {
 
         case Mode::OAM_SCAN:
-            ly_ = 0;
+            _ly = 0;
             current_t_cycles = 0;
             //oam_scan_index = 0;
             //scanline_object_indexes.resize(0);
@@ -97,12 +97,12 @@ void Ppu::oam_scan_tick() {
 
     // Fully identify an object every 2nd call
 
-    if (lyc_interrupt_requested() && (ly_ == lyc) ||
+    if (lyc_interrupt_requested() && (_ly == lyc) ||
         oam_scan_interrupt_requested()) {
         interrupt_manager->request(InterruptType::STAT);
     }
 
-    if (current_t_cycles++ == OAM_T_CYCLES) {
+    if (++current_t_cycles == OAM_T_CYCLES) {
         set_mode(Mode::PIXEL_TRANSFER);
     }
 }
@@ -153,7 +153,7 @@ void Ppu::pixel_transfer_tick() {
         case PixelFetcherMode::TILE_ROW_LOW:
             // Get leading byte of tile_row during 4th fetcher_cycle
             if (fetcher_cycles & 0x1) {
-                uint8_t row = (scy + ly_) & 0x7;
+                uint8_t row = (scy + _ly) & 0x7;
                 tile_row = fetch_tile_row(tile_id, row, true) << 8;
                 pixel_fetcher_mode = PixelFetcherMode::TILE_ROW_HIGH;
             }
@@ -162,7 +162,7 @@ void Ppu::pixel_transfer_tick() {
         case PixelFetcherMode::TILE_ROW_HIGH:
             // Get trailing byte of tile_row during 6th fetcher_cycle
             if (fetcher_cycles & 0x1) {
-                uint8_t row = (scy + ly_) & 0x7;
+                uint8_t row = (scy + _ly) & 0x7;
                 tile_row = tile_row & (tile_id, row, false);
                 pixel_fetcher_mode = PixelFetcherMode::PUSH;
             }
@@ -172,7 +172,7 @@ void Ppu::pixel_transfer_tick() {
     // Push a pixel to pixel_buffer if fifo full enough
     if (bgwin_fifo_pointer > 8) {
 
-        pixel_buffer[ly_ * SCREEN_WIDTH + lx] = palette[bgwin_fifo >> 30];
+        pixel_buffer[_ly * SCREEN_WIDTH + lx] = palette[bgwin_fifo >> 30];
         bgwin_fifo <<= 2;
         bgwin_fifo_pointer -= 1;
 
@@ -190,18 +190,18 @@ void Ppu::reset_fetcher() {
     fetcher_cycles = 0;
 }
 
-/* Return the tile ID of the background tile at (scx/8+x_offset,(scy+ly_)/8).
+/* Return the tile ID of the background tile at (scx/8+x_offset,(scy+_ly)/8).
  * Coordinates larger than 31 will wrap around. */
 uint8_t Ppu::fetch_background_tile_id(uint8_t x_offset) {
     uint8_t tile_x = (scx & 0xF8) + x_offset;
-    uint8_t tile_y = (scy + ly_) & 0xF8;
+    uint8_t tile_y = (scy + _ly) & 0xF8;
     return vram[background_tile_map_address() + (tile_y << 5) + tile_x];
 }
 
-/* Return the tile ID of the window tile at (x-(wx-7),ly_-wy). 
+/* Return the tile ID of the window tile at (x-(wx-7),_ly-wy). 
 uint8_t Ppu::fetch_window_tile_id() {
     uint8_t tile_x = (x - (wx - 7)) / 8;
-    uint8_t tile_y = (ly_ - wy) / 8;
+    uint8_t tile_y = (_ly - wy) / 8;
     return vram[window_tile_map_address() + (tile_y << 5) + tile_x];
 }
 */
@@ -217,17 +217,17 @@ uint8_t Ppu::fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) {
 
 /* Carry out 1 HBLANK t-cycle.
  * Checks for relevant STAT interrupts.
- * Increments ly_ and sets mode to VBLANK or OAM_SCAN at the end of the
+ * Increments _ly and sets mode to VBLANK or OAM_SCAN at the end of the
  * scanline. */
 void Ppu::hblank_tick() {
 
-    if (lyc_interrupt_requested() && (ly_ == lyc) ||
+    if (lyc_interrupt_requested() && (_ly == lyc) ||
         hblank_interrupt_requested()) {
         interrupt_manager->request(InterruptType::STAT);
     }
 
-    if (current_t_cycles++ == SCANLINE_T_CYCLES) {
-        if (++ly_== SCREEN_HEIGHT) {
+    if (++current_t_cycles == SCANLINE_T_CYCLES) {
+        if (++_ly== SCREEN_HEIGHT) {
             set_mode(Mode::VBLANK);
         }
         else {
@@ -239,20 +239,20 @@ void Ppu::hblank_tick() {
 /* Carry out 1 VBLANK t-cycle.
  * Requests VBLANK interrupt if the first t-cycle.
  * Checks for relevant STAT interrupts.
- * Increments ly_ and sets to OAM_SCAN at the end of the 10 scanlines. */
+ * Increments _ly and sets to OAM_SCAN at the end of the 10 scanlines. */
 void Ppu::vblank_tick() {
 
-    if (current_t_cycles == 0 && ly_ == SCREEN_HEIGHT) {
+    if (current_t_cycles == 0 && _ly == SCREEN_HEIGHT) {
         interrupt_manager->request(InterruptType::VBLANK);
     }
 
-    if (lyc_interrupt_requested() && (ly_ == lyc) ||
+    if (lyc_interrupt_requested() && (_ly == lyc) ||
         vblank_interrupt_requested()) {
         interrupt_manager->request(InterruptType::STAT);
     }
 
-    if (current_t_cycles++ == SCANLINE_T_CYCLES) {
-        if (++ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES) {
+    if (++current_t_cycles == SCANLINE_T_CYCLES) {
+        if (++_ly == SCREEN_HEIGHT + VBLANK_SCANLINES) {
             set_mode(Mode::OAM_SCAN);
         }
         else {
@@ -261,20 +261,20 @@ void Ppu::vblank_tick() {
     }
 }
 
-// Return ly_.
+// Return _ly.
 uint8_t Ppu::ly() const {
-    return ly_;
+    return _ly;
 }
 
 /* Return the LCD status.
- * Bits 7-3 are the leading 5 bits of stat_.
- * Bit 2 is set if ly_ = lyc or clear otherwise.
+ * Bits 7-3 are the leading 5 bits of _stat.
+ * Bit 2 is set if _ly = lyc or clear otherwise.
  * Bits 1-0 represent the current mode. */
 uint8_t Ppu::stat() const {
-    return (stat_ & 0xF8) | ((ly_ == lyc) << 2) | std::to_underlying(mode);
+    return (_stat & 0xF8) | ((_ly == lyc) << 2) | std::to_underlying(mode);
 }
 
-/* Set bits 7-3 of stat_ to the leading 5 bits of the given value.
+/* Set bits 7-3 of _stat to the leading 5 bits of the given value.
  * Outputs to std::cerr if the trailing 3 bits in the given value are non-
  * zero. */
 void Ppu::set_stat(uint8_t value) {
@@ -283,7 +283,7 @@ void Ppu::set_stat(uint8_t value) {
             << "ignoring them in value: " << std::hex << (uint16_t) value
             << std::endl;
     }
-    stat_ = value & 0xF8;
+    _stat = value & 0xF8;
 }
 
 // Return true if bit 7 of lcdc is set.
@@ -328,22 +328,22 @@ bool Ppu::bgwin_enabled() const {
     return lcdc & 1;
 }
 
-// Return true if bit 6 of stat_ is set.
+// Return true if bit 6 of _stat is set.
 bool Ppu::lyc_interrupt_requested() const {
-    return (stat_ >> 6) & 1;
+    return (_stat >> 6) & 1;
 }
 
-// Return true if bit 5 of stat_ is set.
+// Return true if bit 5 of _stat is set.
 bool Ppu::oam_scan_interrupt_requested() const {
-    return (stat_ >> 5) & 1;
+    return (_stat >> 5) & 1;
 }
 
-// Return true if bit 4 of stat_ is set.
+// Return true if bit 4 of _stat is set.
 bool Ppu::vblank_interrupt_requested() const {
-    return (stat_ >> 4) & 1;
+    return (_stat >> 4) & 1;
 }
 
-// Return true if bit 3 of stat_ is set.
+// Return true if bit 3 of _stat is set.
 bool Ppu::hblank_interrupt_requested() const {
-    return (stat_ >> 3) & 1;
+    return (_stat >> 3) & 1;
 }
