@@ -161,34 +161,47 @@ void Mmu::write(uint16_t address, uint8_t value) {
                 break;
             case 0xFF40:
                 ppu->lcdc = value;
+                break;
             case 0xFF41:
                 ppu->set_stat(value);
+                break;
             case 0xFF42:
                 ppu->scy = value;
+                break;
             case 0xFF43:
                 ppu->scx = value;
+                break;
             case 0xFF44:
                 std::cerr << "Invalid MMU write at address: " << std::hex
                     << address << "- LY register is read-only."
                     << std::endl;
+                break;
             case 0xFF45:
                 ppu->lyc = value;
+                break;
             case 0xFF46:
                 dma->set_source_address(value);
+                break;
             case 0xFF47:
                 ppu->bgp = value;
+                break;
             case 0xFF48:
                 ppu->obp0 = value;
+                break;
             case 0xFF49:
                 ppu->obp1 = value;
+                break;
             case 0xFF4A:
                 ppu->wy = value;
+                break;
             case 0xFF4B:
                 ppu->wx = value;
+                break;
             default:
                 std::cerr << "Invalid MMU write at address " << std::hex
                     << address << " - this I/O register does not exist."
                     << std::endl;
+                break;
         }
     }
 
