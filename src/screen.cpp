@@ -1,6 +1,7 @@
 #include <iostream>
-#include <string>
 #include <cstdint>
+#include <string>
+#include <algorithm>
 #include <SDL2/SDL.h>
 #include "screen.hpp"
 #include "ppu.hpp"
