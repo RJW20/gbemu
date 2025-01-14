@@ -65,7 +65,7 @@ private:
 
     // Main loop variables
     Mode mode;
-    uint8_t current_t_cycles;
+    uint16_t current_t_cycles;
     //uint8_t oam_scan_index;
     //std::vector<uint8_t> scanline_object_indexes;
     uint8_t pixels_to_discard;  // Read at start of scanline

@@ -4,12 +4,13 @@
 #include "ppu.hpp"
 #include "interrupt_manager.hpp"
 
-/* Clear VRAM and OAM.
+/* Clear VRAM, OAM and the pixel_buffer.
  * Set the registers to their power-on values. 
  * Set mode to Mode::VBLANK. */
 void Ppu::reset() {
     vram.fill(0);
     oam.fill(0);
+    pixel_buffer.fill(0);            //pixel_buffer.fill(palette.at(0));
 
     lcdc = 0x91;
     _ly = 0;
@@ -23,7 +24,7 @@ void Ppu::reset() {
     obp0 = 0xFF;
     obp1 = 0xFF;
 
-    set_mode(Mode::VBLANK);
+    set_mode(Mode::OAM_SCAN);       // set_mode(Mode::VBLANK) and set current_t_cycles high?
 }
 
 // Carry out 1 t-cycle.
@@ -63,7 +64,6 @@ void Ppu::set_mode(Mode new_mode) {
     switch (mode) {
 
         case Mode::OAM_SCAN:
-            _ly = 0;
             current_t_cycles = 0;
             //oam_scan_index = 0;
             //scanline_object_indexes.resize(0);
@@ -177,7 +177,7 @@ void Ppu::pixel_transfer_tick() {
         bgwin_fifo_pointer -= 1;
 
         // Change to HBLANK if reached end of scanline
-        if (++lx == 160) {
+        if (++lx == SCREEN_WIDTH) {
             set_mode(Mode::HBLANK);
         }
     }
@@ -254,6 +254,7 @@ void Ppu::vblank_tick() {
     if (++current_t_cycles == SCANLINE_T_CYCLES) {
         if (++_ly == SCREEN_HEIGHT + VBLANK_SCANLINES) {
             set_mode(Mode::OAM_SCAN);
+            _ly = 0;
         }
         else {
             current_t_cycles = 0;
