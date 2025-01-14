@@ -22,6 +22,7 @@ set(SOURCES
     src/cpu/register.cpp
     src/cpu/basis.cpp
     src/cpu/opcodes.cpp
+    src/screen.cpp
 )
 
 # SDL2 (for graphics, sound, and input)
