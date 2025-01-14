@@ -9,7 +9,7 @@
 // Simulates a physical cartridge with ROM and (external) RAM.
 class Cartridge {
 public:
-    Cartridge(std::string rom_path);
+    Cartridge(const std::string rom_path);
     ~Cartridge() {};
 
     void reset();

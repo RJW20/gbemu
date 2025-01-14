@@ -6,7 +6,7 @@
 #include "mbc/lookup.hpp"
 
 // Load the ROM at the given path and pass it to the required MBC.
-Cartridge::Cartridge(std::string rom_path) {
+Cartridge::Cartridge(const std::string rom_path) {
     
     std::cout << "Loading ROM: " << rom_path << std::endl;
 
