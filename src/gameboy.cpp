@@ -4,6 +4,10 @@ void GameBoy::run() {
 
     while (true) {
         tick();
+        if (++ticks == SIXTY_FPS) {
+            screen.render();
+            ticks = 0;
+        }
     }
 }
 

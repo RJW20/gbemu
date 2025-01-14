@@ -10,6 +10,7 @@
 #include "ppu.hpp"
 #include "mmu.hpp"
 #include "cpu/cpu.hpp"
+#include "screen.hpp"
 
 class GameBoy {
 public:
@@ -27,6 +28,10 @@ private:
     Ppu ppu{&interrupt_manager};
     Mmu mmu{&cartridge, &interrupt_manager, &timer, &serial, &dma, &ppu};
     Cpu cpu{&interrupt_manager, &mmu};
+    Screen screen{cartridge.title, &ppu};
+
+    static constexpr int SIXTY_FPS = 70224;     // Ticks per frame render
+    int ticks = 0;
 
     void tick();
 };
