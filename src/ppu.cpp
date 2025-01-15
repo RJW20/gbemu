@@ -131,12 +131,7 @@ void Ppu::pixel_transfer_tick() {
         bgwin_fifo &= (pixel_row << (8 - bgwin_fifo_pointer) * 2);
         bgwin_fifo_pointer += 8;
 
-        // Discard pixels if first tile
-        if (!current_scanline_tile++) {
-            bgwin_fifo <<= (2 * pixels_to_discard);
-            bgwin_fifo_pointer -= pixels_to_discard;
-        }
-
+        current_scanline_tile++;
         reset_fetcher();
     }
 
@@ -169,16 +164,24 @@ void Ppu::pixel_transfer_tick() {
             break;
     }
 
-    // Push a pixel to pixel_buffer if fifo full enough
+    // Push a pixel to pixel_buffer or discard if fifo full enough
     if (bgwin_fifo_pointer > 8) {
 
-        pixel_buffer[_ly * SCREEN_WIDTH + lx] = palette.at(bgwin_fifo >> 30);
-        bgwin_fifo <<= 2;
-        bgwin_fifo_pointer -= 1;
+        if (pixels_to_discard) {
+            bgwin_fifo <<= 2;
+            bgwin_fifo_pointer -= 1;
+            pixels_to_discard -= 1;
+        }
 
-        // Change to HBLANK if reached end of scanline
-        if (++lx == SCREEN_WIDTH) {
-            set_mode(Mode::HBLANK);
+        else {
+            pixel_buffer[_ly * SCREEN_WIDTH + lx] = palette.at(bgwin_fifo >> 30);
+            bgwin_fifo <<= 2;
+            bgwin_fifo_pointer -= 1;
+
+            // Change to HBLANK if reached end of scanline
+            if (++lx == SCREEN_WIDTH) {
+                set_mode(Mode::HBLANK);
+            }
         }
     }
 }
