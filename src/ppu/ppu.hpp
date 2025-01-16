@@ -4,7 +4,8 @@
 #include <cstdint>
 #include <array>
 #include <vector>
-#include "interrupt_manager.hpp"
+#include "../interrupt_manager.hpp"
+#include "fetcher.hpp"
 
 /* Pixel Processing Unit 
  * */
@@ -52,35 +53,29 @@ private:
     std::array<uint8_t, VRAM_SIZE> vram;    // Video RAM
     std::array<uint8_t, OAM_SIZE> oam;      // Object attribute memory
 
-    // Ppu modes
+    // Ppu modes and durations
     enum class Mode : int {
         OAM_SCAN = 2, PIXEL_TRANSFER = 3, HBLANK = 0, VBLANK = 1
     };
     void set_mode(Mode mode);
     static constexpr uint8_t OAM_T_CYCLES = 80;
-    //enum class PixelFetcherSource {BACKGROUND, WINDOW, OBJECT};
-    enum class PixelFetcherMode {PUSH, TILE_ID, TILE_ROW_LOW, TILE_ROW_HIGH};
     static constexpr uint16_t SCANLINE_T_CYCLES = 456;
     static constexpr uint8_t VBLANK_SCANLINES = 10;
 
     // Main loop variables
     Mode mode;
     uint16_t current_t_cycles;
-    //uint8_t oam_scan_index;
-    //std::vector<uint8_t> scanline_object_indexes;
+    uint8_t oam_scan_index;
+    std::vector<uint8_t> scanline_object_indexes;
     uint8_t pixels_to_discard;  // Read at start of scanline
-    //PixelFetcherSource pixel_fetcher_source;
+    bool window_on_scanline;    // Decided at start of scanline
+    Fetcher fetcher;
     //uint8_t wly;
-    PixelFetcherMode pixel_fetcher_mode;
-    uint8_t fetcher_cycles;
-    uint8_t lx;
-    uint8_t current_scanline_tile;
-    uint8_t tile_id;
-    uint16_t tile_row;
     uint32_t bgwin_fifo;    // 16x2 bit pixels
-    //uint32_t sprite_fifo;
+    uint32_t sprite_fifo;
     uint8_t bgwin_fifo_pointer; // 0 points to bits 31-30
-    //uint8_t sprite_fifo_pointer;
+    uint8_t sprite_fifo_pointer;
+    uint8_t lx;
 
     // Tick methods for each mode
     void oam_scan_tick();
@@ -88,11 +83,13 @@ private:
     void hblank_tick();
     void vblank_tick();
 
-    // Pixel transfer mode and helper methods
-    void reset_fetcher();
-    uint8_t fetch_background_tile_id(uint8_t x_offset) const;
+    // Pixel transfer helper methods
+    void bgwin_fetcher_tick();
+    void restart_fetcher();
+    uint8_t fetch_background_tile_id() const;
     //uint8_t fetch_window_tile_id();
     uint8_t fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) const;
+    void push_pixel();
 
     /* RGBA colour values, indexed by 2 bit pixel colour ID
      * 0 - Light-green

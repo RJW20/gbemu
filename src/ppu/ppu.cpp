@@ -2,11 +2,12 @@
 #include <cstdint>
 #include <utility>
 #include "ppu.hpp"
-#include "interrupt_manager.hpp"
+#include "../interrupt_manager.hpp"
+#include "fetcher.hpp"
 
 /* Clear VRAM, OAM and the pixel_buffer.
  * Set the registers to their power-on values. 
- * Set mode to Mode::VBLANK. */
+ * Set mode to VBLANK. */
 void Ppu::reset() {
     vram.fill(0);
     oam.fill(0);
@@ -68,18 +69,20 @@ void Ppu::set_mode(Mode new_mode) {
             //oam_scan_index = 0;
             //scanline_object_indexes.resize(0);
             pixels_to_discard = scx & 0x7;
+            window_on_scanline = (_ly >= wy);
             break;
 
         case Mode::PIXEL_TRANSFER:
             current_t_cycles = 0;
-            //pixel_fetcher_source = PixelFetcherSource::BACKGROUND;
-            reset_fetcher();
-            lx = 0;
-            current_scanline_tile = 0;
+            fetcher.source = FetcherSource::BACKGROUND;
+            restart_fetcher();
+            fetcher.x = 0;
+            fetcher.y = _ly >> 3;
             bgwin_fifo = 0;
-            //sprite_fifo = 0;
+            sprite_fifo = 0;
             bgwin_fifo_pointer = 0;
-            //sprite_fifo_pointer = 0;
+            sprite_fifo_pointer = 0;
+            lx = 0;
             break;
 
         case Mode::VBLANK:
@@ -112,17 +115,20 @@ void Ppu::oam_scan_tick() {
 void Ppu::pixel_transfer_tick() {
 
     current_t_cycles++;
-    fetcher_cycles++;
+
+    push_pixel();
     
-    // Push tile_row pixels to fifo if space
-    if (pixel_fetcher_mode == PixelFetcherMode::PUSH &&
+    bgwin_fetcher_tick();
+
+    // Push fetcher.row_buffer pixels to fifo if space
+    if (fetcher.mode == FetcherMode::PUSH &&
         bgwin_fifo_pointer < 9) {
 
-        // Interleave the tile_row bits to make colour IDs
+        // Interleave the row_buffer bits to make colour IDs
         uint16_t pixel_row = 0;
         for (int i = 0; i < 8; i++) {
-            uint16_t lsb = (tile_row >> (i + 8)) & 1;
-            uint16_t msb = (tile_row >> i) & 1;
+            uint16_t lsb = (fetcher.row_buffer >> (i + 8)) & 1;
+            uint16_t msb = (fetcher.row_buffer >> i) & 1;
             pixel_row |= (lsb << (2 * i));
             pixel_row |= (msb << (2 * i + 1));
         }
@@ -131,73 +137,59 @@ void Ppu::pixel_transfer_tick() {
         bgwin_fifo &= (pixel_row << (8 - bgwin_fifo_pointer) * 2);
         bgwin_fifo_pointer += 8;
 
-        current_scanline_tile++;
-        reset_fetcher();
+        fetcher.x++;
+        restart_fetcher();
     }
+}
 
-    switch(pixel_fetcher_mode) {
+// Carry out 1 t-cycle for fetching BACKGROUND or WINDOW.
+void Ppu::bgwin_fetcher_tick() {
 
-        case PixelFetcherMode::TILE_ID:
+    fetcher.cycles++;
+
+    switch(fetcher.mode) {
+
+        case FetcherMode::TILE_ID:
             // Get tile_id during 2nd fetcher_cycle
-            if (fetcher_cycles & 0x1) {
-                tile_id = fetch_background_tile_id(current_scanline_tile++);
-                pixel_fetcher_mode = PixelFetcherMode::TILE_ROW_LOW;
+            if (fetcher.cycles & 0x1) {
+                fetcher.current_tile_id = fetch_background_tile_id();
+                fetcher.mode = FetcherMode::TILE_ROW_LOW;
             }
             break;
 
-        case PixelFetcherMode::TILE_ROW_LOW:
+        case FetcherMode::TILE_ROW_LOW:
             // Get leading byte of tile_row during 4th fetcher_cycle
-            if (fetcher_cycles & 0x1) {
+            if (fetcher.cycles & 0x1) {
                 uint8_t row = (scy + _ly) & 0x7;
-                tile_row = fetch_tile_row(tile_id, row, true) << 8;
-                pixel_fetcher_mode = PixelFetcherMode::TILE_ROW_HIGH;
+                fetcher.row_buffer = fetch_tile_row(fetcher.current_tile_id, row, true) << 8;
+                fetcher.mode = FetcherMode::TILE_ROW_HIGH;
             }
             break;
 
-        case PixelFetcherMode::TILE_ROW_HIGH:
+        case FetcherMode::TILE_ROW_HIGH:
             // Get trailing byte of tile_row during 6th fetcher_cycle
-            if (fetcher_cycles & 0x1) {
+            if (fetcher.cycles & 0x1) {
                 uint8_t row = (scy + _ly) & 0x7;
-                tile_row = tile_row & (tile_id, row, false);
-                pixel_fetcher_mode = PixelFetcherMode::PUSH;
+                fetcher.row_buffer = fetcher.row_buffer & (fetcher.current_tile_id, row, false);
+                fetcher.mode = FetcherMode::PUSH;
             }
             break;
     }
-
-    // Push a pixel to pixel_buffer or discard if fifo full enough
-    if (bgwin_fifo_pointer > 8) {
-
-        if (pixels_to_discard) {
-            bgwin_fifo <<= 2;
-            bgwin_fifo_pointer -= 1;
-            pixels_to_discard -= 1;
-        }
-
-        else {
-            pixel_buffer[_ly * SCREEN_WIDTH + lx] = palette.at(bgwin_fifo >> 30);
-            bgwin_fifo <<= 2;
-            bgwin_fifo_pointer -= 1;
-
-            // Change to HBLANK if reached end of scanline
-            if (++lx == SCREEN_WIDTH) {
-                set_mode(Mode::HBLANK);
-            }
-        }
-    }
 }
 
-/* Reset the pixel fetcher mode to TILE_ID. 
- * Resets fetcher_cycles.0. */
-void Ppu::reset_fetcher() {
-    pixel_fetcher_mode = PixelFetcherMode::TILE_ID;
-    fetcher_cycles = 0;
+/* Reset the fetcher mode to TILE_ID. 
+ * Resets the fetcher cycles to 0. */
+void Ppu::restart_fetcher() {
+    fetcher.mode = FetcherMode::TILE_ID;
+    fetcher.cycles = 0;
 }
 
-/* Return the tile ID of the background tile at (scx/8+x_offset,(scy+_ly)/8).
+/* Return the tile ID of the background tile at X = (scx >> 3) + fetcher.x,
+ * Y = (scy >> 3) + fetcher.y.
  * Coordinates larger than 31 will wrap around. */
-uint8_t Ppu::fetch_background_tile_id(uint8_t x_offset) const {
-    uint8_t tile_x = (scx & 0xF8) + x_offset;
-    uint8_t tile_y = (scy + _ly) & 0xF8;
+uint8_t Ppu::fetch_background_tile_id() const {
+    uint8_t tile_x = ((scx >> 3) + fetcher.x) & 0x1F;
+    uint8_t tile_y = ((scy >> 3) + fetcher.y) & 0x1F;
     return vram[background_tile_map_address() + (tile_y << 5) + tile_x];
 }
 
@@ -216,6 +208,31 @@ uint8_t Ppu::fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) const {
         tile_id * 16 : 0x1000 + static_cast<int8_t>(tile_id) * 16;
     return low ? vram[start_of_tile_address + 2 * row] :
         vram[start_of_tile_address + 2 * row + 1];
+}
+
+/* Push a pixel to pixel_buffer or discard if fifo full enough.
+ * Increments lx and sets mode to HBLANK if reached end of screen. */
+void Ppu::push_pixel() {
+
+    if (bgwin_fifo_pointer < 9) {
+        return;
+    }
+
+    if (pixels_to_discard) {
+        bgwin_fifo <<= 2;
+        bgwin_fifo_pointer -= 1;
+        pixels_to_discard -= 1;
+    }
+
+    else {
+        pixel_buffer[_ly * SCREEN_WIDTH + lx] = palette.at(bgwin_fifo >> 30);
+        bgwin_fifo <<= 2;
+        bgwin_fifo_pointer -= 1;
+
+        if (++lx == SCREEN_WIDTH) {
+            set_mode(Mode::HBLANK);
+        }
+    }
 }
 
 /* Carry out 1 HBLANK t-cycle.
