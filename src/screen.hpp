@@ -3,7 +3,7 @@
 
 #include <string>
 #include <SDL2/SDL.h>
-#include "ppu.hpp"
+#include "ppu/ppu.hpp"
 
 /* Screen 
  * Manages all SDL2 components.

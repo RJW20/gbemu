@@ -8,7 +8,7 @@
 #include "timer.hpp"
 #include "serial.hpp"
 #include "dma.hpp"
-#include "ppu.hpp"
+#include "ppu/ppu.hpp"
 
 /* Memory Management Unit
  * Simulates an array with the following contents:

@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <SDL2/SDL.h>
 #include "screen.hpp"
-#include "ppu.hpp"
+#include "ppu/ppu.hpp"
 
 // Initialise the SDL2 components.
 Screen::Screen(const std::string rom_title, Ppu* ppu) : ppu(ppu) {

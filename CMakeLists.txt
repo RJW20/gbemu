@@ -16,7 +16,7 @@ set(SOURCES
     src/timer.cpp
     src/serial.cpp
     src/dma.cpp
-    src/ppu.cpp
+    src/ppu/ppu.cpp
     src/mmu.cpp
     src/cpu/cpu.cpp
     src/cpu/register.cpp

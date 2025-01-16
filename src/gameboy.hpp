@@ -7,7 +7,7 @@
 #include "timer.hpp"
 #include "serial.hpp"
 #include "dma.hpp"
-#include "ppu.hpp"
+#include "ppu/ppu.hpp"
 #include "mmu.hpp"
 #include "cpu/cpu.hpp"
 #include "screen.hpp"
