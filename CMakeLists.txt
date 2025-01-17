@@ -17,6 +17,7 @@ set(SOURCES
     src/serial.cpp
     src/dma.cpp
     src/ppu/ppu.cpp
+    src/ppu/pixel_fifo.cpp
     src/mmu.cpp
     src/cpu/cpu.cpp
     src/cpu/register.cpp

@@ -1,4 +1,4 @@
-#ifndef FECTHER_HPP
+#ifndef FETCHER_HPP
 #define FETCHER_HPP
 
 #include <cstdint>
@@ -31,10 +31,10 @@ enum class FetcherSource {
  * Struct holding all relevant data about the Fetcher's current state. */
 struct Fetcher {
     uint8_t cycles;
-    FetcherMode mode;
     FetcherSource source;
-    uint8_t x;  // tile position from the left of the screen
-    uint8_t y;  // tile position from the top of the screen
+    uint8_t x;              // tile X on {source} tile map
+    uint8_t wly;            // window line counter
+    FetcherMode mode;
     uint8_t current_tile_id;
     uint16_t row_buffer;
 };
