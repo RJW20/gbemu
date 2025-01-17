@@ -25,7 +25,7 @@ void Ppu::reset() {
     obp0 = 0xFF;
     obp1 = 0xFF;
 
-    set_mode(Mode::OAM_SCAN);       // set_mode(Mode::VBLANK) and set current_t_cycles high?
+    set_mode(Mode::OAM_SCAN);
 }
 
 // Carry out 1 t-cycle.
@@ -58,7 +58,7 @@ void Ppu::tick() {
 }
 
 /* Set the Ppu mode to the given mode. 
- * Resets all variables in preparation for the new mode. */
+ * Resets the appropriate variables in preparation for the new mode. */
 void Ppu::set_mode(Mode new_mode) {
     
     mode = new_mode;
@@ -66,27 +66,24 @@ void Ppu::set_mode(Mode new_mode) {
 
         case Mode::OAM_SCAN:
             current_t_cycles = 0;
-            //oam_scan_index = 0;
-            //scanline_object_indexes.resize(0);
+            oam_scan_index = 0;
+            scanline_object_indexes.resize(0);
             pixels_to_discard = scx & 0x7;
-            window_on_scanline = (_ly >= wy);
+            window_possible_on_scanline = (_ly >= wy);
+            window_visible_on_scanline = false;
             break;
 
         case Mode::PIXEL_TRANSFER:
             current_t_cycles = 0;
-            fetcher.source = FetcherSource::BACKGROUND;
-            restart_fetcher();
-            fetcher.x = 0;
-            fetcher.y = _ly >> 3;
-            bgwin_fifo = 0;
-            sprite_fifo = 0;
-            bgwin_fifo_pointer = 0;
-            sprite_fifo_pointer = 0;
             lx = 0;
+            set_fetcher_source(FetcherSource::BACKGROUND);
+            bgwin_fifo.clear();
+            object_fifo.clear();
             break;
 
         case Mode::VBLANK:
             current_t_cycles = 0;
+            fetcher.wly = 0;
             break;
     }
 }
@@ -116,13 +113,27 @@ void Ppu::pixel_transfer_tick() {
 
     current_t_cycles++;
 
-    push_pixel();
-    
-    bgwin_fetcher_tick();
+    switch(fetcher.source) {
 
-    // Push fetcher.row_buffer pixels to fifo if space
+        case FetcherSource::BACKGROUND:
+            if (window_enabled() && window_possible_on_scanline &&
+                lx >= wx - 7) {
+                set_fetcher_source(FetcherSource::WINDOW);
+                bgwin_fifo.clear();
+            }
+            break;
+
+        case FetcherSource::WINDOW:
+            if (!window_enabled()) {
+                set_fetcher_source(FetcherSource::BACKGROUND);
+                bgwin_fifo.clear();
+            }
+            break;
+    }
+
+    // Push fetcher.row_buffer pixels to fifo if space ---- turn into method
     if (fetcher.mode == FetcherMode::PUSH &&
-        bgwin_fifo_pointer < 9) {
+        bgwin_fifo.is_accepting_pixels()) {
 
         // Interleave the row_buffer bits to make colour IDs
         uint16_t pixel_row = 0;
@@ -133,73 +144,154 @@ void Ppu::pixel_transfer_tick() {
             pixel_row |= (msb << (2 * i + 1));
         }
 
-        // Push to fifo
-        bgwin_fifo &= (pixel_row << (8 - bgwin_fifo_pointer) * 2);
-        bgwin_fifo_pointer += 8;
-
+        bgwin_fifo.accept_pixels(pixel_row);
         fetcher.x++;
         restart_fetcher();
     }
+
+    fetcher_tick();
+    
+    push_pixel();
 }
 
-// Carry out 1 t-cycle for fetching BACKGROUND or WINDOW.
-void Ppu::bgwin_fetcher_tick() {
+/* Set the fetcher source to the given source. 
+ * Resets the appropriate variables in preparation for the new source. */
+void Ppu::set_fetcher_source(FetcherSource new_source) {
 
-    fetcher.cycles++;
+    fetcher.source = new_source;
+    restart_fetcher();
+    switch(fetcher.source) {
+        
+        case FetcherSource::BACKGROUND:
+            fetcher.x = lx >> 3;
+            break;
+
+        case FetcherSource::WINDOW:
+            fetcher.x = (lx - (wx - 7)) >> 3;
+            window_visible_on_scanline = true;
+            break;        
+    }
+}
+
+/* Prepare the fetcher to fetch a new tile.
+ * Sets the fetcher mode to TILE_ID and resets the fetcher cycles to 0. */
+void Ppu::restart_fetcher() {
+    fetcher.mode = FetcherMode::TILE_ID;
+    fetcher.cycles = 0;
+}
+
+// Carry out 1 fetch t-cycle.
+void Ppu::fetcher_tick() {
 
     switch(fetcher.mode) {
 
         case FetcherMode::TILE_ID:
-            // Get tile_id during 2nd fetcher_cycle
-            if (fetcher.cycles & 0x1) {
-                fetcher.current_tile_id = fetch_background_tile_id();
+
+            if (fetcher.cycles++ & 0x1) { // Get tile_id in cycle 2
+
+                switch(fetcher.source) {
+
+                    case FetcherSource::BACKGROUND:
+                        fetcher.current_tile_id = fetch_background_tile_id();
+                        break;
+
+                    case FetcherSource::WINDOW:
+                        fetcher.current_tile_id = fetch_window_tile_id();
+                        break;
+                }
+
                 fetcher.mode = FetcherMode::TILE_ROW_LOW;
             }
             break;
 
         case FetcherMode::TILE_ROW_LOW:
-            // Get leading byte of tile_row during 4th fetcher_cycle
-            if (fetcher.cycles & 0x1) {
-                uint8_t row = (scy + _ly) & 0x7;
-                fetcher.row_buffer = fetch_tile_row(fetcher.current_tile_id, row, true) << 8;
+            
+            if (fetcher.cycles++ & 0x1) { // Get row_buffer 1st byte in cycle 4
+
+                uint8_t tile_row;
+                switch(fetcher.source) {
+
+                    case FetcherSource::BACKGROUND:
+                        tile_row = (scy + _ly) & 0x7;
+                        break;
+
+                    case FetcherSource::WINDOW:
+                        tile_row = fetcher.wly & 0x7;
+                        break;
+                }
+
+                fetcher.row_buffer = fetch_tile_row(
+                    fetcher.current_tile_id,
+                    tile_row, 
+                    true
+                ) << 8;
                 fetcher.mode = FetcherMode::TILE_ROW_HIGH;
             }
             break;
 
         case FetcherMode::TILE_ROW_HIGH:
-            // Get trailing byte of tile_row during 6th fetcher_cycle
-            if (fetcher.cycles & 0x1) {
-                uint8_t row = (scy + _ly) & 0x7;
-                fetcher.row_buffer = fetcher.row_buffer & (fetcher.current_tile_id, row, false);
+            
+            if (fetcher.cycles++ & 0x1) { // Get row_buffer 2nd byte in cycle 6
+
+                uint8_t tile_row;
+                switch(fetcher.source) {
+
+                    case FetcherSource::BACKGROUND:
+                        tile_row = (scy + _ly) & 0x7;
+                        break;
+
+                    case FetcherSource::WINDOW:
+                        tile_row = fetcher.wly & 0x7;
+                        break;
+                }
+
+                fetcher.row_buffer &= fetch_tile_row(
+                    fetcher.current_tile_id,
+                    tile_row,
+                    false
+                );
                 fetcher.mode = FetcherMode::PUSH;
             }
             break;
     }
 }
 
-/* Reset the fetcher mode to TILE_ID. 
- * Resets the fetcher cycles to 0. */
-void Ppu::restart_fetcher() {
-    fetcher.mode = FetcherMode::TILE_ID;
-    fetcher.cycles = 0;
+/* Push a pixel to the pixel_buffer if the FIFO is full enough or discard it if
+ * necessary.
+ * Increments lx and sets mode to HBLANK if reached end of screen. */
+void Ppu::push_pixel() {
+
+    if (!bgwin_fifo.is_shifting_pixels()) {
+        return;
+    }
+
+    if (pixels_to_discard) {
+        bgwin_fifo.shift_pixel();
+        pixels_to_discard -= 1;
+        return;
+    }
+
+    pixel_buffer[_ly * SCREEN_WIDTH + lx] = palette.at(bgwin_fifo.shift_pixel());
+    if (++lx == SCREEN_WIDTH) {
+        set_mode(Mode::HBLANK);
+    }
 }
 
-/* Return the tile ID of the background tile at X = (scx >> 3) + fetcher.x,
- * Y = (scy >> 3) + fetcher.y.
+/* Return the tile ID of the tile at the current X, Y position on the
+ * background map.
  * Coordinates larger than 31 will wrap around. */
 uint8_t Ppu::fetch_background_tile_id() const {
     uint8_t tile_x = ((scx >> 3) + fetcher.x) & 0x1F;
-    uint8_t tile_y = ((scy >> 3) + fetcher.y) & 0x1F;
+    uint8_t tile_y = ((scy + _ly) >> 3) & 0x1F; // = ((scy + _ly) & 0xFF) >> 3
     return vram[background_tile_map_address() + (tile_y << 5) + tile_x];
 }
 
-/* Return the tile ID of the window tile at (x-(wx-7),_ly-wy). 
-uint8_t Ppu::fetch_window_tile_id() {
-    uint8_t tile_x = (x - (wx - 7)) / 8;
-    uint8_t tile_y = (_ly - wy) / 8;
-    return vram[window_tile_map_address() + (tile_y << 5) + tile_x];
+/* Return the tile ID of the tile at the current X, Y position on the window
+ * map. */
+uint8_t Ppu::fetch_window_tile_id() const {
+    uint8_t tile_y = fetcher.wly >> 3;
+    return vram[window_tile_map_address() + (tile_y << 5) + fetcher.x];
 }
-*/
 
 /* Fetch half of the given row of the tile with given tile_id.
  * Fetches the first byte if the given boolean is true. */
@@ -208,31 +300,6 @@ uint8_t Ppu::fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) const {
         tile_id * 16 : 0x1000 + static_cast<int8_t>(tile_id) * 16;
     return low ? vram[start_of_tile_address + 2 * row] :
         vram[start_of_tile_address + 2 * row + 1];
-}
-
-/* Push a pixel to pixel_buffer or discard if fifo full enough.
- * Increments lx and sets mode to HBLANK if reached end of screen. */
-void Ppu::push_pixel() {
-
-    if (bgwin_fifo_pointer < 9) {
-        return;
-    }
-
-    if (pixels_to_discard) {
-        bgwin_fifo <<= 2;
-        bgwin_fifo_pointer -= 1;
-        pixels_to_discard -= 1;
-    }
-
-    else {
-        pixel_buffer[_ly * SCREEN_WIDTH + lx] = palette.at(bgwin_fifo >> 30);
-        bgwin_fifo <<= 2;
-        bgwin_fifo_pointer -= 1;
-
-        if (++lx == SCREEN_WIDTH) {
-            set_mode(Mode::HBLANK);
-        }
-    }
 }
 
 /* Carry out 1 HBLANK t-cycle.
@@ -251,6 +318,7 @@ void Ppu::hblank_tick() {
             set_mode(Mode::VBLANK);
         }
         else {
+            fetcher.wly += window_visible_on_scanline;
             set_mode(Mode::OAM_SCAN);
         }
     }
@@ -273,8 +341,8 @@ void Ppu::vblank_tick() {
 
     if (++current_t_cycles == SCANLINE_T_CYCLES) {
         if (++_ly == SCREEN_HEIGHT + VBLANK_SCANLINES) {
-            set_mode(Mode::OAM_SCAN);
             _ly = 0;
+            set_mode(Mode::OAM_SCAN);
         }
         else {
             current_t_cycles = 0;

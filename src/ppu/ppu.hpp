@@ -6,6 +6,7 @@
 #include <vector>
 #include "../interrupt_manager.hpp"
 #include "fetcher.hpp"
+#include "pixel_fifo.hpp"
 
 /* Pixel Processing Unit 
  * */
@@ -68,14 +69,12 @@ private:
     uint8_t oam_scan_index;
     std::vector<uint8_t> scanline_object_indexes;
     uint8_t pixels_to_discard;  // Read at start of scanline
-    bool window_on_scanline;    // Decided at start of scanline
-    Fetcher fetcher;
-    //uint8_t wly;
-    uint32_t bgwin_fifo;    // 16x2 bit pixels
-    uint32_t sprite_fifo;
-    uint8_t bgwin_fifo_pointer; // 0 points to bits 31-30
-    uint8_t sprite_fifo_pointer;
+    bool window_possible_on_scanline;    // Decided at start of scanline
+    bool window_visible_on_scanline;
     uint8_t lx;
+    Fetcher fetcher;
+    PixelFifo bgwin_fifo;
+    PixelFifo object_fifo;
 
     // Tick methods for each mode
     void oam_scan_tick();
@@ -84,12 +83,13 @@ private:
     void vblank_tick();
 
     // Pixel transfer helper methods
-    void bgwin_fetcher_tick();
+    void set_fetcher_source(FetcherSource source);
     void restart_fetcher();
-    uint8_t fetch_background_tile_id() const;
-    //uint8_t fetch_window_tile_id();
-    uint8_t fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) const;
+    void fetcher_tick();
     void push_pixel();
+    uint8_t fetch_background_tile_id() const;
+    uint8_t fetch_window_tile_id() const;
+    uint8_t fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) const;
 
     /* RGBA colour values, indexed by 2 bit pixel colour ID
      * 0 - Light-green
