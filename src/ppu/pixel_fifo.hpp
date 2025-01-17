@@ -4,7 +4,7 @@
 #include <cstdint>
 
 /* Pixel First-In-First-Out
- * Data structure for storing and shift out pixels in the order they were
+ * Data structure for storing and shifting out pixels in the order they were
  * fetched. */
 class PixelFifo {
 public:

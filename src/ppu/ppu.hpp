@@ -85,8 +85,9 @@ private:
     // Pixel transfer helper methods
     void set_fetcher_source(FetcherSource source);
     void restart_fetcher();
+    void push_fetcher_to_fifo();
     void fetcher_tick();
-    void push_pixel();
+    void shift_pixel();
     uint8_t fetch_background_tile_id() const;
     uint8_t fetch_window_tile_id() const;
     uint8_t fetch_tile_row(uint8_t tile_id, uint8_t row, bool low) const;

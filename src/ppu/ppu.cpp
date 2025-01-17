@@ -131,31 +131,21 @@ void Ppu::pixel_transfer_tick() {
             break;
     }
 
-    // Push fetcher.row_buffer pixels to fifo if space ---- turn into method
     if (fetcher.mode == FetcherMode::PUSH &&
         bgwin_fifo.is_accepting_pixels()) {
-
-        // Interleave the row_buffer bits to make colour IDs
-        uint16_t pixel_row = 0;
-        for (int i = 0; i < 8; i++) {
-            uint16_t lsb = (fetcher.row_buffer >> (i + 8)) & 1;
-            uint16_t msb = (fetcher.row_buffer >> i) & 1;
-            pixel_row |= (lsb << (2 * i));
-            pixel_row |= (msb << (2 * i + 1));
-        }
-
-        bgwin_fifo.accept_pixels(pixel_row);
-        fetcher.x++;
-        restart_fetcher();
+        push_fetcher_to_fifo();
     }
 
     fetcher_tick();
     
-    push_pixel();
+    if (bgwin_fifo.is_shifting_pixels()) {
+        shift_pixel();
+    }
 }
 
 /* Set the fetcher source to the given source. 
- * Resets the appropriate variables in preparation for the new source. */
+ * Restarts the fetcher and sets the appropriate variables in preparation for
+ * the new source. */
 void Ppu::set_fetcher_source(FetcherSource new_source) {
 
     fetcher.source = new_source;
@@ -178,6 +168,24 @@ void Ppu::set_fetcher_source(FetcherSource new_source) {
 void Ppu::restart_fetcher() {
     fetcher.mode = FetcherMode::TILE_ID;
     fetcher.cycles = 0;
+}
+
+/* Push the fetcher's current row_buffer onto the corresponding FIFO as pixels.
+ * Increments fetcher.x and restarts the fetcher. */
+void Ppu::push_fetcher_to_fifo() {
+        
+    // Interleave the row_buffer bits to make colour IDs
+    uint16_t pixel_row = 0;
+    for (int i = 0; i < 8; i++) {
+        uint16_t lsb = (fetcher.row_buffer >> (i + 8)) & 1;
+        uint16_t msb = (fetcher.row_buffer >> i) & 1;
+        pixel_row |= (lsb << (2 * i));
+        pixel_row |= (msb << (2 * i + 1));
+    }
+
+    bgwin_fifo.accept_pixels(pixel_row);
+    fetcher.x++;
+    restart_fetcher();
 }
 
 // Carry out 1 fetch t-cycle.
@@ -256,14 +264,9 @@ void Ppu::fetcher_tick() {
     }
 }
 
-/* Push a pixel to the pixel_buffer if the FIFO is full enough or discard it if
- * necessary.
+/* Push a pixel to the pixel_buffer or discard it if necessary.
  * Increments lx and sets mode to HBLANK if reached end of screen. */
-void Ppu::push_pixel() {
-
-    if (!bgwin_fifo.is_shifting_pixels()) {
-        return;
-    }
+void Ppu::shift_pixel() {
 
     if (pixels_to_discard) {
         bgwin_fifo.shift_pixel();
