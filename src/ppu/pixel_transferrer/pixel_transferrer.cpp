@@ -10,7 +10,6 @@ void PixelTransferrer::new_pixel_transfer() {
     lx = 0;
     set_fetcher_source(FetcherSource::BACKGROUND);
     fetcher.wly = 0;
-    fetcher.current_object_index = 0;
     window_visible_on_scanline = false;
     bgwin_fifo.clear();
     object_fifo.clear();
@@ -87,8 +86,7 @@ void PixelTransferrer::try_push_fetcher_to_fifo() {
             if (!object_fifo.is_accepting_pixels()) {
                 return;
             }
-            const OamObject oam_object =
-                scanline_objects[fetcher.current_object_index];
+            const OamObject& oam_object = scanline_objects.front();
             const PaletteRegister palette_register =
                 PaletteRegister(oam_object.pallette + 1);
             const bool priority = oam_object.priority;
@@ -103,7 +101,7 @@ void PixelTransferrer::try_push_fetcher_to_fifo() {
                 );
                 object_fifo.push(Pixel{colour_id, palette_register, priority});
             }
-            fetcher.current_object_index++;
+            scanline_objects.pop_front();
             set_fetcher_source(window_covers_current_pixel() ? 
                 FetcherSource::WINDOW : FetcherSource::BACKGROUND);
             break;
@@ -164,8 +162,10 @@ bool PixelTransferrer::window_covers_current_pixel() const {
 
 // Return true if objects are enabled and one occupies the pixel at (lx,ly_).
 bool PixelTransferrer::object_occupies_current_pixel() const {
-    const OamObject oam_object =
-        scanline_objects[fetcher.current_object_index];
+    if (!scanline_objects.size()) {
+        return false;
+    }
+    const OamObject& oam_object = scanline_objects.front();
     return objects_enabled() && oam_object.x - 8 <= lx && oam_object.x > lx;
 }
 
@@ -240,8 +240,7 @@ uint8_t PixelTransferrer::fetch_tile_id() const {
         }
 
         case FetcherSource::OBJECT:
-            const OamObject oam_object =
-                scanline_objects[fetcher.current_object_index];
+            const OamObject& oam_object = scanline_objects.front();
             const uint8_t tile_offset = ly_ - oam_object.y + 16;
             return oam_object.tile_id + (tile_offset >= 8);
     }
@@ -257,8 +256,7 @@ uint8_t PixelTransferrer::fetch_tile_offset() const {
         case FetcherSource::WINDOW:
             return fetcher.wly & 0x7;
         case FetcherSource::OBJECT:
-            const OamObject oam_object =
-                scanline_objects[fetcher.current_object_index];
+            const OamObject& oam_object = scanline_objects.front();
             const uint8_t tile_offset = (ly_ - oam_object.y + 16) & 0x7;
             return oam_object.y_flip ? 8 - tile_offset : tile_offset;
     }

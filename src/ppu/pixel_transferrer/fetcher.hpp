@@ -37,7 +37,6 @@ struct Fetcher {
     FetcherSource source;
     uint8_t x;              // tile X on {source} tile map
     uint8_t wly;            // window line counter
-    uint8_t current_object_index;   // index for scanline objects
     uint8_t current_tile_id;
     uint8_t current_tile_offset;    // internal tile y coordinate
     uint8_t row_low_buffer;

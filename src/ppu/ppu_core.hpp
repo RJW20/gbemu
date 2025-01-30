@@ -3,8 +3,8 @@
 
 #include <cstdint>
 #include <array>
-#include <vector>
-#include "oam_object.hpp"
+#include <deque>
+#include "oam_scanner/oam_object.hpp"
 #include "../interrupt_manager.hpp"
 
 /* Pixel Processing Unit Core 
@@ -44,7 +44,7 @@ protected:
 
     // Variables used during multiple modes
     uint16_t current_t_cycles;
-    std::vector<OamObject> scanline_objects;
+    std::deque<OamObject> scanline_objects;
     uint8_t pixels_to_discard;          // Read at start of scanline
     bool window_present_on_scanline;    // Decided at start of scanline
 
