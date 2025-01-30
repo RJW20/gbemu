@@ -17,7 +17,11 @@ void PixelTransferrer::new_pixel_transfer() {
 }
 
 /* Carry out 1 PIXEL_TRANSFER t-cycle. 
- * */
+ * Pushes the current fetcher row buffer to a PixelFifo if possible.
+ * Checks the contents at the current (lx, ly_) to keep the fetcher's source
+ * accurate.
+ * Carries out a fetcher cycle.
+ * Shifts a pixel if possible. */
 void PixelTransferrer::pixel_transfer_tick() {
 
     if (fetcher.mode == FetcherMode::PUSH) {
@@ -62,7 +66,7 @@ void PixelTransferrer::try_push_fetcher_to_fifo() {
 
     switch(fetcher.source) {
 
-        case FetcherSource::BACKGROUND:
+        case FetcherSource::BACKGROUND: [[fallthrough]];
         case FetcherSource::WINDOW:
             if (!bgwin_fifo.is_accepting_pixels()) {
                 return;
@@ -178,7 +182,7 @@ void PixelTransferrer::fetcher_tick() {
             fetcher.mode = FetcherMode::TILE_ROW_LOW;
             break;
 
-        case FetcherMode::TILE_ROW_LOW:
+        case FetcherMode::TILE_ROW_LOW: {
             fetcher.current_tile_offset = fetch_tile_offset();
             const bool unsigned_addressing = 
                 fetcher.source == FetcherSource::OBJECT ?
@@ -191,8 +195,9 @@ void PixelTransferrer::fetcher_tick() {
             );
             fetcher.mode = FetcherMode::TILE_ROW_HIGH;
             break;
+        }
 
-        case FetcherMode::TILE_ROW_HIGH:
+        case FetcherMode::TILE_ROW_HIGH: {
             const bool unsigned_addressing = 
                 fetcher.source == FetcherSource::OBJECT ?
                 true : bgwin_unsigned_addressing();
@@ -204,6 +209,7 @@ void PixelTransferrer::fetcher_tick() {
             );
             fetcher.mode = FetcherMode::PUSH;
             break;
+        }
     }
 }
 
@@ -217,18 +223,21 @@ void PixelTransferrer::fetcher_tick() {
  * if ly_ places us in the possible second (underneath) tile of the OamObject.
  */
 uint8_t PixelTransferrer::fetch_tile_id() const {
+
     switch(fetcher.source) {
 
-        case FetcherSource::BACKGROUND:
+        case FetcherSource::BACKGROUND: {
             const uint8_t tile_x = ((scx >> 3) + fetcher.x) & 0x1F;
             const uint8_t tile_y = ((scy + ly_) >> 3) & 0x1F;
             return vram[
                 background_tile_map_address() + (tile_y << 5) + tile_x
             ];
+        }
 
-        case FetcherSource::WINDOW:
+        case FetcherSource::WINDOW: {
             const uint8_t tile_y = fetcher.wly >> 3;
             return vram[window_tile_map_address() + (tile_y << 5) + fetcher.x];
+        }
 
         case FetcherSource::OBJECT:
             const OamObject oam_object =
@@ -236,6 +245,8 @@ uint8_t PixelTransferrer::fetch_tile_id() const {
             const uint8_t tile_offset = ly_ - oam_object.y + 16;
             return oam_object.tile_id + (tile_offset >= 8);
     }
+
+    __builtin_unreachable();
 }
 
 // Return the local y-coordinate on the current tile.
@@ -251,6 +262,8 @@ uint8_t PixelTransferrer::fetch_tile_offset() const {
             const uint8_t tile_offset = (ly_ - oam_object.y + 16) & 0x7;
             return oam_object.y_flip ? 8 - tile_offset : tile_offset;
     }
+
+    __builtin_unreachable();
 }
 
 /* Fetch half of the row of the tile with given tile_id at the given
@@ -313,4 +326,6 @@ uint32_t PixelTransferrer::pixel_to_rgba(Pixel pixel) const {
         case PaletteRegister::OBP1:
             return palette.at((obp1 >> (pixel.colour_id * 2)) & 0x3);
     }
+
+    __builtin_unreachable();
 }
