@@ -33,7 +33,7 @@ public:
     bool is_shifting_pixels() const { return size > 8; }
     bool is_empty() const { return !size; }
     void push(Pixel pixel) { data[end_pointer++] = pixel; size++; }
-    Pixel shift() { return data[front_pointer++]; size--; }
+    Pixel shift() { size--; return data[front_pointer++]; }
 
 private:
     std::array<Pixel, 0x10> data;
