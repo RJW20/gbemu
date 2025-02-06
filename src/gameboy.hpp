@@ -34,6 +34,7 @@ private:
     int ticks = 0;
 
     void tick();
+    bool power_off() const;
 };
 
 #endif

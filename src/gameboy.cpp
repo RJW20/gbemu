@@ -1,3 +1,4 @@
+#include <SDL2/SDL.h>
 #include "gameboy.hpp"
 
 void GameBoy::run() {
@@ -7,6 +8,9 @@ void GameBoy::run() {
         if (++ticks == SIXTY_FPS) {
             screen.render();
             ticks = 0;
+            if (power_off()) {
+                break;
+            }
         }
     }
 }
@@ -18,4 +22,15 @@ void GameBoy::tick() {
     serial.tick();
     dma.tick();
     ppu.tick();
+}
+
+// Return true if an SDL_QUIT event has occurred.
+bool GameBoy::power_off() const {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            return true;
+        }
+    }
+    return false;
 }
