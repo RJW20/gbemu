@@ -15,9 +15,12 @@ set(SOURCES
     src/interrupt_manager.cpp
     src/timer.cpp
     src/serial.cpp
+    src/joypad.cpp
     src/dma.cpp
+    src/ppu/ppu_core.cpp
+    src/ppu/oam_scanner/oam_scanner.cpp
+    src/ppu/pixel_transferrer/pixel_transferrer.cpp
     src/ppu/ppu.cpp
-    src/ppu/pixel_fifo.cpp
     src/mmu.cpp
     src/cpu/cpu.cpp
     src/cpu/register.cpp
