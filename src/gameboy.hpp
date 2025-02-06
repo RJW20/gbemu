@@ -6,6 +6,7 @@
 #include "interrupt_manager.hpp"
 #include "timer.hpp"
 #include "serial.hpp"
+#include "joypad.hpp"
 #include "dma.hpp"
 #include "ppu/ppu.hpp"
 #include "mmu.hpp"
@@ -24,9 +25,12 @@ private:
     InterruptManager interrupt_manager;
     Timer timer{&interrupt_manager};
     Serial serial{&interrupt_manager};
+    Joypad joypad{&interrupt_manager};
     Dma dma{};
     Ppu ppu{&interrupt_manager};
-    Mmu mmu{&cartridge, &interrupt_manager, &timer, &serial, &dma, &ppu};
+    Mmu mmu{
+        &cartridge, &interrupt_manager, &timer, &serial, &joypad, &dma, &ppu
+    };
     Cpu cpu{&interrupt_manager, &mmu};
     Screen screen{cartridge.title, &ppu};
 
