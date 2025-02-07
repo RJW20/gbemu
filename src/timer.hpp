@@ -10,19 +10,19 @@
 class Timer {
 public:
     Timer(InterruptManager* interrupt_manager) :
-        interrupt_manager(interrupt_manager) { reset(); };
-    ~Timer() {};
+        interrupt_manager(interrupt_manager) { reset(); }
+    ~Timer() {}
 
     void reset();
     void tick();
-    uint8_t div() const;
-    uint8_t tima() const;
-    uint8_t tma() const;
-    uint8_t tac() const;
-    void set_div();
+    uint8_t div() const { return system_counter >> 8; }
+    uint8_t tima() const { return tima_; }
+    uint8_t tma() const { return tma_; }
+    uint8_t tac() const { return tac_; }
+    void set_div() { system_counter = 0; }
     void set_tima(uint8_t value);
     void set_tma(uint8_t value);
-    void set_tac(uint8_t value);
+    void set_tac(uint8_t value) { tac_ = value & 7; };
 
 private:
     InterruptManager* interrupt_manager;
@@ -47,7 +47,7 @@ private:
     bool tima_overflow;
     int ticks_since_overflow;
 
-    bool timer_is_enabled() const;
+    bool timer_is_enabled() const { return (tac_ >> 2) & 1; }
 };
 
 #endif

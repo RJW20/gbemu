@@ -44,31 +44,6 @@ void Timer::tick() {
     }
 }
 
-// Return the upper 8 bits of the system_counter.
-uint8_t Timer::div() const {
-    return system_counter >> 8;
-}
-
-// Return tima_.
-uint8_t Timer::tima() const {
-    return tima_;
-}
-
-// Return tma_.
-uint8_t Timer::tma() const {
-    return tma_;
-}
-
-// Return tac_.
-uint8_t Timer::tac() const {
-    return tac_;
-}
-
-// Set the system_counter to zero.
-void Timer::set_div() {
-    system_counter = 0;
-}
-
 /* Set tima_ to the given value.
  * If a tima_ overflow occurred in the previous cycle the write will be
  * ignored.
@@ -91,14 +66,4 @@ void Timer::set_tma(uint8_t value) {
     if (ticks_since_overflow == 4) {
         tima_ = value;
     }
-}
-
-// Set tac_ to the lower 3 bits of the given value.
-void Timer::set_tac(uint8_t value) {
-    tac_ = value & 0x7;
-}
-
-// Return true if bit 2 of tac_ is set.
-bool Timer::timer_is_enabled() const {
-    return (tac_ >> 2) & 1;
 }
