@@ -21,6 +21,7 @@ set(SOURCES
     src/ppu/oam_scanner/oam_scanner.cpp
     src/ppu/pixel_transferrer/pixel_transferrer.cpp
     src/ppu/ppu.cpp
+    src/apu.cpp
     src/mmu.cpp
     src/cpu/cpu.cpp
     src/cpu/register.cpp
