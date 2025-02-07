@@ -1649,7 +1649,8 @@ Opcode Cpu::opcode_0xd9_generator() {
     std::vector<Step> steps;
     steps.push_back([this]() { z8 = mmu->read(reg.sp++); });
     steps.push_back([this]() { z16 = (mmu->read(reg.sp++) << 8) | z8; });
-    steps.push_back([this]() { reg.pc = z16; interrupt_manager->ime = true; });
+    steps.push_back([this]() { reg.pc = z16;
+        interrupt_manager->enable_interrupts(); });
     return Opcode(0xd9, "RETI", 1, 16, steps);
 }
 
@@ -1817,7 +1818,7 @@ Opcode Cpu::opcode_0xf2_generator() {
 // DI
 Opcode Cpu::opcode_0xf3_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { interrupt_manager->ime = false; });
+    steps.push_back([this]() { interrupt_manager->disable_interrupts(); });
     return Opcode(0xf3, "DI", 1, 4, steps);
 }
 

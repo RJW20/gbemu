@@ -623,7 +623,7 @@ def nop(opcode: Opcode) -> str:
 @wrap_function_definition()
 def di(opcode: Opcode) -> str:
 
-    return step("interrupt_manager->ime = false")
+    return step("interrupt_manager->disable_interrupts()")
 
 @wrap_function_definition()
 def ei(opcode: Opcode) -> str:
@@ -984,5 +984,8 @@ def reti(opcode: Opcode) -> str:
     return (
         step("z8 = mmu->read(reg.sp++)") +
         step("z16 = (mmu->read(reg.sp++) << 8) | z8") +
-        step("reg.pc = z16; interrupt_manager->ime = true")
+        step(
+            "reg.pc = z16;\n"
+            f"{INDENT}{INDENT}interrupt_manager->enable_interrupts()"
+        )
     )
