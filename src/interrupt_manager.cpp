@@ -3,35 +3,35 @@
 #include <utility>
 #include "interrupt_manager.hpp"
 
-// Reset all attributes.
+// Set the registers to their post bootrom values.
 void InterruptManager::reset() {
     ime = false;
-    ie = 0;
-    ix = 0;
+    ie_ = 1;
+    if_ = 1;
 }
 
 /* Request an interrupt of the given type.
- * Sets the corresponding bit in ix. */
+ * Sets the corresponding bit in if_. */
 void InterruptManager::request(InterruptType interruption) {
     if (interruption == InterruptType::NONE) {
         return;
     }
-    ix |= (1 << std::to_underlying(interruption));
+    if_ |= (1 << std::to_underlying(interruption));
 }
 
 /* Acknowledge an interrupt of the given type.
- * Resets the corresponding bit in ix. */
+ * Resets the corresponding bit in if_. */
 void InterruptManager::acknowledge(InterruptType interruption) {
     if (interruption == InterruptType::NONE) {
         return;
     }
-    ix &= ~(1 << std::to_underlying(interruption));
+    if_ &= ~(1 << std::to_underlying(interruption));
 }
 
 /* Return true if interrupts are enabled and a specific interrupt is
  * requested. */
 bool InterruptManager::is_interrupt_requested() const {
-    return ime && (ie & ix);
+    return ime && (ie_ & if_);
 }
 
 /* Return the bit corresponding to the enabled interrupt.
@@ -39,7 +39,7 @@ bool InterruptManager::is_interrupt_requested() const {
  * Returns -1 if no interrupts are enabled. */
 InterruptType InterruptManager::get_enabled() const {
     for (int bit_pos = 0; bit_pos < 5; bit_pos++) {
-        if (((ie & ix) >> bit_pos) & 1) {
+        if (((ie_ & if_) >> bit_pos) & 1) {
             return InterruptType(bit_pos);
         }
     }
