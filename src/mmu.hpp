@@ -7,8 +7,10 @@
 #include "interrupt_manager.hpp"
 #include "timer.hpp"
 #include "serial.hpp"
+#include "joypad.hpp"
 #include "dma.hpp"
 #include "ppu/ppu.hpp"
+#include "apu.hpp"
 
 /* Memory Management Unit
  * Simulates an array with the following contents:
@@ -30,13 +32,15 @@ public:
         InterruptManager* interrupt_manager,
         Timer* timer,
         Serial* serial,
+        Joypad* joypad,
         Dma* dma,
-        Ppu* ppu
+        Ppu* ppu,
+        Apu* apu
     ) : cartridge(cartridge), interrupt_manager(interrupt_manager),
-        timer(timer), serial(serial), dma(dma), ppu(ppu) { reset(); }
-    ~Mmu() {};
-
+        timer(timer), serial(serial), joypad(joypad), dma(dma), ppu(ppu),
+        apu(apu) { reset(); }
     void reset();
+    
     uint8_t read(uint16_t address) const;
     void write(uint16_t address, uint8_t value);
 
@@ -45,8 +49,10 @@ private:
     InterruptManager* interrupt_manager;
     Timer* timer;
     Serial* serial;
+    Joypad* joypad;
     Dma* dma;
     Ppu* ppu;
+    Apu* apu;
 
     static constexpr uint16_t WRAM_SIZE = 0x2000;    // 8 KB
     static constexpr uint16_t HRAM_SIZE = 0x7F;      // 127 B

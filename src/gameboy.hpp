@@ -9,6 +9,7 @@
 #include "joypad.hpp"
 #include "dma.hpp"
 #include "ppu/ppu.hpp"
+#include "apu.hpp"
 #include "mmu.hpp"
 #include "cpu/cpu.hpp"
 #include "screen.hpp"
@@ -26,10 +27,12 @@ private:
     Timer timer{&interrupt_manager};
     Serial serial{&interrupt_manager};
     Joypad joypad{&interrupt_manager};
-    Dma dma{};
+    Dma dma;
     Ppu ppu{&interrupt_manager};
+    Apu apu;
     Mmu mmu{
-        &cartridge, &interrupt_manager, &timer, &serial, &joypad, &dma, &ppu
+        &cartridge, &interrupt_manager, &timer, &serial, &joypad, &dma, &ppu,
+        &apu
     };
     Cpu cpu{&interrupt_manager, &mmu};
     Screen screen{cartridge.title, &ppu};
