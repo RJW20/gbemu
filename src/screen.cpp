@@ -17,7 +17,7 @@ Screen::Screen(const std::string rom_title, Ppu* ppu) : ppu(ppu) {
 
     window = SDL_CreateWindow(
         rom_title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        ppu->SCREEN_WIDTH, ppu->SCREEN_HEIGHT, 0
+        ppu->SCREEN_WIDTH * 4, ppu->SCREEN_HEIGHT * 4, 0
     );
     if (!window) {
         std::cerr << "Window could not be created! SDL_Error: "
