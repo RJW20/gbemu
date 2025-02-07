@@ -3,7 +3,7 @@
 #include <utility>
 #include "interrupt_manager.hpp"
 
-// Set the registers to their post bootrom values.
+// Set the registers to their post boot ROM values.
 void InterruptManager::reset() {
     ime = false;
     ie_ = 0;
