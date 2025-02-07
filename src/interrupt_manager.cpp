@@ -6,8 +6,8 @@
 // Set the registers to their post bootrom values.
 void InterruptManager::reset() {
     ime = false;
-    ie_ = 1;
-    if_ = 1;
+    ie_ = 0;
+    if_ = 0xE1;
 }
 
 /* Request an interrupt of the given type.
