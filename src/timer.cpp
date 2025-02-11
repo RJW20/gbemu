@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <fstream>
 #include <sstream>
 #include "timer.hpp"
 #include "interrupt_manager.hpp"
