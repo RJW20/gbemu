@@ -1,4 +1,6 @@
 #include <cstdint>
+#include <string>
+#include <sstream>
 #include "timer.hpp"
 #include "interrupt_manager.hpp"
 
@@ -63,4 +65,13 @@ void Timer::set_tma(uint8_t value) {
     if (ticks_since_overflow == 4) {
         tima_ = value;
     }
+}
+
+// Output a string representation of the Timer to the given ostream.
+std::ostream& operator<<(std::ostream& os, const Timer& timer) {
+    os << "Timer:" << std::hex
+        << " TIMA = " << static_cast<int>(timer.tima())
+        << " TMA = " << static_cast<int>(timer.tma())
+        << " TAC = " << static_cast<int>(timer.tac());
+    return os;
 }
