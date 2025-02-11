@@ -6,7 +6,7 @@
 #include "ppu/ppu.hpp"
 
 /* Screen 
- * Manages all SDL2 components.
+ * Manages all SDL2 window components.
  * Draws the pixels outputted by the PPU. */
 class Screen {
 public:

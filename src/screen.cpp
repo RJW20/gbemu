@@ -1,8 +1,8 @@
-#include <iostream>
 #include <cstdint>
 #include <string>
 #include <algorithm>
 #include <SDL2/SDL.h>
+#include "logger.hpp"
 #include "screen.hpp"
 #include "ppu/ppu.hpp"
 
@@ -10,8 +10,10 @@
 Screen::Screen(const std::string rom_title, Ppu* ppu) : ppu(ppu) {
     
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError()
-            << std::endl;
+        Log::error(
+            "SDL could not initialize! SDL_Error: " +
+            std::string(SDL_GetError())
+        );
         exit(1);
     };
 
@@ -20,15 +22,19 @@ Screen::Screen(const std::string rom_title, Ppu* ppu) : ppu(ppu) {
         ppu->SCREEN_WIDTH * 4, ppu->SCREEN_HEIGHT * 4, 0
     );
     if (!window) {
-        std::cerr << "Window could not be created! SDL_Error: "
-            << SDL_GetError() << std::endl;
+        Log::error(
+            "Window could not be created! SDL_Error: " +
+            std::string(SDL_GetError())
+        );
         exit(2);
     }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     if (!renderer) {
-        std::cerr << "Renderer could not be created! SDL_Error: "
-            << SDL_GetError() << std::endl;
+        Log::error(
+            "Renderer could not be created! SDL_Error: " +
+            std::string(SDL_GetError())
+        );
         exit(3);
     }
 
@@ -37,8 +43,10 @@ Screen::Screen(const std::string rom_title, Ppu* ppu) : ppu(ppu) {
         ppu->SCREEN_WIDTH, ppu->SCREEN_HEIGHT
     );
     if (!texture) {
-        std::cerr << "Texture could not be created! SDL_Error: "
-            << SDL_GetError() << std::endl;
+        Log::error(
+            "Texture could not be created! SDL_Error: " +
+            std::string(SDL_GetError())
+        );
         exit(4);
     }
 }
@@ -59,7 +67,10 @@ void Screen::render() {
     void* pixel_pointer;
     int pitch;
     if (SDL_LockTexture(texture, nullptr, &pixel_pointer, &pitch) != 0) {
-        std::cerr << "SDL_LockTexture failed: " << SDL_GetError() << std::endl;
+        Log::error(
+            "SDL_LockTexture failed! SDL_Error: " + std::string(SDL_GetError())
+        );
+        exit(5);
     }
 
     std::copy(
