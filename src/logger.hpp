@@ -23,10 +23,10 @@ class Logger {
 public:
     static void set_log_file(const std::string& file_name);
 
-    static void debug(const std::string& message);
-    static void info(const std::string& message);
-    static void warning(const std::string& message);
     static void error(const std::string& message);
+    static void warning(const std::string& message);
+    static void info(const std::string& message);
+    static void debug(const std::string& message);
 
 private:
     static void log(const std::string& level, const std::string& message);

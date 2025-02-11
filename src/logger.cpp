@@ -12,19 +12,11 @@ void Logger<log_level>::set_log_file(const std::string& file_name) {
     log_file.open(file_name, std::ios::app);
 }
 
-// Log a DEBUG message.
+// Log an ERROR message.
 template <LogLevel log_level>
-void Logger<log_level>::debug(const std::string& message) {
-    if constexpr (log_level >= LogLevel::DEBUG) {
-        log("DEBUG", message);
-    }
-}
-
-// Log an INFO message.
-template <LogLevel log_level>
-void Logger<log_level>::info(const std::string& message) {
-    if constexpr (log_level >= LogLevel::INFO) {
-        log("INFO", message);
+void Logger<log_level>::error(const std::string& message) {
+    if constexpr (log_level >= LogLevel::ERROR) {
+        log("ERROR", message);
     }
 }
 
@@ -36,11 +28,19 @@ void Logger<log_level>::warning(const std::string& message) {
     }
 }
 
-// Log an ERROR message.
+// Log an INFO message.
 template <LogLevel log_level>
-void Logger<log_level>::error(const std::string& message) {
-    if constexpr (log_level >= LogLevel::ERROR) {
-        log("ERROR", message);
+void Logger<log_level>::info(const std::string& message) {
+    if constexpr (log_level >= LogLevel::INFO) {
+        log("INFO", message);
+    }
+}
+
+// Log a DEBUG message.
+template <LogLevel log_level>
+void Logger<log_level>::debug(const std::string& message) {
+    if constexpr (log_level >= LogLevel::DEBUG) {
+        log("DEBUG", message);
     }
 }
 
