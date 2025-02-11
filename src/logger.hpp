@@ -6,13 +6,14 @@
 #include <fstream>
 
 /* LogLevel
- * Enum containing the 5 levels of detail the Logger can output. */
+ * Enum containing the 5 levels of detail the Logger can output.
+ * Each level includes all those less than it. */
 enum class LogLevel : uint8_t {
-    DEBUG,
-    INFO,
-    WARNING,
+    NONE,
     ERROR,
-    NONE
+    WARNING,
+    INFO,
+    DEBUG
 };
 
 /* Logger 
@@ -33,6 +34,7 @@ private:
     static inline std::ofstream log_file;
 };
 
+constexpr LogLevel log_level = LogLevel::WARNING;
 using Log = Logger<LogLevel::WARNING>;
 
 #endif

@@ -15,7 +15,7 @@ void Logger<log_level>::set_log_file(const std::string& file_name) {
 // Log a DEBUG message.
 template <LogLevel log_level>
 void Logger<log_level>::debug(const std::string& message) {
-    if constexpr (log_level <= LogLevel::DEBUG) {
+    if constexpr (log_level >= LogLevel::DEBUG) {
         log("DEBUG", message);
     }
 }
@@ -23,7 +23,7 @@ void Logger<log_level>::debug(const std::string& message) {
 // Log an INFO message.
 template <LogLevel log_level>
 void Logger<log_level>::info(const std::string& message) {
-    if constexpr (log_level <= LogLevel::INFO) {
+    if constexpr (log_level >= LogLevel::INFO) {
         log("INFO", message);
     }
 }
@@ -31,7 +31,7 @@ void Logger<log_level>::info(const std::string& message) {
 // Log a WANRING message.
 template <LogLevel log_level>
 void Logger<log_level>::warning(const std::string& message) {
-    if constexpr (log_level <= LogLevel::WARNING) {
+    if constexpr (log_level >= LogLevel::WARNING) {
         log("WARNING", message);
     }
 }
@@ -39,7 +39,7 @@ void Logger<log_level>::warning(const std::string& message) {
 // Log an ERROR message.
 template <LogLevel log_level>
 void Logger<log_level>::error(const std::string& message) {
-    if constexpr (log_level <= LogLevel::ERROR) {
+    if constexpr (log_level >= LogLevel::ERROR) {
         log("ERROR", message);
     }
 }
@@ -57,8 +57,8 @@ void Logger<log_level>::log(
     }
 }
 
-template class Logger<LogLevel::DEBUG>;
-template class Logger<LogLevel::INFO>;
-template class Logger<LogLevel::WARNING>;
-template class Logger<LogLevel::ERROR>;
 template class Logger<LogLevel::NONE>;
+template class Logger<LogLevel::ERROR>;
+template class Logger<LogLevel::WARNING>;
+template class Logger<LogLevel::INFO>;
+template class Logger<LogLevel::DEBUG>;
