@@ -1,59 +1,66 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 #include "Logger.hpp"
 
-/* Set the file to output the logs to.
- * Closes the current log_file if needed. */
-template <LogLevel log_level>
-void Logger<log_level>::set_log_file(const std::string& file_name) {
-    if (log_file.is_open()) {
-        log_file.close();
-    }
-    log_file.open(file_name, std::ios::app);
-}
-
-// Log an ERROR message.
+// Log an ERROR message to std::cout.
 template <LogLevel log_level>
 void Logger<log_level>::error(const std::string& message) {
     if constexpr (log_level >= LogLevel::ERROR) {
-        log("ERROR", message);
+        std::cout << create_log_message("ERROR", message);
     }
 }
 
-// Log a WANRING message.
+// Log a WANRING message to std::cout.
 template <LogLevel log_level>
 void Logger<log_level>::warning(const std::string& message) {
     if constexpr (log_level >= LogLevel::WARNING) {
-        log("WARNING", message);
+        std::cout << create_log_message("WARNING", message);
     }
 }
 
-// Log an INFO message.
+// Log an INFO message to std::cout.
 template <LogLevel log_level>
 void Logger<log_level>::info(const std::string& message) {
     if constexpr (log_level >= LogLevel::INFO) {
-        log("INFO", message);
+        std::cout << create_log_message("INFO", message);
     }
 }
 
-// Log a DEBUG message.
+// Log a DEBUG message to debug.txt.
 template <LogLevel log_level>
 void Logger<log_level>::debug(const std::string& message) {
     if constexpr (log_level >= LogLevel::DEBUG) {
-        log("DEBUG", message);
+        if (!debug_file_opened) {
+            open_debug_file();
+        }
+        if (debug_file.is_open()) {
+            debug_file << message << "\n";
+        }
     }
 }
 
-// Log the given message and its level to std::cout and to file_stream if set.
+// Generate the log message for the given level and message.
 template <LogLevel log_level>
-void Logger<log_level>::log(
+void Logger<log_level>::create_log_message(
     const std::string& level,
     const std::string& message
 ) {
-    std::string output = "[" + level + "] " + message + "\n";
-    std::cout << output;
-    if (file_stream.is_open()) {
-        file_stream << output;
+    return std::string("[" + level + "] " + message + "\n");
+}
+
+template <LogLevel Level>
+std::ofstream Logger<Level>::debug_file;
+
+template <LogLevel Level>
+bool Logger<Level>::debug_file_opened = false;
+
+/* Open debug.txt for logging DEBUG messages. */
+template <LogLevel log_level>
+void Logger<log_level>::open_debug_file() {
+    if constexpr (log_level >= LogLevel::DEBUG) {
+        debug_file.open("debug.txt", std::ios::trunc);
+        debug_file_opened = true;
     }
 }
 

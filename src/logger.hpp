@@ -17,21 +17,26 @@ enum class LogLevel : uint8_t {
 };
 
 /* Logger 
- * Manages logging with a compile-time LogLevel for maximum perfomance. */
+ * Manages logging with a compile-time LogLevel for maximum perfomance.
+ * If enabled, DEBUG messages get logged to debug.txt. All other logging is
+ * outputted to std::cout. */
 template <LogLevel log_level>
 class Logger {
 public:
-    static void set_log_file(const std::string& file_name);
-
     static void error(const std::string& message);
     static void warning(const std::string& message);
     static void info(const std::string& message);
     static void debug(const std::string& message);
 
 private:
-    static void log(const std::string& level, const std::string& message);
+    static void create_log_message(
+        const std::string& level,
+        const std::string& message
+    );
 
-    static inline std::ofstream log_file;
+    static std::ofstream debug_file;
+    static bool debug_file_opened;
+    static void open_debug_file();
 };
 
 constexpr LogLevel log_level = LogLevel::WARNING;
