@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <string>
 #include <sstream>
 #include <fstream>
 #include "timer.hpp"

@@ -1,3 +1,4 @@
+#include <string>
 #include <sstream>
 #include <fstream>
 #include "serial.hpp"
