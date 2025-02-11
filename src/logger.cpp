@@ -12,7 +12,7 @@ void Logger<log_level>::error(const std::string& message) {
     }
 }
 
-// Log a WANRING message to std::cout.
+// Log a WARNING message to std::cout.
 template <LogLevel log_level>
 void Logger<log_level>::warning(const std::string& message) {
     if constexpr (log_level >= LogLevel::WARNING) {
