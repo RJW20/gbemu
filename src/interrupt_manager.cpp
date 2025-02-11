@@ -1,6 +1,7 @@
-#include <iostream>
 #include <cstdint>
 #include <utility>
+#include <fstream>
+#include "logger.hpp"
 #include "interrupt_manager.hpp"
 
 // Set the registers to their post boot ROM values.
@@ -50,9 +51,23 @@ InterruptType InterruptManager::get_enabled() const {
  * Should never be called when interruption is InterruptType::None. */
 uint8_t InterruptManager::get_handler_address(InterruptType interruption) {
     if (interruption == InterruptType::NONE) {
-        std::cout << "Do not call InterruptManager.get_handler_address with" <<
-            " argument: InterruptType::NONE" << std::endl;
+        Log::error(
+            "Do not call InterruptManager.get_handler_address with argument: "
+            "InterruptType::NONE"
+        );
         exit(10);
     } 
     return handler_addresses.at(std::to_underlying(interruption));
+}
+
+// Output a string representation of the InterruptManager to the given ostream.
+std::ostream& operator<<(
+    std::ostream& os,
+    const InterruptManager& interrupt_manager
+) {
+    os << "Interrupt Manager:" << std::hex
+        << " IME = " << static_cast<int>(interrupt_manager.ime)
+        << " IE = " << static_cast<int>(interrupt_manager.ie())
+        << " IF = " << static_cast<int>(interrupt_manager._if());
+    return os;
 }
