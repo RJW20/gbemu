@@ -2,6 +2,7 @@
 #define DMA_HPP
 
 #include <cstdint>
+#include <fstream>
 
 class Mmu;
 
@@ -10,10 +11,10 @@ class Mmu;
  * main program. */
 class Dma {
 public:
-    Dma() { reset(); };
-    ~Dma() {};
+    Dma() { reset(); }
 
     void set_mmu(Mmu* _mmu);
+
     void reset();
     void tick();
 
@@ -21,6 +22,8 @@ public:
 
     uint8_t source_address() const;
     void set_source_address(uint8_t value);
+
+    friend std::ostream& operator<<(std::ostream& os, const Dma& dma);
 
 private:
     Mmu* mmu;

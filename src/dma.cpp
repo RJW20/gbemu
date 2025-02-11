@@ -7,7 +7,7 @@ void Dma::set_mmu(Mmu* _mmu) {
     mmu = _mmu;
 }
 
-// Set _source_address to it's power-on value. 
+// Set _source_address to its post boot ROM value. 
 void Dma::reset() {
     _source_address = 0xFF;
     transfer_in_progress = false;
@@ -48,4 +48,11 @@ void Dma::set_source_address(uint8_t value) {
     transfer_in_progress = true;
     locked = 0;
     current_m_cycles = 0;
+}
+
+// Output a string representation of the DMA to the given ostream.
+std::ostream& operator<<(std::ostream& os, const Dma& dma) {
+    os << "DMA:" << std::hex
+        << " source_address = " << static_cast<int>(dma.source_address());
+    return os;
 }
