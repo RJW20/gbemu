@@ -26,7 +26,10 @@ public:
     static void error(const std::string& message);
     static void warning(const std::string& message);
     static void info(const std::string& message);
+
     static void debug(const std::string& message);
+    template <typename MessageGenerator>
+    static void debug(MessageGenerator&& message_generator);
 
 private:
     static void create_log_message(
