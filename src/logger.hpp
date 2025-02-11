@@ -27,9 +27,8 @@ public:
     static void warning(const std::string& message);
     static void info(const std::string& message);
 
-    static void debug(const std::string& message);
-    template <typename MessageGenerator>
-    static void debug(MessageGenerator&& message_generator);
+    template <typename T>
+    static void debug(const T& message);
 
 private:
     static void create_log_message(
