@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <fstream>
 #include "Logger.hpp"
 
@@ -33,7 +34,9 @@ void Logger<log_level>::create_log_message(
     const std::string& level,
     const std::string& message
 ) {
-    return std::string("[" + level + "] " + message + "\n");
+    std::ostringstream log_message;
+    log_message << "[" << level << "] " << message << "\n";
+    return log_message.str();
 }
 
 // Log a DEBUG message to debug.txt.
