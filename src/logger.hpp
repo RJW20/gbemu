@@ -35,6 +35,6 @@ private:
 };
 
 constexpr LogLevel log_level = LogLevel::WARNING;
-using Log = Logger<LogLevel::WARNING>;
+using Log = Logger<log_level>;
 
 #endif
