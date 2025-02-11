@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <array>
-#include <fstream>
+#include <string>
 
 /* There are 5 types of interrupt, whose values correspond to their bit
  * position in ie_ and if_, as well as the index in the handler_addresses
@@ -42,10 +42,7 @@ public:
     void set_ie(uint8_t value) { ie_ = value & 0x1F; }
     void set_if(uint8_t value) { if_ = value & 0x1F; }
 
-    friend std::ostream& operator<<(
-        std::ostream& os,
-        const InterruptManager& interrupt_manage
-    );
+    std::string representation() const;
 
 private:
     bool ime;    // Interrupt master enable

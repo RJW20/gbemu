@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <sstream>
 #include <fstream>
 #include "timer.hpp"
 #include "interrupt_manager.hpp"
@@ -66,11 +67,18 @@ void Timer::set_tma(uint8_t value) {
     }
 }
 
+// Return a string representation of the Timer.
+std::string Timer::representation() const {
+    std::ostringstream repr;
+    repr << "Timer:" << std::hex
+        << " TIMA = " << static_cast<int>(tima())
+        << " TMA = " << static_cast<int>(tma())
+        << " TAC = " << static_cast<int>(tac());
+    return repr.str();
+}
+
 // Output a string representation of the Timer to the given ostream.
 std::ostream& operator<<(std::ostream& os, const Timer& timer) {
-    os << "Timer:" << std::hex
-        << " TIMA = " << static_cast<int>(timer.tima())
-        << " TMA = " << static_cast<int>(timer.tma())
-        << " TAC = " << static_cast<int>(timer.tac());
+    os << timer.representation();
     return os;
 }

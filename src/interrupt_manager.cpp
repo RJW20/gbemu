@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <utility>
+#include <sstream>
 #include <fstream>
 #include "logger.hpp"
 #include "interrupt_manager.hpp"
@@ -60,14 +61,21 @@ uint8_t InterruptManager::get_handler_address(InterruptType interruption) {
     return handler_addresses.at(std::to_underlying(interruption));
 }
 
+// Return a string representation of the InterruptManager.
+std::string InterruptManager::representation() const {
+    std::ostringstream repr;
+    repr << "Interrupt Manager:" << std::hex
+        << " IME = " << static_cast<int>(ime)
+        << " IE = " << static_cast<int>(ie())
+        << " IF = " << static_cast<int>(_if());
+    return repr.str();
+}
+
 // Output a string representation of the InterruptManager to the given ostream.
 std::ostream& operator<<(
     std::ostream& os,
     const InterruptManager& interrupt_manager
 ) {
-    os << "Interrupt Manager:" << std::hex
-        << " IME = " << static_cast<int>(interrupt_manager.ime)
-        << " IE = " << static_cast<int>(interrupt_manager.ie())
-        << " IF = " << static_cast<int>(interrupt_manager._if());
+    os << interrupt_manager.representation();
     return os;
 }

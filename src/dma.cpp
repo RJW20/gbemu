@@ -1,4 +1,6 @@
 #include <cstdint>
+#include <sstream>
+#include <fstream>
 #include "dma.hpp"
 #include "mmu.hpp"
 
@@ -50,9 +52,16 @@ void Dma::set_source_address(uint8_t value) {
     current_m_cycles = 0;
 }
 
+// Return a string representation of the DMA.
+std::string Dma::representation() const {
+    std::ostringstream repr;
+    repr << "DMA:" << std::hex
+        << " source_address = " << static_cast<int>(source_address());
+    return repr.str();
+}
+
 // Output a string representation of the DMA to the given ostream.
 std::ostream& operator<<(std::ostream& os, const Dma& dma) {
-    os << "DMA:" << std::hex
-        << " source_address = " << static_cast<int>(dma.source_address());
+    os << dma.representation();
     return os;
 }

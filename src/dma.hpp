@@ -2,7 +2,7 @@
 #define DMA_HPP
 
 #include <cstdint>
-#include <fstream>
+#include <string>
 
 class Mmu;
 
@@ -23,7 +23,7 @@ public:
     uint8_t source_address() const;
     void set_source_address(uint8_t value);
 
-    friend std::ostream& operator<<(std::ostream& os, const Dma& dma);
+    std::string representation() const;
 
 private:
     Mmu* mmu;

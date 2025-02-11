@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <array>
-#include <fstream>
+#include <string>
 #include "interrupt_manager.hpp"
 
 /* Timer
@@ -26,7 +26,7 @@ public:
     void set_tma(uint8_t value);
     void set_tac(uint8_t value) { tac_ = value & 7; }
 
-    friend std::ostream& operator<<(std::ostream& os, const Timer& timer);
+    std::string representation() const;
 
 private:
     InterruptManager* interrupt_manager;

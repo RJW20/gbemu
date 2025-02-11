@@ -2,7 +2,7 @@
 #define SERIAL_HPP
 
 #include <cstdint>
-#include <fstream>
+#include <string>
 #include "interrupt_manager.hpp"
 
 /* Serial
@@ -19,7 +19,7 @@ public:
     uint8_t sb;     // Serial data transfer
     uint8_t sc;     // Serial transfer control
 
-    friend std::ostream& operator<<(std::ostream& os, const Serial& serial);
+    std::string representation() const;
 
 private:
     InterruptManager* interrupt_manager;

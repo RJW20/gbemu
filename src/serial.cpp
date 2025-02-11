@@ -1,8 +1,7 @@
+#include <sstream>
 #include <fstream>
 #include "serial.hpp"
 #include "interrupt_manager.hpp"
-
-#include <iostream>
 
 // Set the registers to their post boot ROM values.
 void Serial::reset() {
@@ -24,10 +23,17 @@ void Serial::tick() {
     }
 }
 
+// Return a string representation of the Serial.
+std::string Serial::representation() const {
+    std::ostringstream repr;
+    repr << "Serial:" << std::hex
+        << " SB = " << static_cast<int>(sb)
+        << " SC = " << static_cast<int>(sc);
+    return repr.str();
+}
+
 // Output a string representation of the Serial to the given ostream.
 std::ostream& operator<<(std::ostream& os, const Serial& serial) {
-    os << "Serial:" << std::hex
-        << " SB = " << static_cast<int>(serial.sb)
-        << " SC = " << static_cast<int>(serial.sc);
+    os << serial.representation();
     return os;
 }
