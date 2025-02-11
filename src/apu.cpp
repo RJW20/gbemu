@@ -37,10 +37,7 @@ void Apu::reset() {
 uint8_t Apu::read_wave_ram(uint16_t address) const {
 
     if (address >= 0x10) {
-        std::ostringstream message;
-        message << "Invalid APU wave RAM read at address " << std::hex
-            << address << " - out of bounds.";
-        Log::warning(message.str());
+        Log::warning("Invalid APU wave RAM read - out of bounds.");
         return 0xFF;
     }
 
@@ -52,10 +49,7 @@ uint8_t Apu::read_wave_ram(uint16_t address) const {
 void Apu::write_wave_ram(uint16_t address, uint8_t value) {
 
     if (address >= 0x10) {
-        std::ostringstream message;
-        message << "Invalid APU wave RAM write at address " << std::hex
-            << address << " - out of bounds.";
-        Log::warning(message.str());
+        Log::warning("Invalid APU wave RAM write - out of bounds.");
         return;
     }
 
