@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <utility>
 #include <fstream>
 #include "Logger.hpp"
 
@@ -37,32 +36,16 @@ void Logger<log_level>::create_log_message(
     return std::string("[" + level + "] " + message + "\n");
 }
 
-
 // Log a DEBUG message to debug.txt.
 template <LogLevel log_level>
-void Logger<log_level>::debug(const std::string& message) {
+template <typename T>
+void Logger<log_level>::debug(const T& message) {
     if constexpr (log_level >= LogLevel::DEBUG) {
         if (!debug_file_opened) {
             open_debug_file();
         }
         if (debug_file.is_open()) {
             debug_file << message << "\n";
-        }
-    }
-}
-
-/* Log a DEBUG message to debug.txt, but only generate the message if LogLevel
- * includes DEBUG messages. */
-template <LogLevel log_level>
-template <typename MessageGenerator>
-void Logger<log_level>::debug(MessageGenerator&& message_generator) {
-    if constexpr (log_level >= LogLevel::DEBUG) {
-        if (!debug_file_opened) {
-            open_debug_file();
-        }
-        if (debug_file.is_open()) {
-            debug_file <<
-                std::forward<MessageGenerator>(message_generator)() << "\n";
         }
     }
 }
