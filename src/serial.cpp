@@ -1,12 +1,15 @@
+#include <fstream>
+#include <sstream>
+#include "logger.hpp"
 #include "serial.hpp"
 #include "interrupt_manager.hpp"
 
 #include <iostream>
 
-// Reset all components to zero.
+// Set the registers to their post boot ROM values.
 void Serial::reset() {
     sb = 0;
-    sc = 0;
+    sc = 0x7E;
     transfer_counter = 0;
 }
 
@@ -20,14 +23,13 @@ void Serial::tick() {
     if (++transfer_counter == 512) { // 512 t-cycles per byte transfer 
         transfer_counter = 0;
         interrupt_manager->request(InterruptType::SERIAL);
-
-        // logging for blargg
-        std::cout << sb;
-        sc = 1;     // shouldn't need this here, something must be broken
     }
 }
 
-// Return true if the 7th bit in sc is 1.
-bool Serial::transfer_in_progress() const {
-    return sc >> 7;
+// Output a string representation of the Serial to the given ostream.
+std::ostream& operator<<(std::ostream& os, const Serial& serial) {
+    os << "Serial:" << std::hex
+        << " SB = " << static_cast<int>(serial.sb)
+        << " SC = " << static_cast<int>(serial.sc);
+    return os;
 }
