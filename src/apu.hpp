@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <array>
+#include <string>
 
 /* Audio Processing Unit
  * Implements no functionality beyond containing 21 audio registers and 16
@@ -10,6 +11,7 @@
 class Apu {
 public:
     Apu() { reset(); } 
+
     void reset();
 
     uint8_t read_wave_ram(uint16_t address) const;
@@ -66,6 +68,8 @@ public:
     void set_nr50(uint8_t value) { nr50_ = value; }
     void set_nr51(uint8_t value) { nr51_ = value; }
     void set_nr52(uint8_t value) { nr52_ = (nr52_ & 0xF) | value & 0x80; }
+
+    std::string representation() const;
 
 private:
     // Sound channel 1

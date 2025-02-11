@@ -1,5 +1,8 @@
-#include <iostream>
 #include <cstdint>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include "logger.hpp"
 #include "apu.hpp"
 
 // Set the registers to their post boot ROM values and clear the wave RAM.
@@ -30,12 +33,14 @@ void Apu::reset() {
 }
 
 /* Return the 8 bit value in wave RAM at the given address.
- * Returns 0xFF if the address is out of boudns. */
+ * Returns 0xFF if the address is out of bounds. */
 uint8_t Apu::read_wave_ram(uint16_t address) const {
 
     if (address >= 0x10) {
-        std::cerr << "Invalid APU wave RAM read at address " << std::hex
-            << address << " - out of bounds." << std::endl;
+        std::ostringstream message;
+        message << "Invalid APU wave RAM read at address " << std::hex
+            << address << " - out of bounds.";
+        Log::warning(message.str());
         return 0xFF;
     }
 
@@ -47,10 +52,46 @@ uint8_t Apu::read_wave_ram(uint16_t address) const {
 void Apu::write_wave_ram(uint16_t address, uint8_t value) {
 
     if (address >= 0x10) {
-        std::cerr << "Invalid APU wave RAM write at address " << std::hex
-            << address << " - out of bounds." << std::endl;
+        std::ostringstream message;
+        message << "Invalid APU wave RAM write at address " << std::hex
+            << address << " - out of bounds.";
+        Log::warning(message.str());
         return;
     }
 
     wave_ram[address] = value;
+}
+
+// Return a string representation of the APU.
+std::string Apu::representation() const {
+    std::ostringstream repr;
+    repr << "APU:" << std::hex
+        << " NR10 = " << static_cast<int>(nr10())
+        << " NR11 = " << static_cast<int>(nr11())
+        << " NR12 = " << static_cast<int>(nr12())
+        << " NR13 = " << static_cast<int>(nr13())
+        << " NR14 = " << static_cast<int>(nr14())
+        << " NR21 = " << static_cast<int>(nr21())
+        << " NR22 = " << static_cast<int>(nr22())
+        << " NR23 = " << static_cast<int>(nr23())
+        << " NR24 = " << static_cast<int>(nr24())
+        << " NR30 = " << static_cast<int>(nr30())
+        << " NR31 = " << static_cast<int>(nr31())
+        << " NR32 = " << static_cast<int>(nr32())
+        << " NR33 = " << static_cast<int>(nr33())
+        << " NR34 = " << static_cast<int>(nr34())
+        << " NR41 = " << static_cast<int>(nr41())
+        << " NR42 = " << static_cast<int>(nr42())
+        << " NR43 = " << static_cast<int>(nr43())
+        << " NR44 = " << static_cast<int>(nr44())
+        << " NR50 = " << static_cast<int>(nr50())
+        << " NR51 = " << static_cast<int>(nr51())
+        << " NR52 = " << static_cast<int>(nr52());
+    return repr.str();
+}
+
+// Output a string representation of the APU to the given ostream.
+std::ostream& operator<<(std::ostream& os, const Apu& apu) {
+    os << apu.representation();
+    return os;
 }
