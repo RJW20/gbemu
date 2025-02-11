@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <array>
 #include <fstream>
-#include <string>
 #include "interrupt_manager.hpp"
 
 /* Timer
