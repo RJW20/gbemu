@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 23)
 # Source files
 set(SOURCES
     src/main.cpp
+    src/logger.cpp
     src/gameboy.cpp
     src/cartridge/cartridge.cpp
     src/cartridge/mbc/base_mbc.cpp
