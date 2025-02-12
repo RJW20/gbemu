@@ -72,6 +72,7 @@ void Timer::set_tma(uint8_t value) {
 std::string Timer::representation() const {
     std::ostringstream repr;
     repr << "Timer:" << std::hex
+        << " DIV  = " << static_cast<int>(div())
         << " TIMA = " << static_cast<int>(tima())
         << " TMA = " << static_cast<int>(tma())
         << " TAC = " << static_cast<int>(tac());
