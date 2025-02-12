@@ -24,6 +24,7 @@ set(SOURCES
     src/ppu/ppu.cpp
     src/apu.cpp
     src/mmu.cpp
+    src/exceptions.cpp
     src/cpu/cpu.cpp
     src/cpu/register.cpp
     src/cpu/basis.cpp
