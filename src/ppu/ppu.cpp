@@ -1,20 +1,22 @@
-#include <iostream>
 #include <cstdint>
 #include <algorithm>
 #include <utility>
+#include <string>
+#include <sstream>
 #include "ppu.hpp"
 #include "oam_scanner/oam_object.hpp"
 #include "../interrupt_manager.hpp"
+#include "exceptions.hpp"
 
 /* Clear VRAM, OAM and the pixel_buffer.
- * Set the registers to their power-on values. 
+ * Set the registers to their post boot ROM values. 
  * Set mode to VBLANK. */
 void Ppu::reset() {
     vram.fill(0);
     oam.fill(0);
-    pixel_buffer.fill(0);            //pixel_buffer.fill(palette.at(0));
+    pixel_buffer.fill(palette.at(0));
 
-    lcdc = 0x91;
+    lcdc_ = 0x91;
     ly_ = 0;
     lyc = 0;
     stat_ = 0x80;
@@ -79,7 +81,7 @@ void Ppu::tick() {
                 interrupt_manager->request(InterruptType::STAT);
             }
 
-            if (++current_t_cycles == SCANLINE_T_CYCLES) {
+            if (current_t_cycles == SCANLINE_T_CYCLES) {
                 if (++ly_== SCREEN_HEIGHT) {
                     set_mode(Mode::VBLANK);
                 }
@@ -90,7 +92,7 @@ void Ppu::tick() {
             break;
 
         case Mode::VBLANK:
-            if (current_t_cycles == 0 && ly_ == SCREEN_HEIGHT) {
+            if (current_t_cycles == 1 && ly_ == SCREEN_HEIGHT) {
                 interrupt_manager->request(InterruptType::VBLANK);
             }
 
@@ -99,7 +101,7 @@ void Ppu::tick() {
                 interrupt_manager->request(InterruptType::STAT);
             }
 
-            if (++current_t_cycles == SCANLINE_T_CYCLES) {
+            if (current_t_cycles == SCANLINE_T_CYCLES) {
                 if (++ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES) {
                     ly_ = 0;
                     set_mode(Mode::OAM_SCAN);
@@ -112,8 +114,8 @@ void Ppu::tick() {
     }
 }
 
-/* Set the Ppu mode to the given mode. 
- * Resets the appropriate variables in preparation for the new mode. */
+/* Set the Ppu mode to the given Mode. 
+ * Resets the appropriate variables in preparation for the new Mode. */
 void Ppu::set_mode(Mode new_mode) {
     
     mode = new_mode;
@@ -142,14 +144,42 @@ uint8_t Ppu::stat() const {
     return (stat_ & 0xF8) | ((ly_ == lyc) << 2) | std::to_underlying(mode);
 }
 
-/* Set bits 7-3 of stat_ to the leading 5 bits of the given value.
- * Outputs to std::cerr if the trailing 3 bits in the given value are non-
- * zero. */
-void Ppu::set_stat(uint8_t value) {
-    if (value & 0x7) {
-        std::cerr << "The trailing 3 bits in STAT must always be zero, "
-            << "ignoring them in value: " << std::hex << (uint16_t) value
-            << std::endl;
+// Set lcdc_ to the given value and disable the LCD if needed.
+void Ppu::set_lcdc(uint8_t value) {
+    lcdc_ = value;
+    if (!lcd_enabled()) {
+        ly_ = 0;
+        set_mode(Mode::OAM_SCAN);
     }
-    stat_ = value & 0xF8;
+}
+
+// Throws a MemoryAccessException. */
+void Ppu::set_ly(uint8_t value) const {
+    throw MemoryAccessException(
+        "PPU register", "LY is read-only", 0xFF44, false
+    );
+}
+
+// Return a string representation of the PPU.
+std::string Ppu::representation() const {
+    std::ostringstream repr;
+    repr << "PPU: " << std::hex
+        << " LCDC = " << static_cast<int>(lcdc())
+        << " LY = " << static_cast<int>(ly())
+        << " LYC = " << static_cast<int>(lyc)
+        << " STAT = " << static_cast<int>(stat())
+        << " SCY = " << static_cast<int>(scy)
+        << " SCX = " << static_cast<int>(scx)
+        << " WY = " << static_cast<int>(wy)
+        << " WX = " << static_cast<int>(wx)
+        << " BGP = " << static_cast<int>(bgp)
+        << " obp0 = " << static_cast<int>(obp0)
+        << " obp1 = " << static_cast<int>(obp1);
+    return repr.str();
+}
+
+// Output a string representation of the PPU to the given ostream.
+std::ostream& operator<<(std::ostream& os, const Ppu& ppu) {
+    os << ppu.representation();
+    return os;
 }

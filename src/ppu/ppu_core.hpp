@@ -22,7 +22,6 @@ public:
     void write_oam(uint16_t address, uint8_t value);
 
     // Public read/write registers
-    uint8_t lcdc;
     uint8_t lyc;
     uint8_t scy;
     uint8_t scx;
@@ -49,22 +48,23 @@ protected:
     bool window_present_on_scanline;    // Decided at start of scanline
 
     // Underlying (partially) read-only registers
+    uint8_t lcdc_;
     uint8_t ly_;
     uint8_t stat_;
 
     // Methods for reading register flags
-    bool lcd_enabled() const { return (lcdc >> 7) & 1; }
+    bool lcd_enabled() const { return (lcdc_ >> 7) & 1; }
     uint16_t window_tile_map_address() const {
-        return (lcdc >> 6) & 1 ? 0x1C00 : 0x1800;
+        return (lcdc_ >> 6) & 1 ? 0x1C00 : 0x1800;
     }
-    bool window_enabled() const {return (lcdc >> 5) & 1; }
-    bool bgwin_unsigned_addressing() const { return (lcdc >> 4) & 1; }
+    bool window_enabled() const {return (lcdc_ >> 5) & 1; }
+    bool bgwin_unsigned_addressing() const { return (lcdc_ >> 4) & 1; }
     uint16_t background_tile_map_address() const {
-        return (lcdc >> 3) & 1 ? 0x1C00 : 0x1800;
+        return (lcdc_ >> 3) & 1 ? 0x1C00 : 0x1800;
     }
-    bool double_object_height() const { return (lcdc >> 2) & 1; }
-    bool objects_enabled() const { return (lcdc >> 1) & 1;} 
-    bool bgwin_enabled() const { return lcdc & 1; }
+    bool double_object_height() const { return (lcdc_ >> 2) & 1; }
+    bool objects_enabled() const { return (lcdc_ >> 1) & 1;} 
+    bool bgwin_enabled() const { return lcdc_ & 1; }
     bool lyc_interrupt_requested() const { return (stat_ >> 6) & 1; }
     bool oam_scan_interrupt_requested() const { return (stat_ >> 5) & 1; }
     bool vblank_interrupt_requested() const { return (stat_ >> 4) & 1; }
