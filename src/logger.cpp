@@ -1,74 +1,7 @@
-#include <iostream>
 #include <string>
 #include <sstream>
-#include <utility>
 #include <fstream>
-#include "Logger.hpp"
-
-// Log an ERROR message to std::cout.
-template <LogLevel log_level>
-template <typename T>
-void Logger<log_level>::error(const T& message) {
-    if constexpr (log_level >= LogLevel::ERROR) {
-        std::cout << create_log_message("ERROR", message);
-    }
-}
-
-/* Log an ERROR message to std::cout, but only generate the message if LogLevel
- * includes ERROR messages. */
-template <LogLevel log_level>
-template <typename MessageGenerator>
-void Logger<log_level>::error(MessageGenerator&& message_generator) {
-    if constexpr (log_level >= LogLevel::ERROR) {
-        std::cout << create_log_message(
-            "ERROR",
-            std::forward<MessageGenerator>(message_generator)()
-        );
-    }
-}
-
-// Log a WARNING message to std::cout.
-template <LogLevel log_level>
-template <typename T>
-void Logger<log_level>::warning(const T& message) {
-    if constexpr (log_level >= LogLevel::WARNING) {
-        std::cout << create_log_message("WARNING", message);
-    }
-}
-
-/* Log a WARNING message to std::cout, but only generate the message if
- * LogLevel includes WARNING messages. */
-template <LogLevel log_level>
-template <typename MessageGenerator>
-void Logger<log_level>::warning(MessageGenerator&& message_generator) {
-    if constexpr (log_level >= LogLevel::WARNING) {
-        std::cout << create_log_message(
-            "WARNING",
-            std::forward<MessageGenerator>(message_generator)()
-        );
-    }
-}
-
-// Log an INFO message to std::cout.
-template <LogLevel log_level>
-template <typename T>
-void Logger<log_level>::info(const T& message) {
-    if constexpr (log_level >= LogLevel::INFO) {
-        std::cout << create_log_message("INFO", message);
-    }
-}
-/* Log an INFO message to std::cout, but only generate the message if LogLevel
- * includes INFO messages. */
-template <LogLevel log_level>
-template <typename MessageGenerator>
-void Logger<log_level>::info(MessageGenerator&& message_generator) {
-    if constexpr (log_level >= LogLevel::INFO) {
-        std::cout << create_log_message(
-            "INFO",
-            std::forward<MessageGenerator>(message_generator)()
-        );
-    }
-}
+#include "logger.hpp"
 
 // Generate the log message for the given level and message.
 template <LogLevel log_level>
@@ -80,36 +13,6 @@ std::string Logger<log_level>::create_log_message(
     std::ostringstream log_message;
     log_message << "[" << level << "] " << message << "\n";
     return log_message.str();
-}
-
-// Log a DEBUG message to debug.txt.
-template <LogLevel log_level>
-template <typename T>
-void Logger<log_level>::debug(const T& message) {
-    if constexpr (log_level >= LogLevel::DEBUG) {
-        if (!debug_file_opened) {
-            open_debug_file();
-        }
-        if (debug_file.is_open()) {
-            debug_file << message << "\n";
-        }
-    }
-}
-
-/* Log a DEBUG message to debug.txt, but only generate the message if LogLevel
- * includes DEBUG messages. */
-template <LogLevel log_level>
-template <typename MessageGenerator>
-void Logger<log_level>::debug(MessageGenerator&& message_generator) {
-    if constexpr (log_level >= LogLevel::DEBUG) {
-        if (!debug_file_opened) {
-            open_debug_file();
-        }
-        if (debug_file.is_open()) {
-            debug_file <<
-                std::forward<MessageGenerator>(message_generator)() << "\n";
-        }
-    }
 }
 
 template <LogLevel Level>
