@@ -20,7 +20,7 @@ public:
     uint16_t pc;    // Program Counter
 
     // Flags register
-    uint8_t f();
+    uint8_t f() const ;
     void set_f(uint8_t value);
     bool flag_z : 1;  // Zero flag
     bool flag_n : 1;  // Subtract flag
@@ -28,10 +28,10 @@ public:
     bool flag_c : 1;  // Carry flag
 
     // 16 bit getters
-    uint16_t af() { return (a << 8) | f(); }
-    uint16_t bc() { return (b << 8) | c; }
-    uint16_t de() { return (d << 8) | e; }
-    uint16_t hl() { return (h << 8) | l; }
+    uint16_t af() const { return (a << 8) | f(); }
+    uint16_t bc() const { return (b << 8) | c; }
+    uint16_t de() const { return (d << 8) | e; }
+    uint16_t hl() const { return (h << 8) | l; }
 
     // 16 bit setters
     void set_af(uint16_t value) { a = value >> 8; set_f(value & 0xFF); }

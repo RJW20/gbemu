@@ -18,7 +18,7 @@ void Register::reset() {
  * - Bit 5 = flag_h
  * - Bit 4 = flag_c
  * - Bits 0-3 = 0 */
-uint8_t Register::f() {
+uint8_t Register::f() const {
     return (flag_z << 7) | (flag_n << 6) | (flag_h << 5) | (flag_c << 4);
 }
 

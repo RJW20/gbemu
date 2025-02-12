@@ -2,6 +2,7 @@
 #define CPU_HPP
 
 #include <cstdint>
+#include <string>
 #include <unordered_map>
 #include "../interrupt_manager.hpp"
 #include "../mmu.hpp"
@@ -17,6 +18,8 @@ public:
 
     void reset();
     void tick();
+
+    std::string representation() const;
 
 private:
     Register reg;

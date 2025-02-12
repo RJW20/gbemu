@@ -1,4 +1,7 @@
 #include <stdexcept>
+#include <string>
+#include <sstream>
+#include <bitset>
 #include "cpu.hpp"
 #include "../interrupt_manager.hpp"
 
@@ -162,6 +165,30 @@ void Cpu::interrupt_cycle() {
     }
 
     current_m_cycles += 1;
+}
+
+// Return a string representation of the CPU.
+std::string Cpu::representation() const {
+    std::ostringstream repr;
+    repr << "CPU:" << std::hex
+        << " Opcode = " << static_cast<int>(opcode->address)
+        << " A = " << static_cast<int>(reg.a)
+        << " B = " << static_cast<int>(reg.b)
+        << " C = " << static_cast<int>(reg.c)
+        << " D = " << static_cast<int>(reg.d)
+        << " E = " << std::bitset<4>(reg.f() >> 4)
+        << " F = " << static_cast<int>(reg.a)
+        << " H = " << static_cast<int>(reg.h)
+        << " L = " << static_cast<int>(reg.l)
+        << " SP = " << reg.sp
+        << " PC = " << reg.pc;
+    return repr.str();
+}
+
+// Output a string representation of the Cpu to the given ostream.
+std::ostream& operator<<(std::ostream& os, const Cpu& cpu) {
+    os << cpu.representation();
+    return os;
 }
 
 // Initialise both opcode dictionaries.
