@@ -8,8 +8,9 @@
 
 typedef std::function<void()> Step;
 
-/* Contains all relevant information about an Opcode.
- * Should be passed lambdas from the cpu as steps. */
+/* Opcode
+ * Struct containing all relevant information about an Opcode.
+ * Should be passed lambdas from the CPU as steps. */
 struct Opcode {
     Opcode(
         uint8_t address,
@@ -18,8 +19,7 @@ struct Opcode {
         int t_cycles,
         std::vector<Step> steps
     ) : address(address), name(name), length(length), t_cycles(t_cycles),
-        steps(steps) {};
-    ~Opcode() {};
+        steps(steps) {}
 
     uint8_t address;            // Hex address of opcode
     std::string name;           // Common name for opcode
