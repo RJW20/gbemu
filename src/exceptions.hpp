@@ -11,18 +11,18 @@ class MemoryAccessException : public std::exception {
 public:
     MemoryAccessException(
         const std::string& location,
-        const bool read,
-        const uint8_t address,
-        const std::string& reason
-    ) : location(location), read(read), address(address), reason(reason) {}
+        const std::string& reason,
+        const uint8_t& address,
+        const bool& read
+    ) : location(location), reason(reason), address(address), read(read) {}
 
     const char* what() const noexcept override { return message().c_str(); }
 
 private:
     const std::string location;
-    const bool read;
-    const uint8_t address;
     const std::string reason;
+    const uint8_t address;
+    const bool read;
 
     std::string message() const;
 };

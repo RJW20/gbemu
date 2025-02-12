@@ -38,10 +38,7 @@ uint8_t Apu::read_wave_ram(uint16_t address) const {
 
     if (address >= 0x10) {
         throw MemoryAccessException(
-            "APU wave RAM",
-            true,
-            address,
-            "out of bounds"
+            "APU wave RAM", "out of bounds", address, true
         );
     }
 
@@ -54,10 +51,7 @@ void Apu::write_wave_ram(uint16_t address, uint8_t value) {
 
     if (address >= 0x10) {
         throw MemoryAccessException(
-            "APU wave RAM",
-            false,
-            address,
-            "out of bounds"
+            "APU wave RAM", "out of bounds", address, false
         );
     }
 
