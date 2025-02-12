@@ -1,6 +1,9 @@
-#include <iostream>
 #include <cstdint>
+#include <string>
+#include <sstream>
+#include "logger.hpp"
 #include "mmu.hpp"
+#include "exceptions.hpp"
 
 // Clear WRAM and HRAM.
 void Mmu::reset() {
@@ -9,8 +12,47 @@ void Mmu::reset() {
 }
 
 /* Return the 8 bit value stored at the given address.
- * Directs the address to its corresponding component. */
-uint8_t Mmu::read(uint16_t address) const {
+ * Returns 0xFF if the value cannot be read. */
+uint8_t Mmu::read(const uint16_t& address) const {
+
+    uint8_t value;
+    try {
+        value = read_value(address);
+    }
+    catch (MemoryAccessException& e) {
+        Log::warning([e](){ return e.what(); });
+        value = 0xFF;
+    }
+
+    Log::debug(
+        [this, address, value]() {
+            return read_write_message(address, value, true);
+        }
+    );
+    return value;
+}
+
+/* Write the given 8 bit value to the given address.
+ * Does nothing if the address cannot be written to. */
+void Mmu::write(const uint16_t& address, const uint8_t& value) {
+    try {
+        write_value(address, value);
+        Log::debug(
+            [this, address, value]() {
+                return read_write_message(address, value, false);
+            }
+        );
+    }
+    catch (MemoryAccessException& e) {
+        Log::warning([e](){ return e.what(); });
+    }
+}
+
+/* Return the 8 bit value stored at the given address.
+ * Directs the address to its corresponding component.
+ * Throws a MemoryAccessException if the address has no corresponding
+ * component. */
+uint8_t Mmu::read_value(const uint16_t& address) const {
 
     if (address < ROM_UPPER) {
         return cartridge->read_rom(address);
@@ -37,9 +79,9 @@ uint8_t Mmu::read(uint16_t address) const {
     }
 
     else if (address < UNUSABLE_MEMORY_UPPER) {
-        std::cerr << "Invalid MMU read at address " << std::hex << address
-            << " - this section of RAM is unusable." << std::endl;
-        return 0xFF;
+        throw MemoryAccessException(
+            "MMU", "this section of RAM is unusable", address, true
+        );
     }
 
     else if (address < IO_REGISTERS_UPPER) {
@@ -144,10 +186,10 @@ uint8_t Mmu::read(uint16_t address) const {
             case 0xFF4B:
                 return ppu->wx;
             default:
-                std::cerr << "Invalid MMU read at address " << std::hex
-                    << address << " - this I/O register does not exist."
-                    << std::endl;
-                return 0xFF;
+                throw MemoryAccessException(
+                    "MMU I/O register", "this register does not exist",
+                    address, true
+                );
         }
     }
 
@@ -161,8 +203,10 @@ uint8_t Mmu::read(uint16_t address) const {
 }
 
 /* Write the given 8 bit value to the given address.
- * Directs the address to its corresponding component. */
-void Mmu::write(uint16_t address, uint8_t value) {
+ * Directs the address to its corresponding component.
+ * Throws a MemoryAccessException if the address has no corresponding
+ * component. */
+void Mmu::write_value(const uint16_t& address, const uint8_t& value) {
 
     if (address < ROM_UPPER) {
         cartridge->write_rom(address, value);
@@ -181,8 +225,9 @@ void Mmu::write(uint16_t address, uint8_t value) {
     }
 
     else if (address < ECHO_RAM_UPPER) {
-        std::cerr << "Invalid MMU write at address " << std::hex << address
-            << " - echo RAM cannot be written to." << std::endl;
+        throw MemoryAccessException(
+            "MMU", "echo RAM cannot be written to", address, true
+        );
     }
 
     else if (address < OAM_UPPER) {
@@ -190,8 +235,9 @@ void Mmu::write(uint16_t address, uint8_t value) {
     }
 
     else if (address < UNUSABLE_MEMORY_UPPER) {
-        std::cerr << "Invalid MMU write at address " << std::hex << address
-            << " - this section of RAM is unusable." << std::endl;
+        throw MemoryAccessException(
+            "MMU", "this section of RAM is unusable", address, false
+        );
     }
 
     else if (address < IO_REGISTERS_UPPER) {
@@ -336,10 +382,10 @@ void Mmu::write(uint16_t address, uint8_t value) {
                 ppu->wx = value;
                 break;
             default:
-                std::cerr << "Invalid MMU write at address " << std::hex
-                    << address << " - this I/O register does not exist."
-                    << std::endl;
-                break;
+                throw MemoryAccessException(
+                    "MMU I/O register", "this register does not exist",
+                    address, false
+                );
         }
     }
 
@@ -350,4 +396,23 @@ void Mmu::write(uint16_t address, uint8_t value) {
     else {
         interrupt_manager->set_ie(value);
     }
+}
+
+// Generate an MMU read or write debug message.
+std::string Mmu::read_write_message(
+    const uint16_t& address,
+    const uint8_t& value,
+    const bool& read
+) const {
+    std::ostringstream msg;
+    msg << "MMU: ";
+    if (read) {
+        msg << "Read " << std::hex << static_cast<int>(value) << " from "
+            << address;
+    }
+    else {
+        msg << "Write " << std::hex << static_cast<int>(value) << " to "
+            << address;
+    }
+    return msg.str();
 }
