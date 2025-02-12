@@ -12,7 +12,7 @@ public:
     MemoryAccessException(
         const std::string& location,
         const std::string& reason,
-        const uint8_t address,
+        const uint16_t address,
         const bool read
     ) : location(location), reason(reason), address(address), read(read) {}
 
@@ -21,7 +21,7 @@ public:
 private:
     const std::string location;
     const std::string reason;
-    const uint8_t address;
+    const uint16_t address;
     const bool read;
 
     std::string message() const;

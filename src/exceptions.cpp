@@ -12,7 +12,7 @@ std::string MemoryAccessException::message() const {
     else {
         msg << "write to ";
     }
-    msg << location << " at address " << std::hex << static_cast<int>(address)
-        << " - " << reason << ".";
+    msg << location << " at address " << std::hex << address << " - " << reason
+        << ".";
     return msg.str();
 }
