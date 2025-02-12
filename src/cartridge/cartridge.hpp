@@ -6,15 +6,15 @@
 #include <memory>
 #include "mbc/base_mbc.hpp"
 
-// Simulates a physical cartridge with ROM and (external) RAM.
+/* Cartridge
+ * Simulates a physical cartridge with ROM and (external) RAM. */
 class Cartridge {
 public:
-    Cartridge(const std::string rom_path);
-    ~Cartridge() {};
+    Cartridge(const std::string& rom_path);
 
     void reset();
 
-    std::string title;  // ROM title
+    std::string title;
 
     uint8_t read_rom(uint16_t address) const;
     void write_rom(uint16_t address, uint8_t value);

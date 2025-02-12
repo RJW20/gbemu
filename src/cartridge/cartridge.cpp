@@ -1,19 +1,20 @@
-#include <iostream>
 #include <cstdint>
 #include <string>
 #include <fstream>
+#include <sstream>
+#include "logger.hpp"
 #include "cartridge.hpp"
 #include "mbc/lookup.hpp"
 
 // Load the ROM at the given path and pass it to the required MBC.
-Cartridge::Cartridge(const std::string rom_path) {
+Cartridge::Cartridge(const std::string& rom_path) {
     
-    std::cout << "Loading ROM: " << rom_path << std::endl;
+    Log::info("Loading ROM: " + rom_path);
 
     // Open the file in binary mode
     std::ifstream rom_file(rom_path, std::ios::binary | std::ios::ate);
     if (!rom_file) {
-        std::cerr << "Failed to open ROM: " << rom_path << std::endl;
+        Log::error("Failed to open ROM: " + rom_path);
         exit(0);
     }
 
@@ -29,9 +30,10 @@ Cartridge::Cartridge(const std::string rom_path) {
     try {
         mbc = mbc_lookup.at(mbc_code)(rom_file);
     }
-    catch(const std::out_of_range& ex) {
-        std::cerr << "Unimplemented ROM type with MBC code: " << mbc_code <<
-            std::endl;
+    catch(const std::out_of_range& e) {
+        std::ostringstream code;
+        code << std::hex << static_cast<int>(mbc_code);
+        Log::error("Unimplemented ROM type with MBC code: " + code.str());
     }
 }
 
