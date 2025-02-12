@@ -34,6 +34,7 @@ Cartridge::Cartridge(const std::string& rom_path) {
         std::ostringstream code;
         code << std::hex << static_cast<int>(mbc_code);
         Log::error("Unimplemented ROM type with MBC code: " + code.str());
+        exit(1);
     }
 }
 
