@@ -45,7 +45,10 @@ public:
 
 private:
     template <typename T>
-    static void create_log_message(const std::string& level, const T& message);
+    static std::string create_log_message(
+        const std::string& level,
+        const T& message
+    );
 
     static std::ofstream debug_file;
     static bool debug_file_opened;

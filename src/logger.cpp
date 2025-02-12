@@ -73,7 +73,7 @@ void Logger<log_level>::info(MessageGenerator&& message_generator) {
 // Generate the log message for the given level and message.
 template <LogLevel log_level>
 template <typename T>
-void Logger<log_level>::create_log_message(
+std::string Logger<log_level>::create_log_message(
     const std::string& level,
     const T& message
 ) {
