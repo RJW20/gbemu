@@ -1,11 +1,10 @@
-#include <iostream>
 #include <cstdint>
 #include <utility>
 #include <SDL2/SDL.h>
 #include "joypad.hpp"
 #include "interrupt_manager.hpp"
 
-/* Set joyp_ to the value determined by it's own bits 5-4 and the state of the
+/* Set joyp_ to the value determined by its own bits 5-4 and the state of the
  * keyboard keys representing the GameBoy buttons.
  * Returns 0xFF if both bits 5 and 4 are set. */
 uint8_t Joypad::joyp() {
