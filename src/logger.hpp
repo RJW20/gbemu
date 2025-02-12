@@ -3,10 +3,10 @@
 
 #include <iostream>
 #include <cstdint>
-#include <string>
-#include <sstream>
-#include <fstream>
+#include <type_traits>
 #include <utility>
+#include <string>
+#include <fstream>
 
 /* LogLevel
  * Enum containing the 5 levels of detail the Logger can output.
@@ -28,107 +28,106 @@ class Logger {
 public:
 
     // Log an ERROR message to std::cout.
-    template <typename T>
+    template <typename T, typename = std::enable_if_t<!std::is_invocable_v<T>>>
     static void error(const T& message) {
         if constexpr (log_level >= LogLevel::ERROR) {
-            std::cout << create_log_message("ERROR", message);
+            std::cout << "[ERROR]: " << message << std::endl;
         }
     }
 
     /* Log an ERROR message to std::cout, but only generate the message if
-     * LogLevel
-     * includes ERROR messages. */
-    template <typename MessageGenerator>
-    static void error(MessageGenerator&& message_generator) {
+     * LogLevel includes ERROR messages. */
+    template <
+        typename Func,
+        typename = std::enable_if_t<std::is_invocable_r_v<std::string, Func>>
+    >
+    static void error(Func&& message_generator) {
         if constexpr (log_level >= LogLevel::ERROR) {
-            std::cout << create_log_message(
-                "ERROR",
-                std::forward<MessageGenerator>(message_generator)()
-            );
+            std::cout << "[ERROR]: "
+                << std::forward<Func>(message_generator)() << std::endl;
         }
     }
 
     // Log a WARNING message to std::cout.
-    template <typename T>
+    template <typename T, typename = std::enable_if_t<!std::is_invocable_v<T>>>
     static void warning(const T& message) {
         if constexpr (log_level >= LogLevel::WARNING) {
-            std::cout << create_log_message("WARNING", message);
+            std::cout << "[WARNING]: " << message << std::endl;
         }
     }
 
     /* Log a WARNING message to std::cout, but only generate the message if
      * LogLevel includes WARNING messages. */
-    template <typename MessageGenerator>
-    static void warning(MessageGenerator&& message_generator) {
+    template <
+        typename Func,
+        typename = std::enable_if_t<std::is_invocable_r_v<std::string, Func>>
+    >
+    static void warning(Func&& message_generator) {
         if constexpr (log_level >= LogLevel::WARNING) {
-            std::cout << create_log_message(
-                "WARNING",
-                std::forward<MessageGenerator>(message_generator)()
-            );
+            std::cout << "[WARNING]: "
+                << std::forward<Func>(message_generator)() << std::endl;
         }
     }
 
     // Log an INFO message to std::cout.
-    template <typename T>
+    template <typename T, typename = std::enable_if_t<!std::is_invocable_v<T>>>
     static void info(const T& message) {
         if constexpr (log_level >= LogLevel::INFO) {
-            std::cout << create_log_message("INFO", message);
+            std::cout << "[INFO]: " << message << std::endl;
         }
     }
 
     /* Log an INFO message to std::cout, but only generate the message if
      * LogLevel includes INFO messages. */
-    template <typename MessageGenerator>
-    void info(MessageGenerator&& message_generator) {
+    template <
+        typename Func,
+        typename = std::enable_if_t<std::is_invocable_r_v<std::string, Func>>
+    >
+    static void info(Func&& message_generator) {
         if constexpr (log_level >= LogLevel::INFO) {
-            std::cout << create_log_message(
-                "INFO",
-                std::forward<MessageGenerator>(message_generator)()
-            );
+            std::cout << "[INFO]: "
+                << std::forward<Func>(message_generator)() << std::endl;
         }
     }
 
     // Log a DEBUG message to debug.txt.
-    template <typename T>
+    template <typename T, typename = std::enable_if_t<!std::is_invocable_v<T>>>
     static void debug(const T& message) {
         if constexpr (log_level >= LogLevel::DEBUG) {
             if (!debug_file_opened) {
                 open_debug_file();
             }
             if (debug_file.is_open()) {
-                debug_file << message << "\n";
+                debug_file << message << std::endl;
             }
         }
     }
 
     /* Log a DEBUG message to debug.txt, but only generate the message if
      * LogLevel includes DEBUG messages. */
-    template <typename MessageGenerator>
-    static void debug(MessageGenerator&& message_generator) {
+    template <
+        typename Func,
+        typename = std::enable_if_t<std::is_invocable_r_v<std::string, Func>>
+    >
+    static void debug(Func&& message_generator) {
         if constexpr (log_level >= LogLevel::DEBUG) {
             if (!debug_file_opened) {
                 open_debug_file();
             }
             if (debug_file.is_open()) {
-                debug_file <<
-                    std::forward<MessageGenerator>(message_generator)() << "\n";
+                debug_file << std::forward<Func>(message_generator)()
+                    << std::endl;
             }
         }
     }
 
 private:
-    template <typename T>
-    static std::string create_log_message(
-        const std::string& level,
-        const T& message
-    );
-
     static std::ofstream debug_file;
     static bool debug_file_opened;
     static void open_debug_file();
 };
 
-constexpr LogLevel log_level = LogLevel::WARNING;
+constexpr LogLevel log_level = LogLevel::DEBUG;
 using Log = Logger<log_level>;
 
 #endif

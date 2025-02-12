@@ -1,19 +1,5 @@
-#include <string>
-#include <sstream>
 #include <fstream>
 #include "logger.hpp"
-
-// Generate the log message for the given level and message.
-template <LogLevel log_level>
-template <typename T>
-std::string Logger<log_level>::create_log_message(
-    const std::string& level,
-    const T& message
-) {
-    std::ostringstream log_message;
-    log_message << "[" << level << "] " << message << "\n";
-    return log_message.str();
-}
 
 template <LogLevel Level>
 std::ofstream Logger<Level>::debug_file;
