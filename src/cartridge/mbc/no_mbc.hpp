@@ -10,8 +10,7 @@
  * Directly maps the ROM to 0x0000 - 0x7FFF. */
 class NoMbc : public BaseMbc {
 public:
-    NoMbc(std::ifstream& rom_file) : BaseMbc(rom_file, false) {};
-    ~NoMbc() override {};
+    NoMbc(std::ifstream& rom_file) : BaseMbc(rom_file, false) {}
 
     uint8_t read_rom(uint16_t address) const override;
     void write_rom(uint16_t address, uint8_t value) override;

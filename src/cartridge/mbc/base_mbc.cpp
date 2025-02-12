@@ -1,8 +1,9 @@
-#include <iostream>
 #include <cstdint>
 #include <cstddef>
 #include <fstream>
 #include <vector>
+#include <sstream>
+#include "logger.hpp"
 #include "base_mbc.hpp"
 #include "lookup.hpp"
 
@@ -26,9 +27,12 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
     // ROM bank handling
     rom_size = rom[0][ROM_SIZE_ADDRESS];
     if (rom.size() != (1 << (rom_size + 1))) {
-        std::cerr << "Cartridge header has incorrect ROM size value at "
-            << "address: " << std::hex << (uint16_t) ROM_SIZE_ADDRESS
-            << std::endl;
+        std::ostringstream rom_size_address;
+        rom_size_address << std::hex << ROM_SIZE_ADDRESS;
+        Log::error(
+            "Cartridge header has incorrect ROM size value at " +
+            rom_size_address.str()
+        );
         exit(20);
     }
 
@@ -38,10 +42,13 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
             external_ram_lookup.at(rom[0][RAM_SIZE_ADDRESS]) : 0;
         reset();
     }
-    catch(const std::out_of_range& ex) {
-        std::cerr << "Cartridge header has invalid RAM size value at "
-            << "address: " << std::hex << (uint16_t) RAM_SIZE_ADDRESS
-            << std::endl;
+    catch(const std::out_of_range& e) {
+        std::ostringstream ram_size_address;
+        ram_size_address << std::hex << RAM_SIZE_ADDRESS;
+        Log::error(
+            "Cartridge header has invalid RAM size value at " +
+            ram_size_address.str()
+        );
         exit(21);
     }
 }

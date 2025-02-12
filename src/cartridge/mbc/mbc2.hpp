@@ -9,7 +9,6 @@
 class Mbc2 : public BaseMbc {
 public:
     Mbc2(std::ifstream& rom_file);
-    ~Mbc2() override {};
 
     void reset() override;
 

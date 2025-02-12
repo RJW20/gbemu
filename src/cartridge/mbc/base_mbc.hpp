@@ -9,7 +9,6 @@
 class BaseMbc {
 public:
     BaseMbc(std::ifstream& rom_file, bool has_external_ram);
-    virtual ~BaseMbc() {};
 
     virtual void reset();
 

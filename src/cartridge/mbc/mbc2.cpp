@@ -1,8 +1,8 @@
-#include <iostream>
 #include <cstdint>
 #include <fstream>
 #include "mbc2.hpp"
 #include "base_mbc.hpp"
+#include "exceptions.hpp"
 
 /* Construct BaseMbc, initialise 512 x 4 bit RAM and set the registers to their
  * default values. */
@@ -20,7 +20,7 @@ void Mbc2::reset() {
 
 /* Return the 8 bit value in the currently selected ROM bank at the given
  * address.
- * Returns 0xFF if the address is out of bounds. */
+ * Throws a MemoryAccessException if the address is out of bounds. */
 uint8_t Mbc2::read_rom(uint16_t address) const {
 
     if (address < ROM_BANK_SIZE) {
@@ -33,9 +33,9 @@ uint8_t Mbc2::read_rom(uint16_t address) const {
     }
     
     else {
-        std::cerr << "Invalid MBC2 ROM read at address " << std::hex
-            << address << " - out of bounds." << std::endl;
-        return 0xFF;
+        throw MemoryAccessException(
+            "MBC2 ROM", "out of bounds", address, true
+        );
     }
 }
 
@@ -44,7 +44,8 @@ uint8_t Mbc2::read_rom(uint16_t address) const {
  * - 0 - is_ram_enabled
  * Set true if the value is 0xA, otherwise false.
  * - 1 - rom_bank_number
- * Set to the trailing 4 bits of value. If set to 0 is incremented to 1. */
+ * Set to the trailing 4 bits of value. If set to 0 is incremented to 1.
+ * Throws a MemoryAccessException if the address is out of bounds. */
 void Mbc2::write_rom(uint16_t address, uint8_t value) {
 
     if (address < ROM_BANK_SIZE) {
@@ -58,8 +59,9 @@ void Mbc2::write_rom(uint16_t address, uint8_t value) {
     }
 
     if (address >= 2 * ROM_BANK_SIZE) {
-        std::cerr << "Invalid MBC2 ROM write at address " << std::hex 
-            << address << " - out of bounds." << std::endl;
+        throw MemoryAccessException(
+            "MBC2 ROM", "out of bounds", address, false
+        );
     }
 }
 
@@ -67,21 +69,21 @@ void Mbc2::write_rom(uint16_t address, uint8_t value) {
  * The value will be padded with leading 0s.
  * Only the bottom 9 bits of the address are used, so those over 0x200 will be
  * echoes of the region 0x000-0x1FF.
- * Returns 0xFF if RAM is not accessible or if the address is out of bounds. */
+ * Throws a MemoryAccessException if RAM is not accessible or if the address is
+ * out of bounds. */
 uint8_t Mbc2::read_ram(uint16_t address) const {
 
     if (!is_ram_enabled) {
-        std::cerr << "Invalid MBC2 RAM read at address " << std::hex
-            << address << " - built-in RAM is currently not accessible."
-            << std::endl;
-        return 0xFF;
+        throw MemoryAccessException(
+            "MBC2 RAM", "built-in RAM is currently not accessible",
+            address, true
+        );
     }
 
-    if (address >= BUILT_IN_RAM_SIZE)
-    {
-        std::cerr << "Invalid MBC2 RAM read at address " << std::hex
-            << address << " - out of bounds." << std::endl;
-        return 0xFF;
+    if (address >= BUILT_IN_RAM_SIZE) {
+        throw MemoryAccessException(
+            "MBC2 RAM", "out of bounds", address, true
+        );
     }
 
     return ram[0][address & (BUILT_IN_RAM_SIZE - 1)] & 0xF;
@@ -89,20 +91,21 @@ uint8_t Mbc2::read_ram(uint16_t address) const {
 
 /* Write the trailing 4 bits of the given 8 bit value to the RAM at the given
  * address.
- * Fails if RAM is not accessible or if the address is out of bounds. */
+ * Throws a MemoryAccessException if RAM is not accessible or if the address is
+ * out of bounds. */
 void Mbc2::write_ram(uint16_t address, uint8_t value) {
 
     if (!is_ram_enabled) {
-        std::cerr << "Invalid MBC2 RAM write at address " << std::hex
-            << address << " - built-in RAM is currently not accessible."
-            << std::endl;
-        return;
+        throw MemoryAccessException(
+            "MBC2 RAM", "built-in RAM is currently not accessible",
+            address, false
+        );
     }
 
     if (address >= BUILT_IN_RAM_SIZE) {
-        std::cerr << "Invalid MBC2 RAM write at address " << std::hex
-            << address << " - out of bounds." << std::endl;
-        return;
+        throw MemoryAccessException(
+            "MBC2 RAM", "out of bounds", address, false
+        );
     }
 
     ram[0][address & (BUILT_IN_RAM_SIZE - 1)] = value & 0xF;

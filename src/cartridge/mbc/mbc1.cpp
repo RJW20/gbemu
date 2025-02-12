@@ -1,8 +1,7 @@
-#include <iostream>
 #include <cstdint>
 #include <fstream>
 #include "mbc1.hpp"
-#include "base_mbc.hpp"
+#include "exceptions.hpp"
 
 // Clear RAM and set registers to their default power-on values.
 void Mbc1::reset() {
@@ -15,7 +14,7 @@ void Mbc1::reset() {
 
 /* Return the 8 bit value in the currently selected ROM bank at the given
  * address.
- * Returns 0xFF if the address is out of bounds. */
+ * Throws a MemoryAccessException if the address is out of bounds. */
 uint8_t Mbc1::read_rom(uint16_t address) const {
 
     if (address < ROM_BANK_SIZE) {
@@ -31,9 +30,9 @@ uint8_t Mbc1::read_rom(uint16_t address) const {
     }
     
     else {
-        std::cerr << "Invalid MBC1 ROM read at address " << std::hex
-            << address << " - out of bounds." << std::endl;
-        return 0xFF;
+        throw MemoryAccessException(
+            "MBC1 ROM", "out of bounds", address, true
+        );
     }
 }
 
@@ -46,7 +45,8 @@ uint8_t Mbc1::read_rom(uint16_t address) const {
  * - 0x4000-0x5FFF - ram_bank_number
  * Set to the trailing 2 bits of value.
  * - 0x6000-0x7FFF - advanced_banking
- * Set to the trailing bit of value. */
+ * Set to the trailing bit of value. 
+ * Throws a MemoryAccessException if the address is out of bounds. */
 void Mbc1::write_rom(uint16_t address, uint8_t value) {
 
     if (address < IS_RAM_ENABLED_UPPER) {
@@ -67,34 +67,35 @@ void Mbc1::write_rom(uint16_t address, uint8_t value) {
     }
     
     else {
-        std::cerr << "Invalid MBC1 ROM write at address " << std::hex 
-            << address << " - out of bounds." << std::endl;
+        throw MemoryAccessException(
+            "MBC1 ROM", "out of bounds", address, false
+        );
     }
 }
 
 /* Return the 8 bit value in the currently selected RAM bank at the given
  * address.
- * Returns 0xFF if there are no external RAM banks, if RAM is not accessible or
- * if the address is out of bounds. */
+ * Throws a MemoryAccessException if there are no external RAM banks, if RAM is
+ * not accessible or if the address is out of bounds. */
 uint8_t Mbc1::read_ram(uint16_t address) const {
 
     if (!ram_size) {
-        std::cerr << "Invalid MBC1 RAM read at address " << std::hex
-            << address << " - there are no external RAM banks." << std::endl;
-        return 0xFF;
+        throw MemoryAccessException(
+            "MBC1 RAM", "there are no external RAM banks", address, true
+        );
     }
 
     if (!is_ram_enabled) {
-        std::cerr << "Invalid MBC1 RAM read at address " << std::hex
-            << address << " - external RAM is currently not accessible."
-            << std::endl;
-        return 0xFF;
+        throw MemoryAccessException(
+            "MBC1 RAM", "external RAM is currently not accessible",
+            address, true
+        );
     }
 
     if (address >= RAM_BANK_SIZE) {
-        std::cerr << "Invalid MBC1 RAM read at address " << std::hex
-            << address << " - out of bounds." << std::endl;
-        return 0xFF;
+        throw MemoryAccessException(
+            "MBC1 RAM", "out of bounds", address, true
+        );
     }
 
     uint8_t selected_ram_bank = advanced_banking ? ram_bank_number : 0;
@@ -103,27 +104,27 @@ uint8_t Mbc1::read_ram(uint16_t address) const {
 
 /* Write the given 8 bit value to the given address in the currently selected
  * RAM bank.
- * Fails if there are no external RAM banks, if RAM is not accessible or if the
- * address is out of bounds. */
+ * Throws a MemoryAccessException if there are no external RAM banks, if RAM is
+ * not accessible or if the address is out of bounds. */
 void Mbc1::write_ram(uint16_t address, uint8_t value) {
 
     if (!ram_size) {
-        std::cerr << "Invalid MBC1 RAM write at address " << std::hex
-            << address << " - there are no external RAM banks." << std::endl;
-        return;
+        throw MemoryAccessException(
+            "MBC1 RAM", "there are no external RAM banks", address, false
+        );
     }
 
     if (!is_ram_enabled) {
-        std::cerr << "Invalid MBC1 RAM write at address " << std::hex
-            << address << " - external RAM is currently not accessible."
-            << std::endl;
-        return;
+        throw MemoryAccessException(
+            "MBC1 RAM", "external RAM is currently not accessible",
+            address, false
+        );
     }
 
     if (address >= RAM_BANK_SIZE) {
-        std::cerr << "Invalid MBC1 RAM write at address " << std::hex
-            << address << " - out of bounds." << std::endl;
-        return;
+        throw MemoryAccessException(
+            "MBC1 RAM", "out of bounds", address, false
+        );
     }
 
     uint8_t selected_ram_bank = advanced_banking ? ram_bank_number : 0;

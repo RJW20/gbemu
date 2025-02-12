@@ -9,8 +9,7 @@
 class Mbc1 : public BaseMbc {
 public:
     Mbc1(std::ifstream& rom_file, bool has_external_ram) : 
-        BaseMbc(rom_file, has_external_ram) { reset(); };
-    ~Mbc1() override {};
+        BaseMbc(rom_file, has_external_ram) { reset(); }
 
     void reset() override;
 
