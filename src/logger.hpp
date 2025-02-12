@@ -23,18 +23,29 @@ enum class LogLevel : uint8_t {
 template <LogLevel log_level>
 class Logger {
 public:
-    static void error(const std::string& message);
-    static void warning(const std::string& message);
-    static void info(const std::string& message);
+    template <typename T>
+    static void error(const T& message);
+    template <typename MessageGenerator>
+    static void error(MessageGenerator&& message_generator);
+
+    template <typename T>
+    static void warning(const T& message);
+    template <typename MessageGenerator>
+    static void warning(MessageGenerator&& message_generator);
+
+    template <typename T>
+    static void info(const T& message);
+    template <typename MessageGenerator>
+    static void info(MessageGenerator&& message_generator);
 
     template <typename T>
     static void debug(const T& message);
+    template <typename MessageGenerator>
+    static void debug(MessageGenerator&& message_generator);
 
 private:
-    static void create_log_message(
-        const std::string& level,
-        const std::string& message
-    );
+    template <typename T>
+    static void create_log_message(const std::string& level, const T& message);
 
     static std::ofstream debug_file;
     static bool debug_file_opened;
