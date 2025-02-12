@@ -6,7 +6,6 @@
 
 // Initialise variables for a new pixel transfer.
 void PixelTransferrer::new_pixel_transfer() {
-    current_t_cycles = 0;
     lx = 0;
     set_fetcher_source(FetcherSource::BACKGROUND);
     fetcher.wly = 0;

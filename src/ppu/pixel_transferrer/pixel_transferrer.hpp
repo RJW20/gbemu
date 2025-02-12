@@ -44,6 +44,14 @@ private:
     void shift_pixel();
     uint32_t pixel_to_rgba(Pixel pixel) const;
 
+protected:
+    uint8_t lx;
+    Fetcher fetcher;
+    bool window_visible_on_scanline;    // Flag for incrementing fetcher.wly
+
+    void new_pixel_transfer();
+    void pixel_transfer_tick();
+
     /* Singular global palette containing RGBA colour values, with 2 bit index:
      * 0 - Light-green
      * 1 - Green
@@ -52,14 +60,6 @@ private:
     static constexpr std::array<uint32_t, 4> palette = {
         0xE0F8D0FF, 0x88C070FF, 0x346856FF, 0x081820FF
     };
-
-protected:
-    uint8_t lx;
-    Fetcher fetcher;
-    bool window_visible_on_scanline;    // Flag for incrementing fetcher.wly
-
-    void new_pixel_transfer();
-    void pixel_transfer_tick();
 };
 
 #endif
