@@ -34,7 +34,7 @@ void Apu::reset() {
 
 /* Return the 8 bit value in wave RAM at the given address.
  * Throws a MemoryAccessException if the address is out of bounds. */
-uint8_t Apu::read_wave_ram(uint16_t address) const {
+uint8_t Apu::read_wave_ram(const uint8_t& address) const {
 
     if (address >= 0x10) {
         throw MemoryAccessException(
@@ -47,7 +47,7 @@ uint8_t Apu::read_wave_ram(uint16_t address) const {
 
 /* Write the given 8 bit value to the wave RAM at the given address.
  * Throws a MemoryAccessException if the address is out of bounds. */
-void Apu::write_wave_ram(uint16_t address, uint8_t value) {
+void Apu::write_wave_ram(const uint8_t& address, const uint8_t& value) {
 
     if (address >= 0x10) {
         throw MemoryAccessException(

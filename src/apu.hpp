@@ -14,8 +14,8 @@ public:
 
     void reset();
 
-    uint8_t read_wave_ram(uint16_t address) const;
-    void write_wave_ram(uint16_t address, uint8_t value);
+    uint8_t read_wave_ram(const uint8_t& address) const;
+    void write_wave_ram(const uint8_t& address, const uint8_t& value);
 
     // Sound channel 1
     uint8_t nr10() const { return nr10_ & 0x7F; }
