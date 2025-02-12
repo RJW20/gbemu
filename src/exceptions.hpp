@@ -12,8 +12,8 @@ public:
     MemoryAccessException(
         const std::string& location,
         const std::string& reason,
-        const uint8_t& address,
-        const bool& read
+        const uint8_t address,
+        const bool read
     ) : location(location), reason(reason), address(address), read(read) {}
 
     const char* what() const noexcept override { return message().c_str(); }

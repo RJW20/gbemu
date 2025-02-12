@@ -43,8 +43,8 @@ public:
 
     void reset();
     
-    uint8_t read(const uint16_t& address) const;
-    void write(const uint16_t& address, const uint8_t& value);
+    uint8_t read(uint16_t address) const;
+    void write(uint16_t address, uint8_t value);
 
 private:
     Cartridge* cartridge;
@@ -73,13 +73,13 @@ private:
     static constexpr uint16_t IO_REGISTERS_UPPER = 0xFF80;
     static constexpr uint16_t HRAM_UPPER = 0xFFFF;
 
-    uint8_t read_value(const uint16_t& address) const;
-    void write_value(const uint16_t& address, const uint8_t& value);
+    uint8_t read_value(uint16_t address) const;
+    void write_value(uint16_t address, uint8_t value);
 
     std::string read_write_message(
-        const uint16_t& address,
-        const uint8_t& value,
-        const bool& read
+        uint16_t address,
+        uint8_t value,
+        bool read
     ) const;
 };
 

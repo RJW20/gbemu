@@ -13,7 +13,7 @@ void Mmu::reset() {
 
 /* Return the 8 bit value stored at the given address.
  * Returns 0xFF if the value cannot be read. */
-uint8_t Mmu::read(const uint16_t& address) const {
+uint8_t Mmu::read(uint16_t address) const {
 
     uint8_t value;
     try {
@@ -34,7 +34,7 @@ uint8_t Mmu::read(const uint16_t& address) const {
 
 /* Write the given 8 bit value to the given address.
  * Does nothing if the address cannot be written to. */
-void Mmu::write(const uint16_t& address, const uint8_t& value) {
+void Mmu::write(uint16_t address, uint8_t value) {
     try {
         write_value(address, value);
         Log::debug(
@@ -52,7 +52,7 @@ void Mmu::write(const uint16_t& address, const uint8_t& value) {
  * Directs the address to its corresponding component.
  * Throws a MemoryAccessException if the address has no corresponding
  * component. */
-uint8_t Mmu::read_value(const uint16_t& address) const {
+uint8_t Mmu::read_value(uint16_t address) const {
 
     if (address < ROM_UPPER) {
         return cartridge->read_rom(address);
@@ -206,7 +206,7 @@ uint8_t Mmu::read_value(const uint16_t& address) const {
  * Directs the address to its corresponding component.
  * Throws a MemoryAccessException if the address has no corresponding
  * component. */
-void Mmu::write_value(const uint16_t& address, const uint8_t& value) {
+void Mmu::write_value(uint16_t address, const uint8_t value) {
 
     if (address < ROM_UPPER) {
         cartridge->write_rom(address, value);
@@ -400,9 +400,9 @@ void Mmu::write_value(const uint16_t& address, const uint8_t& value) {
 
 // Generate an MMU read or write debug message.
 std::string Mmu::read_write_message(
-    const uint16_t& address,
-    const uint8_t& value,
-    const bool& read
+    uint16_t address,
+    uint8_t value,
+    bool read
 ) const {
     std::ostringstream msg;
     msg << "MMU: ";
