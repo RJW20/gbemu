@@ -6,7 +6,7 @@
 #include "ppu.hpp"
 #include "oam_scanner/oam_object.hpp"
 #include "../interrupt_manager.hpp"
-#include "exceptions.hpp"
+#include "../exceptions.hpp"
 
 /* Clear VRAM, OAM and the pixel_buffer.
  * Set the registers to their post boot ROM values. 

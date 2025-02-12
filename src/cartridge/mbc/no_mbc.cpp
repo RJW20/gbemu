@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <fstream>
 #include "no_mbc.hpp"
-#include "exceptions.hpp"
+#include "../../exceptions.hpp"
 
 /* Return the 8 bit value in the ROM at the given address.
  * Throws a MemoryAccessException if the address is out of bounds. */

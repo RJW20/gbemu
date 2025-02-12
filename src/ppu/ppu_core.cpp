@@ -1,6 +1,6 @@
 #include <cstdint>
 #include "ppu_core.hpp"
-#include "exceptions.hpp"
+#include "../exceptions.hpp"
 
 /* Return the 8 bit value in VRAM at the given address.
  * Throws a MemoryAccessException if the address is out of bounds. */

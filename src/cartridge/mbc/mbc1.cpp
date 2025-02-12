@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <fstream>
 #include "mbc1.hpp"
-#include "exceptions.hpp"
+#include "../../exceptions.hpp"
 
 // Clear RAM and set registers to their default power-on values.
 void Mbc1::reset() {

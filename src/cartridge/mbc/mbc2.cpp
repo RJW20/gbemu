@@ -2,7 +2,7 @@
 #include <fstream>
 #include "mbc2.hpp"
 #include "base_mbc.hpp"
-#include "exceptions.hpp"
+#include "../../exceptions.hpp"
 
 /* Construct BaseMbc, initialise 512 x 4 bit RAM and set the registers to their
  * default values. */

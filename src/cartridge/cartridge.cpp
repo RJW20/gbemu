@@ -2,7 +2,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "logger.hpp"
+#include "../logger.hpp"
 #include "cartridge.hpp"
 #include "mbc/lookup.hpp"
 
