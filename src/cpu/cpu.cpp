@@ -2,11 +2,22 @@
 #include "cpu.hpp"
 #include "../interrupt_manager.hpp"
 
+/* Initialise all the Opcodes.
+ * Reset the CPU to post boot ROM state. */
 Cpu::Cpu(InterruptManager* interrupt_manager, Mmu* mmu) :
     interrupt_manager(interrupt_manager), mmu(mmu) {
-    
     initialise_opcodes_dictionaries();
+    reset();
+}
+
+/* Set the Register to its post boot ROM state.
+ * Set state to Fetch. */
+void Cpu::reset() {
+    reg.reset();
+    locked = 0;
+    set_state(State::FETCH);
     opcode = opcodes[0];
+    interrupt_enable_scheduled = false;
 }
 
 // Carry out 1 t-cycle.
@@ -21,13 +32,13 @@ void Cpu::tick() {
     // Check for interrupts
     if (state != State::INTERRUPT &&
         interrupt_manager->is_interrupt_requested()) {
-        set_interrupt_state();
+        set_state(State::INTERRUPT);
     }
 
     /* Set master interrupt enable if scheduled - done here since EI opcode
      * delays one instruction. */
     if (interrupt_enable_scheduled) {
-        interrupt_manager->ime = true;
+        interrupt_manager->enable_interrupts();
     }
 
     switch(state) {
@@ -48,29 +59,21 @@ void Cpu::tick() {
         case State::STOP:
             return;
     }
-
 }
 
-/* Set the Cpu state to FETCH.
- * Resets cb_prefix. */
-void Cpu::set_fetch_state() {
-    state = State::FETCH;
-    cb_prefix = false;
-}
-
-/* Set the Cpu state to WORK.
- * Resets current_m_cycles and early_exit. */
-void Cpu::set_work_state() {
-    state = State::WORK;
-    current_m_cycles = 0;
-    early_exit = false;
-}
-
-/* Set the Cpu state to INTERRUPT.
- * Resets current_m_cycles. */
-void Cpu::set_interrupt_state() {
-    state = State::INTERRUPT;
-    current_m_cycles = 0;
+/* Set the CPU state to the given State. 
+ * Resets the appropriate variables in preparation for the new State. */
+void Cpu::set_state(State new_state) {
+    state = new_state;
+    switch(state) {
+        case State::FETCH:
+            cb_prefix = false;
+        case State::WORK:
+            current_m_cycles = 0;
+            early_exit = false;
+        case State::INTERRUPT:
+            current_m_cycles = 0;
+    }
 }
 
 /* Carry out 1 FETCH m-cycle.
@@ -95,7 +98,7 @@ void Cpu::fetch_cycle() {
     }
 
     opcode = cb_prefix ? cb_opcodes[opcode_address] : opcodes[opcode_address];
-    set_work_state();
+    set_state(State::WORK);
 }
 
 /* Carry out 1 WORK m-cycle.
@@ -108,17 +111,16 @@ void Cpu::work_cycle() {
     try {
         opcode->steps.at(current_m_cycles++)();
     }
-    catch(const std::out_of_range& ex) {}
+    catch(const std::out_of_range& e) {}
 
     if (early_exit) {
-        set_fetch_state();
+        set_state(State::FETCH);
         return;
     }
 
     if (current_m_cycles * 4 == opcode->t_cycles) {
-        set_fetch_state();
+        set_state(State::FETCH);
         fetch_cycle(); // Fetch in same m-cycle as last working m-cycle
-        return;
     }
 }
 
@@ -137,11 +139,11 @@ void Cpu::interrupt_cycle() {
         case 1:
             interrupt_type = interrupt_manager->get_enabled();
             if (interrupt_type == InterruptType::NONE) {
-                set_fetch_state();
+                set_state(State::FETCH);
                 return;
             }
             interrupt_manager->acknowledge(interrupt_type);
-            interrupt_manager->ime = false;
+            interrupt_manager->disable_interrupts();
             break;
 
         case 2:
@@ -155,7 +157,7 @@ void Cpu::interrupt_cycle() {
 
         case 4:
             reg.pc = interrupt_manager->get_handler_address(interrupt_type);
-            set_fetch_state();
+            set_state(State::FETCH);
             return;
     }
 

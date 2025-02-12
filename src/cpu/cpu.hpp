@@ -14,8 +14,8 @@
 class Cpu {
 public:
     Cpu(InterruptManager* interrupt_manager, Mmu* mmu);
-    ~Cpu() {};
 
+    void reset();
     void tick();
 
 private:
@@ -23,23 +23,20 @@ private:
     InterruptManager* interrupt_manager;
     Mmu* mmu;
 
-    // Cpu state
+    // Cpu states
     enum class State {FETCH, WORK, INTERRUPT, HALT, STOP};
-    void set_fetch_state();
-    void set_work_state();
-    void set_interrupt_state();
+    void set_state(State new_state);
 
     // Main loop variables
-    uint8_t locked = 0;
-    State state = State::FETCH;
-    bool cb_prefix = false;
+    uint8_t locked;
+    State state;
+    bool cb_prefix;
     Opcode* opcode;
     uint8_t current_m_cycles;
-    bool early_exit;
-    bool interrupt_enable_scheduled = false;
+    bool interrupt_enable_scheduled;
     InterruptType interrupt_type;
 
-    // Main loop functions
+    // Cycle methods for each state
     void fetch_cycle();
     void work_cycle();
     void interrupt_cycle();
@@ -53,6 +50,7 @@ private:
     // Variables for the opcodes to manipulate
     uint8_t z8;
     uint16_t z16;
+    bool early_exit;
 
     // Basis of cpu functionality
     void add(uint8_t value);
