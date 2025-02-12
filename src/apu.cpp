@@ -2,8 +2,8 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include "logger.hpp"
 #include "apu.hpp"
+#include "exceptions.hpp"
 
 // Set the registers to their post boot ROM values and clear the wave RAM.
 void Apu::reset() {
@@ -33,24 +33,32 @@ void Apu::reset() {
 }
 
 /* Return the 8 bit value in wave RAM at the given address.
- * Returns 0xFF if the address is out of bounds. */
+ * Throws a MemoryAccessException if the address is out of bounds. */
 uint8_t Apu::read_wave_ram(uint16_t address) const {
 
     if (address >= 0x10) {
-        Log::warning("Invalid APU wave RAM read - out of bounds.");
-        return 0xFF;
+        throw MemoryAccessException(
+            "APU wave RAM",
+            true,
+            address,
+            "out of bounds"
+        );
     }
 
     return wave_ram[address];
 }
 
 /* Write the given 8 bit value to the wave RAM at the given address.
- * Fails if the address is out of bounds. */
+ * Throws a MemoryAccessException if the address is out of bounds. */
 void Apu::write_wave_ram(uint16_t address, uint8_t value) {
 
     if (address >= 0x10) {
-        Log::warning("Invalid APU wave RAM write - out of bounds.");
-        return;
+        throw MemoryAccessException(
+            "APU wave RAM",
+            false,
+            address,
+            "out of bounds"
+        );
     }
 
     wave_ram[address] = value;
