@@ -8,6 +8,17 @@
 #include <string>
 #include <fstream>
 
+// Overload << for all objects that have a representation method.
+template <typename T>
+concept HasRepresentation = requires(T t) {
+    { t.representation() } -> std::same_as<std::string>;
+};
+template <HasRepresentation T>
+std::ostream& operator<<(std::ostream& os, const T& t) {
+    os << t.representation();
+    return os;
+}
+
 /* LogLevel
  * Enum containing the 5 levels of detail the Logger can output.
  * Each level includes all those less than it. */
@@ -21,8 +32,8 @@ enum class LogLevel : uint8_t {
 
 /* Logger 
  * Manages logging with a compile-time LogLevel for maximum perfomance.
- * If enabled, DEBUG messages get logged to debug.txt. All other logging is
- * outputted to std::cout. */
+ * If enabled, DEBUG messages get logged to debug.txt. All other messages are
+ * logged to std::cout. */
 template <LogLevel log_level>
 class Logger {
 public:
@@ -43,8 +54,8 @@ public:
     >
     static void error(Func&& message_generator) {
         if constexpr (log_level >= LogLevel::ERROR) {
-            std::cout << "[ERROR]: "
-                << std::forward<Func>(message_generator)() << std::endl;
+            std::cout << "[ERROR]: " << std::forward<Func>(message_generator)()
+                << std::endl;
         }
     }
 
@@ -85,8 +96,8 @@ public:
     >
     static void info(Func&& message_generator) {
         if constexpr (log_level >= LogLevel::INFO) {
-            std::cout << "[INFO]: "
-                << std::forward<Func>(message_generator)() << std::endl;
+            std::cout << "[INFO]: " << std::forward<Func>(message_generator)()
+                << std::endl;
         }
     }
 

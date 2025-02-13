@@ -14,12 +14,14 @@
 #include "cpu/cpu.hpp"
 #include "screen.hpp"
 
+// GameBoy
 class GameBoy {
 public:
-    GameBoy(std::string rom_path) : cartridge(rom_path) { dma.set_mmu(&mmu); };
-    ~GameBoy() {};
+    GameBoy(std::string rom_path) : cartridge(rom_path) { dma.set_mmu(&mmu); }
 
     void run();
+
+    std::string representation() const;
 
 private:
     Cartridge cartridge;

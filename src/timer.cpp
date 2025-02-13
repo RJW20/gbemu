@@ -1,7 +1,6 @@
 #include <cstdint>
 #include <string>
 #include <sstream>
-#include <fstream>
 #include "timer.hpp"
 #include "interrupt_manager.hpp"
 
@@ -77,10 +76,4 @@ std::string Timer::representation() const {
         << " TMA = " << static_cast<int>(tma())
         << " TAC = " << static_cast<int>(tac());
     return repr.str();
-}
-
-// Output a string representation of the Timer to the given ostream.
-std::ostream& operator<<(std::ostream& os, const Timer& timer) {
-    os << timer.representation();
-    return os;
 }

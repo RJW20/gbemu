@@ -177,9 +177,3 @@ std::string Ppu::representation() const {
         << " obp1 = " << static_cast<int>(obp1);
     return repr.str();
 }
-
-// Output a string representation of the PPU to the given ostream.
-std::ostream& operator<<(std::ostream& os, const Ppu& ppu) {
-    os << ppu.representation();
-    return os;
-}

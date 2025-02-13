@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include <SDL2/SDL.h>
 #include "logger.hpp"
@@ -11,7 +10,7 @@ int main(int argc, char** argv) {
         Log::info("Usage: gbemu <ROM file>");
     }
 
-    GameBoy gameboy((std::string) argv[1]);
+    GameBoy gameboy(static_cast<std::string>(argv[1]));
     gameboy.run();
 
     return 0;

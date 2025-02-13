@@ -185,12 +185,6 @@ std::string Cpu::representation() const {
     return repr.str();
 }
 
-// Output a string representation of the Cpu to the given ostream.
-std::ostream& operator<<(std::ostream& os, const Cpu& cpu) {
-    os << cpu.representation();
-    return os;
-}
-
 // Initialise both opcode dictionaries.
 void Cpu::initialise_opcodes_dictionaries() {
     

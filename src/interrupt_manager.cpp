@@ -2,7 +2,6 @@
 #include <utility>
 #include <string>
 #include <sstream>
-#include <fstream>
 #include "logger.hpp"
 #include "interrupt_manager.hpp"
 
@@ -70,13 +69,4 @@ std::string InterruptManager::representation() const {
         << " IE = " << static_cast<int>(ie())
         << " IF = " << static_cast<int>(_if());
     return repr.str();
-}
-
-// Output a string representation of the InterruptManager to the given ostream.
-std::ostream& operator<<(
-    std::ostream& os,
-    const InterruptManager& interrupt_manager
-) {
-    os << interrupt_manager.representation();
-    return os;
 }

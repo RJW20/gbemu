@@ -85,9 +85,3 @@ std::string Apu::representation() const {
         << " NR52 = " << static_cast<int>(nr52());
     return repr.str();
 }
-
-// Output a string representation of the APU to the given ostream.
-std::ostream& operator<<(std::ostream& os, const Apu& apu) {
-    os << apu.representation();
-    return os;
-}

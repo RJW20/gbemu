@@ -1,13 +1,13 @@
 #include <fstream>
 #include "logger.hpp"
 
-template <LogLevel Level>
-std::ofstream Logger<Level>::debug_file;
+template <LogLevel log_level>
+std::ofstream Logger<log_level>::debug_file;
 
-template <LogLevel Level>
-bool Logger<Level>::debug_file_opened = false;
+template <LogLevel log_level>
+bool Logger<log_level>::debug_file_opened = false;
 
-/* Open debug.txt for logging DEBUG messages. */
+// Open debug.txt for logging DEBUG messages.
 template <LogLevel log_level>
 void Logger<log_level>::open_debug_file() {
     if constexpr (log_level >= LogLevel::DEBUG) {

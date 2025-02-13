@@ -1,7 +1,6 @@
 #include <cstdint>
 #include <string>
 #include <sstream>
-#include <fstream>
 #include "dma.hpp"
 #include "mmu.hpp"
 
@@ -59,10 +58,4 @@ std::string Dma::representation() const {
     repr << "DMA:" << std::hex
         << " source_address = " << static_cast<int>(source_address());
     return repr.str();
-}
-
-// Output a string representation of the DMA to the given ostream.
-std::ostream& operator<<(std::ostream& os, const Dma& dma) {
-    os << dma.representation();
-    return os;
 }
