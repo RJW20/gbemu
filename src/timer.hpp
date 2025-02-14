@@ -20,7 +20,7 @@ public:
     uint8_t div() const { return system_counter >> 8; }
     uint8_t tima() const { return tima_; }
     uint8_t tma() const { return tma_; }
-    uint8_t tac() const { return tac_; }
+    uint8_t tac() const { return tac_ | 0xF8; }
     void set_div() { system_counter = 0; }
     void set_tima(uint8_t value);
     void set_tma(uint8_t value);

@@ -35,7 +35,7 @@ void Timer::tick() {
     }
     previous_sc_bit = current_sc_bit;
 
-    // Send interrupt request if tima_ overflowed last cycle
+    // Send interrupt request if tima_ overflowed last m-cycle
     if (tima_overflow && ticks_since_overflow++ == 4) {
         tima_ = tma_;
         interrupt_manager->request(InterruptType::TIMER);
@@ -71,7 +71,7 @@ void Timer::set_tma(uint8_t value) {
 std::string Timer::representation() const {
     std::ostringstream repr;
     repr << "Timer:" << std::hex
-        << " DIV  = " << static_cast<int>(div())
+        << " DIV = " << static_cast<int>(div())
         << " TIMA = " << static_cast<int>(tima())
         << " TMA = " << static_cast<int>(tma())
         << " TAC = " << static_cast<int>(tac());
