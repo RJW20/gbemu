@@ -33,7 +33,7 @@ void Cpu::tick() {
     locked = 0;
 
     // Check for interrupts
-    if (state != State::INTERRUPT &&
+    if ((state == State::FETCH || state == State::HALT) &&
         interrupt_manager->is_interrupt_requested()) {
         set_state(State::INTERRUPT);
     }
