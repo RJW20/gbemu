@@ -176,8 +176,8 @@ std::string Cpu::representation() const {
         << " B = " << static_cast<int>(reg.b)
         << " C = " << static_cast<int>(reg.c)
         << " D = " << static_cast<int>(reg.d)
-        << " E = " << std::bitset<4>(reg.f() >> 4)
-        << " F = " << static_cast<int>(reg.a)
+        << " E = " << static_cast<int>(reg.e)
+        << " F = " << std::bitset<4>(reg.f() >> 4)
         << " H = " << static_cast<int>(reg.h)
         << " L = " << static_cast<int>(reg.l)
         << " SP = " << reg.sp
