@@ -22,7 +22,7 @@ public:
 
     // (Partially) read-only registers access
     uint8_t lcdc() const { return lcdc_; }
-    uint8_t ly() const { return ly_; }
+    uint8_t ly() const;
     uint8_t stat() const;
     void set_lcdc(uint8_t value);
     void set_ly(uint8_t value) const;

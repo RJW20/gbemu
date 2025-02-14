@@ -136,6 +136,16 @@ void Ppu::set_mode(Mode new_mode) {
     }
 }
 
+/* Return ly_. 
+ * On the final scanline of VBLANK, for t-cycles 4-456 ly reads as 0. */
+uint8_t Ppu::ly() const {
+    if (ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES - 1 &&
+        mode == Mode::VBLANK && current_t_cycles > 4) {
+            return 0;
+        }
+    return ly_;
+}
+
 /* Return the LCD status.
  * Bits 7-3 are the leading 5 bits of stat_.
  * Bit 2 is set if ly_ = lyc or clear otherwise.
@@ -163,7 +173,7 @@ void Ppu::set_ly(uint8_t value) const {
 // Return a string representation of the PPU.
 std::string Ppu::representation() const {
     std::ostringstream repr;
-    repr << "PPU: " << std::hex
+    repr << "PPU:" << std::hex
         << " LCDC = " << static_cast<int>(lcdc())
         << " LY = " << static_cast<int>(ly())
         << " LYC = " << static_cast<int>(lyc)
@@ -171,9 +181,9 @@ std::string Ppu::representation() const {
         << " SCY = " << static_cast<int>(scy)
         << " SCX = " << static_cast<int>(scx)
         << " WY = " << static_cast<int>(wy)
-        << " WX = " << static_cast<int>(wx)
-        << " BGP = " << static_cast<int>(bgp)
-        << " obp0 = " << static_cast<int>(obp0)
-        << " obp1 = " << static_cast<int>(obp1);
+        << " WX = " << static_cast<int>(wx);
+        //<< " BGP = " << static_cast<int>(bgp)
+        //<< " OBP0 = " << static_cast<int>(obp0)
+        //<< " OBP1 = " << static_cast<int>(obp1);
     return repr.str();
 }
