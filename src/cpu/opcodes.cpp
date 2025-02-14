@@ -70,7 +70,7 @@ Opcode Cpu::opcode_0x08_generator() {
     std::vector<Step> steps;
     steps.push_back([this]() { z8 = mmu->read(reg.pc++); });
     steps.push_back([this]() { z16 = (mmu->read(reg.pc++) << 8) | z8; });
-    steps.push_back([this]() { mmu->write(z16, reg.sp & 0xF); });
+    steps.push_back([this]() { mmu->write(z16, reg.sp & 0xFF); });
     steps.push_back([this]() { mmu->write((uint16_t) (z16 + 1), reg.sp >> 8); });
     return Opcode(0x08, "LD (a16), SP", 3, 20, steps);
 }

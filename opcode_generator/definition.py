@@ -138,7 +138,7 @@ def ld(opcode: Opcode) -> str:
                     return (
                         step("z8 = mmu->read(reg.pc++)") +
                         step("z16 = (mmu->read(reg.pc++) << 8) | z8") +
-                        step("mmu->write(z16, reg.sp & 0xF)") +
+                        step("mmu->write(z16, reg.sp & 0xFF)") +
                         step("mmu->write((uint16_t) (z16 + 1), reg.sp >> 8)")
                     )
                 
