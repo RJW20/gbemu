@@ -68,7 +68,7 @@ void Ppu::tick() {
 
         case Mode::HBLANK:
             if (current_t_cycles == SCANLINE_T_CYCLES) {
-                if (++ly_== SCREEN_HEIGHT) {
+                if (++ly_ == SCREEN_HEIGHT) {
                     set_mode(Mode::VBLANK); 
                 }
                 else {
@@ -120,6 +120,7 @@ void Ppu::set_mode(Mode new_mode) {
             if (hblank_interrupt_requested()) {
                 interrupt_manager->request(InterruptType::STAT);
             }
+            break;
 
         case Mode::VBLANK:
             current_t_cycles = 0;
