@@ -2,6 +2,7 @@
 #include <utility>
 #include <string>
 #include <sstream>
+#include <bitset>
 #include "logger.hpp"
 #include "interrupt_manager.hpp"
 
@@ -66,7 +67,7 @@ std::string InterruptManager::representation() const {
     std::ostringstream repr;
     repr << "Interrupt Manager:" << std::hex
         << " IME = " << static_cast<int>(ime)
-        << " IE = " << static_cast<int>(ie())
-        << " IF = " << static_cast<int>(_if());
+        << " IE = " << std::bitset<5>(ie())
+        << " IF = " << std::bitset<5>(_if());
     return repr.str();
 }
