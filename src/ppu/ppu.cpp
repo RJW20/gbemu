@@ -140,7 +140,7 @@ void Ppu::set_mode(Mode new_mode) {
  * On the final scanline of VBLANK, for t-cycles 4-456 ly reads as 0. */
 uint8_t Ppu::ly() const {
     if (ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES - 1 &&
-        mode == Mode::VBLANK && current_t_cycles > 4) {
+        mode == Mode::VBLANK && current_t_cycles > 3) {
             return 0;
         }
     return ly_;
@@ -181,9 +181,9 @@ std::string Ppu::representation() const {
         << " SCY = " << static_cast<int>(scy)
         << " SCX = " << static_cast<int>(scx)
         << " WY = " << static_cast<int>(wy)
-        << " WX = " << static_cast<int>(wx);
-        //<< " BGP = " << static_cast<int>(bgp)
-        //<< " OBP0 = " << static_cast<int>(obp0)
-        //<< " OBP1 = " << static_cast<int>(obp1);
+        << " WX = " << static_cast<int>(wx)
+        << " BGP = " << static_cast<int>(bgp)
+        << " OBP0 = " << static_cast<int>(obp0)
+        << " OBP1 = " << static_cast<int>(obp1);
     return repr.str();
 }
