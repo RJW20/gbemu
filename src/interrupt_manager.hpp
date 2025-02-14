@@ -31,7 +31,8 @@ public:
 
     void request(InterruptType interruption);
     void acknowledge(InterruptType interruption);
-    bool is_interrupt_requested()const;
+    bool interrupts_enabled() const { return ime; }
+    bool interrupt_requested() const { return ie_ & if_; }
     InterruptType get_enabled() const;
     uint8_t get_handler_address(InterruptType interruption);
 

@@ -31,12 +31,6 @@ void InterruptManager::acknowledge(InterruptType interruption) {
     if_ &= ~(1 << std::to_underlying(interruption));
 }
 
-/* Return true if interrupts are enabled and a specific interrupt is
- * requested. */
-bool InterruptManager::is_interrupt_requested() const {
-    return ime && (ie_ & if_);
-}
-
 /* Return the bit corresponding to the enabled interrupt.
  * Interrupts with lower bit value have higher priority.
  * Returns -1 if no interrupts are enabled. */

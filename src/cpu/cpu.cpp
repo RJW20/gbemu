@@ -32,16 +32,9 @@ void Cpu::tick() {
     }
     locked = 0;
 
-    // Check for interrupts
-    if ((state == State::FETCH || state == State::HALT) &&
-        interrupt_manager->is_interrupt_requested()) {
+    // During HALT IME does not need to be set for interrupts to occur
+    if (state == State::HALT && interrupt_manager->interrupt_requested()) {
         set_state(State::INTERRUPT);
-    }
-
-    /* Set master interrupt enable if scheduled - done here since EI opcode
-     * delays one instruction. */
-    if (interrupt_enable_scheduled) {
-        interrupt_manager->enable_interrupts();
     }
 
     switch(state) {
@@ -71,11 +64,14 @@ void Cpu::set_state(State new_state) {
     switch(state) {
         case State::FETCH:
             cb_prefix = false;
+            break;
         case State::WORK:
             current_m_cycles = 0;
             early_exit = false;
+            break;
         case State::INTERRUPT:
             current_m_cycles = 0;
+            break;
     }
 }
 
@@ -122,8 +118,23 @@ void Cpu::work_cycle() {
     }
 
     if (current_m_cycles * 4 == opcode->t_cycles) {
-        set_state(State::FETCH);
-        fetch_cycle(); // Fetch in same m-cycle as last working m-cycle
+
+        /* Set master interrupt enable if scheduled - done here since EI effect
+         * delays one opcode. */
+        if (interrupt_enable_scheduled && opcode->name != "EI") {
+            interrupt_manager->enable_interrupts();
+            interrupt_enable_scheduled = false;
+        }
+        
+        // Set next state
+        if (interrupt_manager->interrupts_enabled() &&
+            interrupt_manager->interrupt_requested()) {
+            set_state(State::INTERRUPT);
+        }
+        else {
+            set_state(State::FETCH);
+            fetch_cycle(); // Fetch in same m-cycle as last working m-cycle
+        }
     }
 }
 
@@ -164,7 +175,7 @@ void Cpu::interrupt_cycle() {
             return;
     }
 
-    current_m_cycles += 1;
+    current_m_cycles++;
 }
 
 // Return a string representation of the CPU.
