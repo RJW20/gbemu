@@ -68,7 +68,7 @@ private:
     uint8_t increment(uint8_t value);
     uint8_t decrement(uint8_t value);
     void add_hl(uint16_t value);
-    uint16_t add_signed8(uint16_t value16, int8_t value8);
+    uint16_t add_signed8(uint16_t value16, uint8_t value8);
     uint8_t swap(uint8_t value);
     void decimal_adjust_accumulator();
     void complement_accumulator();

@@ -183,7 +183,7 @@ def ld(opcode: Opcode) -> str:
                 case "SP+r8":
                     return (
                         step("z8 = mmu->read(reg.pc++)") + 
-                        step("reg.set_hl(add_signed8(reg.sp, (int8_t) z8))")
+                        step("reg.set_hl(add_signed8(reg.sp, z8))")
                     )
                 
                 case _:
@@ -351,7 +351,7 @@ def add(opcode: Opcode) -> str:
             case "r8":
                 return (
                     step("z8 = mmu->read(reg.pc++)") +
-                    step("z16 = add_signed8(reg.sp, (int8_t) z8)") +
+                    step("z16 = add_signed8(reg.sp, z8)") +
                     step("reg.sp = z16")
                 )
 

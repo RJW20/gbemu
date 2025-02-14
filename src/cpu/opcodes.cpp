@@ -1750,7 +1750,7 @@ Opcode Cpu::opcode_0xe7_generator() {
 Opcode Cpu::opcode_0xe8_generator() {
     std::vector<Step> steps;
     steps.push_back([this]() { z8 = mmu->read(reg.pc++); });
-    steps.push_back([this]() { z16 = add_signed8(reg.sp, (int8_t) z8); });
+    steps.push_back([this]() { z16 = add_signed8(reg.sp, z8); });
     steps.push_back([this]() { reg.sp = z16; });
     return Opcode(0xe8, "ADD SP, r8", 2, 16, steps);
 }
@@ -1853,7 +1853,7 @@ Opcode Cpu::opcode_0xf7_generator() {
 Opcode Cpu::opcode_0xf8_generator() {
     std::vector<Step> steps;
     steps.push_back([this]() { z8 = mmu->read(reg.pc++); });
-    steps.push_back([this]() { reg.set_hl(add_signed8(reg.sp, (int8_t) z8)); });
+    steps.push_back([this]() { reg.set_hl(add_signed8(reg.sp, z8)); });
     return Opcode(0xf8, "LD HL, SP+r8", 2, 12, steps);
 }
 
