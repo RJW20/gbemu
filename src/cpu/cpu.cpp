@@ -5,6 +5,8 @@
 #include "cpu.hpp"
 #include "../interrupt_manager.hpp"
 
+#include "../logger.hpp"
+
 /* Initialise all the Opcodes.
  * Reset the CPU to post boot ROM state. */
 Cpu::Cpu(InterruptManager* interrupt_manager, Mmu* mmu) :
@@ -32,11 +34,6 @@ void Cpu::tick() {
     }
     locked = 0;
 
-    // During HALT IME does not need to be set for interrupts to occur
-    if (state == State::HALT && interrupt_manager->interrupt_requested()) {
-        set_state(State::INTERRUPT);
-    }
-
     switch(state) {
 
         case State::FETCH:
@@ -52,6 +49,9 @@ void Cpu::tick() {
             break;
 
         case State::HALT:
+            halt_cycle();
+            break;
+
         case State::STOP:
             return;
     }
@@ -97,6 +97,7 @@ void Cpu::fetch_cycle() {
     }
 
     opcode = cb_prefix ? cb_opcodes[opcode_address] : opcodes[opcode_address];
+    Log::debug(*this);
     set_state(State::WORK);
 }
 
@@ -176,6 +177,13 @@ void Cpu::interrupt_cycle() {
     }
 
     current_m_cycles++;
+}
+
+// Set to FETCH state if an interrupt is requested (regardless of IME).
+void Cpu::halt_cycle() {
+    if (state == State::HALT && interrupt_manager->interrupt_requested()) {
+        set_state(State::FETCH);
+    }
 }
 
 // Return a string representation of the CPU.

@@ -43,6 +43,7 @@ private:
     void fetch_cycle();
     void work_cycle();
     void interrupt_cycle();
+    void halt_cycle();
 
     // Opcode dictionaries
     std::unordered_map<uint8_t, Opcode*> opcodes;
