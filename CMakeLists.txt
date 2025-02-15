@@ -17,11 +17,11 @@ set(SOURCES
     src/timer.cpp
     src/serial.cpp
     src/joypad.cpp
-    src/dma.cpp
     src/ppu/ppu_core.cpp
     src/ppu/oam_scanner/oam_scanner.cpp
     src/ppu/pixel_transferrer/pixel_transferrer.cpp
     src/ppu/ppu.cpp
+    src/dma.cpp
     src/apu.cpp
     src/mmu.cpp
     src/exceptions.cpp
