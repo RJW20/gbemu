@@ -38,7 +38,7 @@ uint8_t PpuCore::read_oam(uint16_t address) const {
         );
     }
 
-    return vram[address];
+    return oam[address];
 }
 
 /* Write the given 8 bit value to the OAM at the given address.
