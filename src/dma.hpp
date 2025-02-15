@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include "ppu/ppu.hpp"
 
 class Mmu;
 
@@ -11,7 +12,7 @@ class Mmu;
  * main program. */
 class Dma {
 public:
-    Dma() { reset(); }
+    Dma(Ppu* ppu) : ppu(ppu) { reset(); }
 
     void set_mmu(Mmu* _mmu);
 
@@ -26,6 +27,7 @@ public:
     std::string representation() const;
 
 private:
+    Ppu* ppu;
     Mmu* mmu;
 
     uint8_t locked;
@@ -35,7 +37,6 @@ private:
 
     // The 16 bit address to start the transfer from
     uint16_t _source_address;
-    static constexpr uint16_t OAM_ADDRESS = 0xFE00;
 };
 
 #endif

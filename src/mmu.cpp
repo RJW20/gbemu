@@ -234,6 +234,11 @@ void Mmu::write_value(uint16_t address, const uint8_t value) {
     }
 
     else if (address < OAM_UPPER) {
+        if (dma->transfer_in_progress) {
+            throw MemoryAccessException(
+                "OAM", "not writable during DMA", address, false
+            );
+        }
         ppu->write_oam(address - ECHO_RAM_UPPER, value);
     }
 

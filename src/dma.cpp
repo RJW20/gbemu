@@ -34,8 +34,8 @@ void Dma::tick() {
         return;
     }
 
-    mmu->write(
-        OAM_ADDRESS + current_m_cycles - DELAY_M_CYCLES,
+    ppu->write_oam(
+        current_m_cycles - DELAY_M_CYCLES,
         mmu->read(_source_address + current_m_cycles - DELAY_M_CYCLES)
     );
     

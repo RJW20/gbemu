@@ -7,8 +7,8 @@
 #include "timer.hpp"
 #include "serial.hpp"
 #include "joypad.hpp"
-#include "dma.hpp"
 #include "ppu/ppu.hpp"
+#include "dma.hpp"
 #include "apu.hpp"
 #include "mmu.hpp"
 #include "cpu/cpu.hpp"
@@ -29,11 +29,11 @@ private:
     Timer timer{&interrupt_manager};
     Serial serial{&interrupt_manager};
     Joypad joypad{&interrupt_manager};
-    Dma dma;
     Ppu ppu{&interrupt_manager};
+    Dma dma{&ppu};
     Apu apu;
     Mmu mmu{
-        &cartridge, &interrupt_manager, &timer, &serial, &joypad, &dma, &ppu,
+        &cartridge, &interrupt_manager, &timer, &serial, &joypad, &ppu, &dma,
         &apu
     };
     Cpu cpu{&interrupt_manager, &mmu};

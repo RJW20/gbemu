@@ -9,8 +9,8 @@
 #include "timer.hpp"
 #include "serial.hpp"
 #include "joypad.hpp"
-#include "dma.hpp"
 #include "ppu/ppu.hpp"
+#include "dma.hpp"
 #include "apu.hpp"
 
 /* Memory Management Unit
@@ -34,11 +34,11 @@ public:
         Timer* timer,
         Serial* serial,
         Joypad* joypad,
-        Dma* dma,
         Ppu* ppu,
+        Dma* dma,
         Apu* apu
     ) : cartridge(cartridge), interrupt_manager(interrupt_manager),
-        timer(timer), serial(serial), joypad(joypad), dma(dma), ppu(ppu),
+        timer(timer), serial(serial), joypad(joypad), ppu(ppu), dma(dma),
         apu(apu) { reset(); }
 
     void reset();
@@ -52,8 +52,8 @@ private:
     Timer* timer;
     Serial* serial;
     Joypad* joypad;
-    Dma* dma;
     Ppu* ppu;
+    Dma* dma;
     Apu* apu;
 
     static constexpr uint16_t WRAM_SIZE = 0x2000;    // 8 KB
