@@ -5,8 +5,6 @@
 #include "cpu.hpp"
 #include "../interrupt_manager.hpp"
 
-#include "../logger.hpp"
-
 /* Initialise all the Opcodes.
  * Reset the CPU to post boot ROM state. */
 Cpu::Cpu(InterruptManager* interrupt_manager, Mmu* mmu) :
@@ -97,7 +95,8 @@ void Cpu::fetch_cycle() {
     }
 
     opcode = cb_prefix ? cb_opcodes[opcode_address] : opcodes[opcode_address];
-    Log::debug(*this);
+    opcode_m_cycles = cb_prefix ?
+        opcode->t_cycles / 4 - 1 : opcode->t_cycles / 4; 
     set_state(State::WORK);
 }
 
@@ -118,7 +117,7 @@ void Cpu::work_cycle() {
         return;
     }
 
-    if (current_m_cycles * 4 == opcode->t_cycles) {
+    if (current_m_cycles == opcode_m_cycles) {
 
         /* Set master interrupt enable if scheduled - done here since EI effect
          * delays one opcode. */

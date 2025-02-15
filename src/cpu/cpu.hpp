@@ -35,6 +35,7 @@ private:
     State state;
     bool cb_prefix;
     Opcode* opcode;
+    uint8_t opcode_m_cycles;
     uint8_t current_m_cycles;
     bool interrupt_enable_scheduled;
     InterruptType interrupt_type;
