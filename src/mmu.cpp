@@ -225,9 +225,7 @@ void Mmu::write_value(uint16_t address, const uint8_t value) {
     }
 
     else if (address < ECHO_RAM_UPPER) {
-        throw MemoryAccessException(
-            "MMU", "echo RAM cannot be written to", address, true
-        );
+        wram[address - WRAM_UPPER] = value;
     }
 
     else if (address < OAM_UPPER) {
