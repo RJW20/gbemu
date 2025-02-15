@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <string>
 #include <sstream>
+#include <bitset>
 #include "timer.hpp"
 #include "interrupt_manager.hpp"
 
@@ -20,26 +21,26 @@ void Timer::tick() {
 
     system_counter += 1;
 
-    if (!timer_is_enabled()) {
-        return;
-    }
-
-    // Increment tima_ based on the system_counter bit specified in tac_
     const bool current_sc_bit =
-        (system_counter >> tac_clock_select.at(tac_ & 0x3)) & 1;
-    if (previous_sc_bit && !current_sc_bit) {   // falling edge
-        if (++tima_ == 0) {
-            tima_overflow = true;
-            ticks_since_overflow = 0;
-        }
+        (system_counter >> tac_clock_select.at(tac_ & 3)) & 1;
+    if (timer_is_enabled() && previous_sc_bit && !current_sc_bit) {
+        increase_tima();
     }
     previous_sc_bit = current_sc_bit;
 
     // Send interrupt request if tima_ overflowed last m-cycle
-    if (tima_overflow && ticks_since_overflow++ == 4) {
+    if (tima_overflow && ++ticks_since_overflow == 4) {
         tima_ = tma_;
         interrupt_manager->request(InterruptType::TIMER);
         tima_overflow = false;
+    }
+}
+
+// Increment tima_ and check for an overflow.
+void Timer::increase_tima() {
+    if (++tima_ == 0) {
+        tima_overflow = true;
+        ticks_since_overflow = 0;
     }
 }
 
@@ -67,11 +68,37 @@ void Timer::set_tma(uint8_t value) {
     }
 }
 
+/* Set tac_ to the trailing 3 bits in the given value.
+ * If this write disables the timer and the specified system_counter bit is
+ * set, tima_ will increase.
+ * If the specified system_counter bit changes then we need to check for
+ * falling edge between the old bit and new bit and update tima_
+ * accordingly. */
+void Timer::set_tac(uint8_t value) {
+
+    const bool previous_timer_enabled = timer_is_enabled();
+    const uint8_t previous_clock_select = tac_ & 3;
+
+    tac_ = value & 7;
+
+    if (previous_timer_enabled && !timer_is_enabled() && previous_sc_bit) {
+        increase_tima();
+    }
+    else if (previous_clock_select != (tac_ & 3)) {
+        const bool current_sc_bit =
+            (system_counter >> tac_clock_select.at(tac_ & 3)) & 1;
+        if (previous_sc_bit && !current_sc_bit) {
+            increase_tima();
+        }
+        previous_sc_bit = current_sc_bit;
+    }
+}
+
 // Return a string representation of the Timer.
 std::string Timer::representation() const {
     std::ostringstream repr;
     repr << "Timer:" << std::hex
-        << " DIV = " << static_cast<int>(div())
+        << " System Counter = " << std::bitset<16>(system_counter)
         << " TIMA = " << static_cast<int>(tima())
         << " TMA = " << static_cast<int>(tma())
         << " TAC = " << static_cast<int>(tac());

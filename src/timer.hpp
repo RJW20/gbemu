@@ -16,6 +16,8 @@ public:
 
     void reset();
     void tick();
+
+    void increase_tima();
     
     uint8_t div() const { return system_counter >> 8; }
     uint8_t tima() const { return tima_; }
@@ -24,7 +26,7 @@ public:
     void set_div() { system_counter = 0; }
     void set_tima(uint8_t value);
     void set_tma(uint8_t value);
-    void set_tac(uint8_t value) { tac_ = value & 7; }
+    void set_tac(uint8_t value);
 
     std::string representation() const;
 
