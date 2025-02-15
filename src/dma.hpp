@@ -20,7 +20,7 @@ public:
 
     bool transfer_in_progress;
 
-    uint8_t source_address() const;
+    uint8_t source_address() const { return _source_address >> 8; }
     void set_source_address(uint8_t value);
 
     std::string representation() const;
@@ -30,10 +30,11 @@ private:
 
     uint8_t locked;
     uint8_t current_m_cycles;
-    static constexpr uint16_t TOTAL_TRANSFER_M_CYCLES = 160;
+    static constexpr uint8_t DELAY_M_CYCLES = 2;
+    static constexpr uint8_t TOTAL_TRANSFER_M_CYCLES = 0xA0;
 
     // The 16 bit address to start the transfer from
-    uint8_t _source_address;
+    uint16_t _source_address;
     static constexpr uint16_t OAM_ADDRESS = 0xFE00;
 };
 

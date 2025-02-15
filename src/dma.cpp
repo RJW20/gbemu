@@ -28,20 +28,20 @@ void Dma::tick() {
     }
     locked = 0;
 
-    mmu->write(
-        OAM_ADDRESS + current_m_cycles,
-        mmu->read(_source_address + current_m_cycles)
-    );
-    
-    if (++current_m_cycles == TOTAL_TRANSFER_M_CYCLES) {
-        transfer_in_progress = false;
+    // Delay for first 2 m-cycles
+    if (current_m_cycles < DELAY_M_CYCLES) {
+        current_m_cycles++;
+        return;
     }
 
-}
-
-// Return _source_address >> 8.
-uint8_t Dma::source_address() const {
-    return _source_address >> 8;
+    mmu->write(
+        OAM_ADDRESS + current_m_cycles - DELAY_M_CYCLES,
+        mmu->read(_source_address + current_m_cycles - DELAY_M_CYCLES)
+    );
+    
+    if (++current_m_cycles == DELAY_M_CYCLES + TOTAL_TRANSFER_M_CYCLES) {
+        transfer_in_progress = false;
+    }
 }
 
 // Set _source_address to the given value << 8 and start a transfer.

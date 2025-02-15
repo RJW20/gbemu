@@ -75,6 +75,11 @@ uint8_t Mmu::read_value(uint16_t address) const {
     }
 
     else if (address < OAM_UPPER) {
+        if (dma->transfer_in_progress) {
+            throw MemoryAccessException(
+                "OAM", "not readable during DMA", address, true
+            );
+        }
         return ppu->read_oam(address - ECHO_RAM_UPPER);
     }
 
