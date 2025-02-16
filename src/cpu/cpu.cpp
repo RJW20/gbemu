@@ -96,7 +96,7 @@ void Cpu::fetch_cycle() {
 
     opcode = cb_prefix ? cb_opcodes[opcode_address] : opcodes[opcode_address];
     opcode_m_cycles = cb_prefix ?
-        opcode->t_cycles / 4 - 1 : opcode->t_cycles / 4; 
+        opcode->t_cycles / 4 - 1 : opcode->t_cycles / 4;
     set_state(State::WORK);
 }
 
@@ -142,7 +142,8 @@ void Cpu::work_cycle() {
  * - First cycle - wait.
  * - Second cycle - acknowledge interrupt.
  * - Third and fourth cycles - push reg.pc onto the stack.
- * - Final cycle - set reg.pc to corresponding handler address. */
+ * - Final cycle - set reg.pc to corresponding handler address and fetch the
+ * corresponding opcode. */
 void Cpu::interrupt_cycle() {
 
     switch(current_m_cycles) {
@@ -172,6 +173,7 @@ void Cpu::interrupt_cycle() {
         case 4:
             reg.pc = interrupt_manager->get_handler_address(interrupt_type);
             set_state(State::FETCH);
+            fetch_cycle();
             return;
     }
 
