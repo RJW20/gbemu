@@ -33,11 +33,13 @@ void InterruptManager::acknowledge(InterruptType interruption) {
 
 /* Return the bit corresponding to the enabled interrupt.
  * Interrupts with lower bit value have higher priority.
- * Returns -1 if no interrupts are enabled. */
+ * Returns NONE if no interrupts are enabled. */
 InterruptType InterruptManager::get_enabled() const {
-    for (int bit_pos = 0; bit_pos < 5; bit_pos++) {
-        if (((ie_ & if_) >> bit_pos) & 1) {
-            return InterruptType(bit_pos);
+    if (ime) {
+        for (int bit_pos = 0; bit_pos < 5; bit_pos++) {
+            if (((ie_ & if_) >> bit_pos) & 1) {
+                return InterruptType(bit_pos);
+            }
         }
     }
     return InterruptType::NONE;
