@@ -3,7 +3,7 @@
 
 // Initialise variables for a new scanline.
 void OamScanner::new_oam_scan() {
-    current_t_cycles = 0;
+    scanline_t_cycles = 0;
     scan_index = 0;
     scanline_objects.resize(0);
     pixels_to_discard = scx & 0x7;
@@ -19,7 +19,7 @@ void OamScanner::oam_scan_tick() {
 
     // Reads objects as off screen if DMA is active
 
-    if ((current_t_cycles & 0x1) && scanline_objects.size() < 10) {
+    if ((mode_t_cycles & 0x1) && scanline_objects.size() < 10) {
         scan_object.y = vram[scan_index++];
         scan_object.x = vram[scan_index++];
         if (scan_object.x > 0 && scan_object.y - 16 <= ly_ &&

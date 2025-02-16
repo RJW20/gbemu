@@ -19,7 +19,7 @@ void Ppu::reset() {
     lcdc_ = 0x91;
     ly_ = 0;
     lyc = 0;
-    stat_ = 0x80;
+    stat_ = 0x85;
     scy = 0;
     scx = 0;
     wy = 0;
@@ -28,7 +28,7 @@ void Ppu::reset() {
     obp0 = 0xFF;
     obp1 = 0xFF;
 
-    set_mode(Mode::OAM_SCAN);
+    set_mode(Mode::VBLANK);
 }
 
 // Carry out 1 t-cycle.
@@ -38,14 +38,19 @@ void Ppu::tick() {
         return;
     }
 
-    current_t_cycles++;
-
     switch(mode) {
 
         case Mode::OAM_SCAN:
+            if (!mode_t_cycles++) {
+                if (oam_scan_interrupt_requested() ||
+                    (ly_++ == lyc) && lyc_interrupt_requested()) {
+                    interrupt_manager->request(InterruptType::STAT);
+                }
+            }
+
             oam_scan_tick();
 
-            if (current_t_cycles == OAM_T_CYCLES) {
+            if (mode_t_cycles == OAM_T_CYCLES) {
                 std::stable_sort(
                     scanline_objects.begin(),
                     scanline_objects.end(),
@@ -55,42 +60,70 @@ void Ppu::tick() {
                 );
                 set_mode(Mode::PIXEL_TRANSFER);
             }
+
+            scanline_t_cycles++;
             break;
 
         case Mode::PIXEL_TRANSFER:
+            mode_t_cycles++;
+
             pixel_transfer_tick();
 
             if (lx == SCREEN_WIDTH) {
                 fetcher.wly += window_visible_on_scanline;
                 set_mode(Mode::HBLANK);
             }
+
+            scanline_t_cycles++;
             break;
 
         case Mode::HBLANK:
-            if (current_t_cycles == SCANLINE_T_CYCLES) {
-                if (++ly_ == SCREEN_HEIGHT) {
+            if (!mode_t_cycles++ && hblank_interrupt_requested()) {
+                interrupt_manager->request(InterruptType::STAT);
+            }
+
+            if (++scanline_t_cycles == SCANLINE_T_CYCLES) {
+                if (ly_ == SCREEN_HEIGHT - 1) {
                     set_mode(Mode::VBLANK); 
                 }
                 else {
                     set_mode(Mode::OAM_SCAN);
                 }
-                if ((ly_ == lyc) && lyc_interrupt_requested()) {
-                    interrupt_manager->request(InterruptType::STAT);
-                }
             }
             break;
 
         case Mode::VBLANK:
-            if (current_t_cycles == SCANLINE_T_CYCLES) {
-                if (++ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES) {
-                    ly_ = 0;
+            if (!mode_t_cycles++) {
+                interrupt_manager->request(InterruptType::VBLANK);
+                if (vblank_interrupt_requested()) {
+                    interrupt_manager->request(InterruptType::STAT);
+                }
+            }
+
+            // The first scanline after the boot ROM is VBLANK with ly_ = 0
+            if (!ly_) {
+                if (!scanline_t_cycles++ &&
+                    (ly_ == lyc) && lyc_interrupt_requested()) {
+                        interrupt_manager->request(InterruptType::STAT);
+                    }
+                else if (scanline_t_cycles == SCANLINE_T_CYCLES) {
                     set_mode(Mode::OAM_SCAN);
                 }
-                else {
-                    current_t_cycles = 0;
-                }
-                if ((ly_ == lyc) && lyc_interrupt_requested()) {
-                    interrupt_manager->request(InterruptType::STAT);
+            }
+            
+            else {
+                if (!scanline_t_cycles++ &&
+                    (ly_++ == lyc) && lyc_interrupt_requested()) {
+                        interrupt_manager->request(InterruptType::STAT);
+                    }
+                else if (scanline_t_cycles == SCANLINE_T_CYCLES) {
+                    if (ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES - 1) {
+                        ly_ = 0;
+                        set_mode(Mode::OAM_SCAN);
+                    }
+                    else {
+                        scanline_t_cycles = 0;
+                    }
                 }
             }
             break;
@@ -103,32 +136,20 @@ void Ppu::tick() {
 void Ppu::set_mode(Mode new_mode) {
     
     mode = new_mode;
+    mode_t_cycles = 0;
     switch (mode) {
 
         case Mode::OAM_SCAN:
             new_oam_scan();
-            if (oam_scan_interrupt_requested()) {
-                interrupt_manager->request(InterruptType::STAT);
-            }
             break;
 
         case Mode::PIXEL_TRANSFER:
             new_pixel_transfer();
             break;
 
-        case Mode::HBLANK:
-            if (hblank_interrupt_requested()) {
-                interrupt_manager->request(InterruptType::STAT);
-            }
-            break;
-
         case Mode::VBLANK:
-            current_t_cycles = 0;
+            scanline_t_cycles = 0;
             fetcher.wly = 0;
-            interrupt_manager->request(InterruptType::VBLANK);
-            if (vblank_interrupt_requested()) {
-                interrupt_manager->request(InterruptType::STAT);
-            }
             break;
     }
 }
@@ -137,7 +158,7 @@ void Ppu::set_mode(Mode new_mode) {
  * On the final scanline of VBLANK, for t-cycles 4-456 ly reads as 0. */
 uint8_t Ppu::ly() const {
     if (ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES - 1 &&
-        mode == Mode::VBLANK && current_t_cycles > 3) {
+        mode == Mode::VBLANK && scanline_t_cycles > 3) {
             return 0;
         }
     return ly_;
@@ -170,7 +191,7 @@ void Ppu::set_ly(uint8_t value) const {
 // Return a string representation of the PPU.
 std::string Ppu::representation() const {
     std::ostringstream repr;
-    repr << "PPU:" << std::hex
+    repr << "PPU:" << " ticks = " << scanline_t_cycles << std::hex
         << " LCDC = " << static_cast<int>(lcdc())
         << " LY = " << static_cast<int>(ly())
         << " LYC = " << static_cast<int>(lyc)
