@@ -7,8 +7,7 @@
 // Initialise variables for a new pixel transfer.
 void PixelTransferrer::new_pixel_transfer() {
     lx = 0;
-    fetcher.source = FetcherSource::BACKGROUND;
-    fetcher.restart();
+    set_fetcher_source(FetcherSource::BACKGROUND);
     fetcher.wly = 0;
     window_visible_on_scanline = false;
     bgwin_fifo.clear();
