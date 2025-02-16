@@ -1818,7 +1818,8 @@ Opcode Cpu::opcode_0xf2_generator() {
 // DI
 Opcode Cpu::opcode_0xf3_generator() {
     std::vector<Step> steps;
-    steps.push_back([this]() { interrupt_manager->disable_interrupts(); });
+    steps.push_back([this]() { interrupt_manager->disable_interrupts();
+        interrupt_enable_scheduled = false; });
     return Opcode(0xf3, "DI", 1, 4, steps);
 }
 
@@ -3742,4 +3743,3 @@ Opcode Cpu::opcode_cb_0xff_generator() {
     steps.push_back([this]() { reg.a = set(reg.a, 7); });
     return Opcode(0xff, "SET 7, A", 2, 8, steps);
 }
-

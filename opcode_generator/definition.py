@@ -623,7 +623,10 @@ def nop(opcode: Opcode) -> str:
 @wrap_function_definition()
 def di(opcode: Opcode) -> str:
 
-    return step("interrupt_manager->disable_interrupts()")
+    return step(
+        "interrupt_manager->disable_interrupts();\n"
+        f"{INDENT}{INDENT}interrupt_enable_scheduled = false"
+    )
 
 @wrap_function_definition()
 def ei(opcode: Opcode) -> str:
