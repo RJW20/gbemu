@@ -28,18 +28,29 @@ class PixelFifo {
 public:
     PixelFifo() { clear(); }
 
-    void clear() { front_pointer = 0; end_pointer = 0; size = 0; }
-    bool is_accepting_pixels() const { return size <= 8; }
-    bool is_shifting_pixels() const { return size > 8; }
-    bool is_empty() const { return !size; }
-    void push(Pixel pixel) { data[end_pointer++] = pixel; size++; }
-    Pixel shift() { size--; return data[front_pointer++]; }
+    uint8_t to_discard;             // Count to shift off before pushing to LCD
+    uint8_t shift_until_discard;    // Count to shift to LCD before discarding
+
+    void clear() { front_pointer = 0; end_pointer = 0; size_ = 0; }
+    bool is_accepting_pixels() const { return size_ <= 8; }
+    bool is_shifting_pixels() const { return size_ > 8; }
+    bool is_empty() const { return !size_; }
+    uint8_t size() { return size_; }
+    void push(Pixel pixel) { data[end_pointer++] = pixel; size_++; }
+    void discard() {size_--; front_pointer++; to_discard--; }
+    Pixel shift() { 
+        size_--;
+        if (shift_until_discard) {
+            shift_until_discard--;
+        }
+        return data[front_pointer++];
+    }
 
 private:
     std::array<Pixel, 0x10> data;
     uint8_t front_pointer : 4;
     uint8_t end_pointer : 4;
-    uint8_t size;
+    uint8_t size_;
 };
 
 #endif

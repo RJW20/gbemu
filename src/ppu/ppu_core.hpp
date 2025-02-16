@@ -45,7 +45,7 @@ protected:
     uint16_t mode_t_cycles;
     uint16_t scanline_t_cycles;
     std::deque<OamObject> scanline_objects;
-    uint8_t pixels_to_discard;          // Read at start of scanline
+    uint8_t bgwin_pixels_to_discard;    // Read at start of scanline
     bool window_present_on_scanline;    // Decided at start of scanline
 
     // Underlying (partially) read-only registers

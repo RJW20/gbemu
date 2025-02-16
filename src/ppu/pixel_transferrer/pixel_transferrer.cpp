@@ -7,11 +7,14 @@
 // Initialise variables for a new pixel transfer.
 void PixelTransferrer::new_pixel_transfer() {
     lx = 0;
-    set_fetcher_source(FetcherSource::BACKGROUND);
+    fetcher.source = FetcherSource::BACKGROUND;
+    fetcher.restart();
     fetcher.wly = 0;
     window_visible_on_scanline = false;
     bgwin_fifo.clear();
     object_fifo.clear();
+    bgwin_fifo.to_discard = bgwin_pixels_to_discard;
+    object_fifo.to_discard = 0;
 }
 
 /* Carry out 1 PIXEL_TRANSFER t-cycle. 
@@ -31,7 +34,7 @@ void PixelTransferrer::pixel_transfer_tick() {
     fetcher_tick();
     
     if (bgwin_fifo.is_shifting_pixels() && 
-        !(fetcher.source == FetcherSource::OBJECT && object_fifo.is_empty())) {
+        !(object_occupies_current_pixel() && object_fifo.is_empty())) {
         shift_pixel();
     }
 }
@@ -64,7 +67,7 @@ void PixelTransferrer::try_push_fetcher_to_fifo() {
 
     switch(fetcher.source) {
 
-        case FetcherSource::BACKGROUND: [[fallthrough]];
+        case FetcherSource::BACKGROUND:
         case FetcherSource::WINDOW:
             if (!bgwin_fifo.is_accepting_pixels()) {
                 return;
@@ -126,10 +129,13 @@ void PixelTransferrer::check_fetcher_source() {
             if (window_covers_current_pixel()) {
                 set_fetcher_source(FetcherSource::WINDOW);
                 bgwin_fifo.clear();
+                bgwin_fifo.to_discard = 0;
             }
             else if (bgwin_fifo.is_shifting_pixels() &&
-                object_occupies_current_pixel() && object_fifo.is_empty()) {
+                object_occupies_current_pixel()) {
                 set_fetcher_source(FetcherSource::OBJECT);
+                object_fifo.to_discard = object_fifo.size();
+                object_fifo.shift_until_discard = object_fifo.size();
             }
             break;
 
@@ -137,10 +143,13 @@ void PixelTransferrer::check_fetcher_source() {
             if (!window_enabled()) {
                 set_fetcher_source(FetcherSource::BACKGROUND);
                 bgwin_fifo.clear();
+                bgwin_fifo.to_discard = bgwin_pixels_to_discard;
             }
             else if (bgwin_fifo.is_shifting_pixels() &&
-                object_occupies_current_pixel() && object_fifo.is_empty()) {
+                object_occupies_current_pixel()) {
                 set_fetcher_source(FetcherSource::OBJECT);
+                object_fifo.to_discard = object_fifo.size();
+                object_fifo.shift_until_discard = object_fifo.size();
             }
             break;
 
@@ -159,13 +168,18 @@ bool PixelTransferrer::window_covers_current_pixel() const {
     return window_present_on_scanline && window_enabled() && lx >= wx - 7;
 }
 
-// Return true if objects are enabled and one occupies the pixel at (lx,ly_).
-bool PixelTransferrer::object_occupies_current_pixel() const {
-    if (!scanline_objects.size()) {
+/* Return true if objects are enabled and one occupies the pixel at (lx,ly_).
+ * If there are leading scanline_objects that were passed over when objects
+ * weren't enabled they will be removed here. */
+bool PixelTransferrer::object_occupies_current_pixel() {
+    if (!objects_enabled() || !scanline_objects.size()) {
         return false;
     }
+    while (scanline_objects.front().x < lx) {
+        scanline_objects.pop_front();
+    }
     const OamObject& oam_object = scanline_objects.front();
-    return objects_enabled() && oam_object.x - 8 <= lx && oam_object.x > lx;
+    return oam_object.x - 8 <= lx && oam_object.x > lx;
 }
 
 // Carry out 1 fetcher t-cycle.
@@ -285,9 +299,14 @@ uint8_t PixelTransferrer::fetch_tile_row(
  * Increments lx. */
 void PixelTransferrer::shift_pixel() {
 
-    if (pixels_to_discard) {
-        bgwin_fifo.shift();
-        pixels_to_discard -= 1;
+    if (bgwin_fifo.to_discard ||
+        object_fifo.to_discard && !object_fifo.shift_until_discard) {
+        if (bgwin_fifo.to_discard) {
+            bgwin_fifo.discard();
+        }
+        if (object_fifo.to_discard) {
+            object_fifo.discard();
+        }
         return;
     }
 

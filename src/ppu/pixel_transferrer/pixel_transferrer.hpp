@@ -31,7 +31,7 @@ private:
     ) const;
     void check_fetcher_source();
     bool window_covers_current_pixel() const;
-    bool object_occupies_current_pixel() const;
+    bool object_occupies_current_pixel();
     void fetcher_tick();
     uint8_t fetch_tile_id() const;
     uint8_t fetch_tile_offset() const;
