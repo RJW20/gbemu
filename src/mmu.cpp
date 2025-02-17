@@ -353,6 +353,7 @@ void Mmu::write_value(uint16_t address, const uint8_t value) {
             case 0xFF3E:
             case 0xFF3F:
                 apu->write_wave_ram(address - 0xFF30, value);
+                break;
             case 0xFF40:
                 ppu->set_lcdc(value);
                 break;
