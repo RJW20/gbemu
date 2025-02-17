@@ -7,13 +7,13 @@
 // Initialise variables for a new pixel transfer.
 void PixelTransferrer::new_pixel_transfer() {
     lx = 0;
-    set_fetcher_source(FetcherSource::BACKGROUND);
-    fetcher.wly = 0;
-    window_visible_on_scanline = false;
     bgwin_fifo.clear();
     object_fifo.clear();
     bgwin_fifo.to_discard = bgwin_pixels_to_discard;
     object_fifo.to_discard = 0;
+    set_fetcher_source(FetcherSource::BACKGROUND);
+    fetcher.wly = 0;
+    window_visible_on_scanline = false;
 }
 
 /* Carry out 1 PIXEL_TRANSFER t-cycle. 
@@ -48,11 +48,11 @@ void PixelTransferrer::set_fetcher_source(FetcherSource new_source) {
     switch(fetcher.source) {
         
         case FetcherSource::BACKGROUND:
-            fetcher.x = lx >> 3;
+            fetcher.x = (lx >> 3) + (bgwin_fifo.size() >> 3);
             break;
 
         case FetcherSource::WINDOW:
-            fetcher.x = (lx - (wx - 7)) >> 3;
+            fetcher.x = ((lx - (wx - 7)) >> 3) + (bgwin_fifo.size() >> 3);
             window_visible_on_scanline = true;
             break;
     }
@@ -126,37 +126,37 @@ void PixelTransferrer::check_fetcher_source() {
 
         case FetcherSource::BACKGROUND:
             if (window_covers_current_pixel()) {
-                set_fetcher_source(FetcherSource::WINDOW);
                 bgwin_fifo.clear();
                 bgwin_fifo.to_discard = 0;
+                set_fetcher_source(FetcherSource::WINDOW);
             }
             else if (bgwin_fifo.is_shifting_pixels() &&
                 object_occupies_current_pixel()) {
-                set_fetcher_source(FetcherSource::OBJECT);
                 object_fifo.to_discard = object_fifo.size();
                 object_fifo.shift_until_discard = object_fifo.size();
+                set_fetcher_source(FetcherSource::OBJECT);
             }
             break;
 
         case FetcherSource::WINDOW:
             if (!window_enabled()) {
-                set_fetcher_source(FetcherSource::BACKGROUND);
                 bgwin_fifo.clear();
                 bgwin_fifo.to_discard = bgwin_pixels_to_discard;
+                set_fetcher_source(FetcherSource::BACKGROUND);
             }
             else if (bgwin_fifo.is_shifting_pixels() &&
                 object_occupies_current_pixel()) {
-                set_fetcher_source(FetcherSource::OBJECT);
                 object_fifo.to_discard = object_fifo.size();
                 object_fifo.shift_until_discard = object_fifo.size();
+                set_fetcher_source(FetcherSource::OBJECT);
             }
             break;
 
         case FetcherSource::OBJECT:
             if (!objects_enabled()) {
+                object_fifo.clear();
                 set_fetcher_source(window_covers_current_pixel() ? 
                     FetcherSource::WINDOW : FetcherSource::BACKGROUND);
-                object_fifo.clear();
             }
             break;
     }
