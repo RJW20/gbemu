@@ -20,12 +20,12 @@ void OamScanner::oam_scan_tick() {
     // Reads objects as off screen if DMA is active
 
     if ((mode_t_cycles & 0x1) && scanline_objects.size() < 10) {
-        scan_object.y = vram[scan_index++];
-        scan_object.x = vram[scan_index++];
+        scan_object.y = oam[scan_index++];
+        scan_object.x = oam[scan_index++];
         if (scan_object.x > 0 && scan_object.y - 16 <= ly_ &&
             scan_object.y - 16 + 8 * (1 + double_object_height()) > ly_) {
-            scan_object.tile_id = vram[scan_index++];
-            const uint8_t attributes = vram[scan_index++];
+            scan_object.tile_id = oam[scan_index++];
+            const uint8_t attributes = oam[scan_index++];
             scan_object.priority = (attributes >> 7) & 1;
             scan_object.y_flip = (attributes >> 6) & 1;
             scan_object.x_flip = (attributes >> 5) & 1;
