@@ -43,7 +43,7 @@ void Ppu::tick() {
         case Mode::OAM_SCAN:
             if (!mode_t_cycles++) {
                 if (oam_scan_interrupt_requested() ||
-                    (ly_++ == lyc) && lyc_interrupt_requested()) {
+                    (ly_ == lyc) && lyc_interrupt_requested()) {
                     interrupt_manager->request(InterruptType::STAT);
                 }
             }
@@ -83,7 +83,7 @@ void Ppu::tick() {
             }
 
             if (++scanline_t_cycles == SCANLINE_T_CYCLES) {
-                if (ly_ == SCREEN_HEIGHT - 1) {
+                if (++ly_ == SCREEN_HEIGHT) {
                     set_mode(Mode::VBLANK); 
                 }
                 else {
@@ -100,30 +100,18 @@ void Ppu::tick() {
                 }
             }
 
-            // The first scanline after the boot ROM is VBLANK with ly_ = 0
-            if (!ly_) {
-                if (!scanline_t_cycles++ &&
-                    (ly_ == lyc) && lyc_interrupt_requested()) {
-                        interrupt_manager->request(InterruptType::STAT);
-                    }
-                else if (scanline_t_cycles == SCANLINE_T_CYCLES) {
-                    set_mode(Mode::OAM_SCAN);
+            if (!scanline_t_cycles++ &&
+                (ly_ == lyc) && lyc_interrupt_requested()) {
+                    interrupt_manager->request(InterruptType::STAT);
                 }
-            }
-            
-            else {
-                if (!scanline_t_cycles++ &&
-                    (ly_++ == lyc) && lyc_interrupt_requested()) {
-                        interrupt_manager->request(InterruptType::STAT);
-                    }
-                else if (scanline_t_cycles == SCANLINE_T_CYCLES) {
-                    if (ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES - 1) {
-                        ly_ = 0;
-                        set_mode(Mode::OAM_SCAN);
-                    }
-                    else {
-                        scanline_t_cycles = 0;
-                    }
+            else if (scanline_t_cycles == SCANLINE_T_CYCLES) {
+                // !ly_ since first scanline after the boot ROM is VBLANK with ly_ = 0
+                if (!ly_ || ++ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES) {
+                    set_mode(Mode::OAM_SCAN);
+                    ly_ = 0;
+                }
+                else {
+                    scanline_t_cycles = 0;
                 }
             }
             break;
@@ -195,13 +183,13 @@ std::string Ppu::representation() const {
         << " LCDC = " << static_cast<int>(lcdc())
         << " LY = " << static_cast<int>(ly())
         << " LYC = " << static_cast<int>(lyc)
-        << " STAT = " << static_cast<int>(stat())
+        //<< " STAT = " << static_cast<int>(stat())
         << " SCY = " << static_cast<int>(scy)
         << " SCX = " << static_cast<int>(scx)
         << " WY = " << static_cast<int>(wy)
-        << " WX = " << static_cast<int>(wx)
-        << " BGP = " << static_cast<int>(bgp)
-        << " OBP0 = " << static_cast<int>(obp0)
-        << " OBP1 = " << static_cast<int>(obp1);
+        << " WX = " << static_cast<int>(wx);
+        //<< " BGP = " << static_cast<int>(bgp)
+        //<< " OBP0 = " << static_cast<int>(obp0)
+        //<< " OBP1 = " << static_cast<int>(obp1);
     return repr.str();
 }
