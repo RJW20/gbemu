@@ -19,6 +19,7 @@ void Cpu::reset() {
     reg.reset();
     locked = 0;
     set_state(State::FETCH);
+    halt_bug = false;
     opcode = opcodes[0];
     interrupt_enable_scheduled = false;
 }
@@ -86,7 +87,13 @@ void Cpu::fetch_cycle() {
                 cb_prefix = true;
                 return;
             case 0x76:
-                state = State::HALT;
+                if (!halt_bug) {
+                    state = State::HALT;
+                }
+                else {
+                    state == State::FETCH;
+                    halt_bug = false;
+                }
                 return;
             case 0x10:
                 state = State::STOP;
@@ -180,10 +187,20 @@ void Cpu::interrupt_cycle() {
     current_m_cycles++;
 }
 
-// Set to FETCH state if an interrupt is requested (regardless of IME).
+/* Switch state to INTERRUPT if interrupts are enabled and an interrupt is 
+ * requested.
+ * If an interrupt is requested but interrupts are not enabled then sets to 
+ * FETCH (halt bug) and prepares to fetch and ignore the same HALT opcode. */
 void Cpu::halt_cycle() {
-    if (state == State::HALT && interrupt_manager->interrupt_requested()) {
-        set_state(State::FETCH);
+    if (interrupt_manager->interrupt_requested()) {
+        if (interrupt_manager->interrupts_enabled()) {
+            set_state(State::INTERRUPT);
+        }
+        else {
+            set_state(State::FETCH);
+            reg.pc--;
+            halt_bug = true;
+        }
     }
 }
 

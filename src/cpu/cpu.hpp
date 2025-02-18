@@ -34,6 +34,7 @@ private:
     uint8_t locked;
     State state;
     bool cb_prefix;
+    bool halt_bug;
     Opcode* opcode;
     uint8_t opcode_m_cycles;
     uint8_t current_m_cycles;
