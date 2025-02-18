@@ -1,5 +1,6 @@
 #include <cstdint>
 #include "oam_scanner.hpp"
+#include "../../dma.hpp"
 
 // Initialise variables for a new scanline.
 void OamScanner::new_oam_scan() {
@@ -17,7 +18,9 @@ void OamScanner::new_oam_scan() {
  * scanline_objects to be used during PIXEL_TRANSFER (up to 10 maximum). */
 void OamScanner::oam_scan_tick() {
 
-    // Reads objects as off screen if DMA is active
+    if (dma->transfer_in_progress) {
+        return;
+    }
 
     if ((mode_t_cycles & 0x1) && scanline_objects.size() < 10) {
         scan_object.y = oam[scan_index++];

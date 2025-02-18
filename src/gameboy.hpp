@@ -17,7 +17,9 @@
 // GameBoy
 class GameBoy {
 public:
-    GameBoy(std::string rom_path) : cartridge(rom_path) { dma.set_mmu(&mmu); }
+    GameBoy(std::string rom_path) : cartridge(rom_path) { 
+        ppu.set_dma(&dma); dma.set_mmu(&mmu);
+    }
 
     void run();
 

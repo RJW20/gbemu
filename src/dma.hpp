@@ -14,7 +14,7 @@ class Dma {
 public:
     Dma(Ppu* ppu) : ppu(ppu) { reset(); }
 
-    void set_mmu(Mmu* _mmu);
+    void set_mmu(Mmu* _mmu) { mmu = _mmu; }
 
     void reset();
     void tick();

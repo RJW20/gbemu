@@ -4,11 +4,6 @@
 #include "dma.hpp"
 #include "mmu.hpp"
 
-// Set the mmu pointer.
-void Dma::set_mmu(Mmu* _mmu) {
-    mmu = _mmu;
-}
-
 // Set _source_address to its post boot ROM value. 
 void Dma::reset() {
     _source_address = 0xFF;
