@@ -20,6 +20,8 @@ void Serial::tick() {
     if (++transfer_counter == 512) { // 512 t-cycles per byte transfer 
         transfer_counter = 0;
         interrupt_manager->request(InterruptType::SERIAL);
+        sb = 0xFF;
+        sc &= 0x7F;
     }
 }
 

@@ -252,6 +252,7 @@ void Mmu::write_value(uint16_t address, const uint8_t value) {
         switch (address) {
             case 0xFF00:
                 joypad->set_joyp(value);
+                break;
             case 0xFF01:
                 serial->sb = value;
                 break;

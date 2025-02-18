@@ -26,7 +26,7 @@ private:
 
     uint16_t transfer_counter;  // Counts to 512 (8192 Hz) per byte transfer
 
-    bool transfer_in_progress() const { return sc >> 7; }
+    bool transfer_in_progress() const { return (sc >> 7) && (sc & 1); }
 };
 
 #endif
