@@ -35,5 +35,8 @@ void OamScanner::oam_scan_tick() {
             scan_object.pallette = (attributes >> 4) & 1;
             scanline_objects.push_back(scan_object);
         }
+        else {
+            scan_index += 2;
+        }
     }
 }
