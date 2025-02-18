@@ -10,7 +10,6 @@ void PixelTransferrer::new_pixel_transfer() {
     bgwin_fifo.clear();
     object_fifo.clear();
     bgwin_fifo.to_discard = bgwin_pixels_to_discard;
-    object_fifo.to_discard = 0;
     set_fetcher_source(FetcherSource::BACKGROUND);
     fetcher.wly = 0;
     window_visible_on_scanline = false;
@@ -32,8 +31,7 @@ void PixelTransferrer::pixel_transfer_tick() {
 
     fetcher_tick();
     
-    if (bgwin_fifo.is_shifting_pixels() && 
-        !(object_occupies_current_pixel() && object_fifo.is_empty())) {
+    if (bgwin_fifo.is_shifting_pixels() && !object_occupies_current_pixel()) {
         shift_pixel();
     }
 }
@@ -48,11 +46,11 @@ void PixelTransferrer::set_fetcher_source(FetcherSource new_source) {
     switch(fetcher.source) {
         
         case FetcherSource::BACKGROUND:
-            fetcher.x = (lx >> 3) + (bgwin_fifo.size() >> 3);
+            fetcher.x = (lx + bgwin_fifo.size()) >> 3;
             break;
 
         case FetcherSource::WINDOW:
-            fetcher.x = ((lx - (wx - 7)) >> 3) + (bgwin_fifo.size() >> 3);
+            fetcher.x = ((lx - (wx - 7)) + bgwin_fifo.size()) >> 3;
             window_visible_on_scanline = true;
             break;
     }
@@ -84,9 +82,6 @@ void PixelTransferrer::try_push_fetcher_to_fifo() {
             break;
 
         case FetcherSource::OBJECT:
-            if (!object_fifo.is_accepting_pixels()) {
-                return;
-            }
             const OamObject& oam_object = scanline_objects.front();
             const PaletteRegister palette_register =
                 PaletteRegister(oam_object.pallette + 1);
@@ -94,13 +89,17 @@ void PixelTransferrer::try_push_fetcher_to_fifo() {
             const int start = oam_object.x_flip ? 0 : 7;
             const int end = oam_object.x_flip ? 8 : -1;
             const int step = oam_object.x_flip ? 1 : -1;
+            uint8_t position = 0;
             for (int i = start; i != end; i += step) {
                 const uint8_t colour_id = colour_id_from_row(
                     fetcher.row_low_buffer,
                     fetcher.row_high_buffer,
                     i
                 );
-                object_fifo.push(Pixel{colour_id, palette_register, priority});
+                object_fifo.push(
+                    Pixel{colour_id, palette_register, priority},
+                    position++
+                );
             }
             scanline_objects.pop_front();
             set_fetcher_source(window_covers_current_pixel() ? 
@@ -132,8 +131,6 @@ void PixelTransferrer::check_fetcher_source() {
             }
             else if (bgwin_fifo.is_shifting_pixels() &&
                 object_occupies_current_pixel()) {
-                object_fifo.to_discard = object_fifo.size();
-                object_fifo.shift_until_discard = object_fifo.size();
                 set_fetcher_source(FetcherSource::OBJECT);
             }
             break;
@@ -146,8 +143,6 @@ void PixelTransferrer::check_fetcher_source() {
             }
             else if (bgwin_fifo.is_shifting_pixels() &&
                 object_occupies_current_pixel()) {
-                object_fifo.to_discard = object_fifo.size();
-                object_fifo.shift_until_discard = object_fifo.size();
                 set_fetcher_source(FetcherSource::OBJECT);
             }
             break;
@@ -298,14 +293,8 @@ uint8_t PixelTransferrer::fetch_tile_row(
  * Increments lx. */
 void PixelTransferrer::shift_pixel() {
 
-    if (bgwin_fifo.to_discard ||
-        object_fifo.to_discard && !object_fifo.shift_until_discard) {
-        if (bgwin_fifo.to_discard) {
-            bgwin_fifo.discard();
-        }
-        if (object_fifo.to_discard) {
-            object_fifo.discard();
-        }
+    if (bgwin_fifo.to_discard) {
+        bgwin_fifo.discard();
         return;
     }
 
@@ -319,8 +308,8 @@ void PixelTransferrer::shift_pixel() {
     }
     else {
         const Pixel object_pixel = object_fifo.shift();
-        shifted_pixel = !object_pixel.colour_id || !object_pixel.priority ?
-            object_pixel : bgwin_pixel;
+        shifted_pixel = !object_pixel.colour_id || object_pixel.priority ?
+            bgwin_pixel : object_pixel;
     }
     pixel_buffer[ly_ * SCREEN_WIDTH + lx++] = pixel_to_rgba(shifted_pixel);
 }

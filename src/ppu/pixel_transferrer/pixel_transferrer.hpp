@@ -18,8 +18,8 @@ public:
     std::array<uint32_t, SCREEN_WIDTH * SCREEN_HEIGHT> pixel_buffer;
 
 private:
-    PixelFifo bgwin_fifo;
-    PixelFifo object_fifo;
+    BGWinFifo bgwin_fifo;
+    ObjectFifo object_fifo;
 
     // Helper methods
     void set_fetcher_source(FetcherSource source);
