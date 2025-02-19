@@ -124,7 +124,7 @@ def wrap_function_definition() -> Callable[
 
 def step(operation: str) -> str:
     """Return an operation encased in a push_back to the steps vector."""
-    return f"{INDENT}steps.push_back([this]() {{ {operation}; }});\n"
+    return f"{INDENT}steps.push_back([this] {{ {operation}; }});\n"
 
 @wrap_function_definition()
 def ld(opcode: Opcode) -> str:

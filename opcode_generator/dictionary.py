@@ -10,6 +10,15 @@ def dictionary_initialisations(
 
     with open("dictionary.txt", "w+") as f:
 
+        for opcode in opcodes:
+            f.write(f"opcodes[{opcode.address}] = {opcode.name}();\n")
+
+        f.write("\n")
+
+        for cb_opcode in cb_opcodes:
+            f.write(f"cb_opcodes[{cb_opcode.address}] = {cb_opcode.name}();\n")
+
+        """
         f.write("opcodes = {\n")
         for opcode in opcodes:
             f.write(
@@ -25,3 +34,4 @@ def dictionary_initialisations(
                 f"{{{cb_opcode.address}, &{cb_opcode.variable_name}}},\n"
             )
         f.write("};")
+        """

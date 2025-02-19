@@ -29,19 +29,13 @@ class Opcode:
             self.operand2 = None
 
     @property
-    def variable_name(self) -> str:
-        """Return this opcodes variable name."""
+    def name(self) -> str:
+        """Return this opcodes name."""
 
         if not self.prefixed:
             return f"opcode_{self.address}"
         else:
             return f"opcode_cb_{self.address}"
-
-    @property
-    def function_handle(self) -> str:
-        """Return this opcodes function handle."""
-
-        return self.variable_name + "_generator"
     
     @property
     def full_name(self) -> str:
@@ -60,7 +54,7 @@ class Opcode:
 
         return (
             f"// {self.full_name}\n"
-            f"Opcode Cpu::{self.function_handle}() {{\n"
+            f"Opcode Cpu::{self.name}() {{\n"
             f"{INDENT}std::vector<Step> steps;\n"
         )
     
@@ -69,6 +63,6 @@ class Opcode:
         """Return the last 3 lines of this opcodes function definition."""
 
         return (
-            f"{INDENT}return Opcode({self.address}, \"{self.full_name}\", "
-            f"{self.length}, {self.cycles}, steps);\n}}\n"
+            f"{INDENT}return Opcode{{{self.address}, \"{self.full_name}\", "
+            f"{self.length}, {self.cycles}, steps}};\n}}\n"
         )
