@@ -1,9 +1,15 @@
-#include <sstream>
+#include <chrono>
+#include <thread>
 #include <SDL2/SDL.h>
-#include "logger.hpp"
 #include "gameboy.hpp"
 
 void GameBoy::run() {
+
+    using namespace std::chrono;
+    using time_between_frames = duration<int64_t, std::ratio<1, 60>>;
+    auto next_frame = system_clock::now() + time_between_frames{0};
+    auto last_frame = next_frame - time_between_frames{1};
+
     while (true) {
         tick();
         if (++ticks == SIXTY_FPS) {
@@ -12,6 +18,9 @@ void GameBoy::run() {
             if (power_off()) {
                 break;
             }
+            std::this_thread::sleep_until(next_frame);
+            last_frame = next_frame;
+            next_frame = next_frame + time_between_frames{1};
         }
     }
 }
@@ -23,8 +32,6 @@ void GameBoy::tick() {
     serial.tick();
     dma.tick();
     ppu.tick();
-
-    Log::debug(*this);
 }
 
 // Return true if an SDL_QUIT event has occurred.
@@ -36,11 +43,4 @@ bool GameBoy::power_off() const {
         }
     }
     return false;
-}
-
-// Return a string representation of the GameBoy.
-std::string GameBoy::representation() const {
-    std::ostringstream repr;
-    repr << "GameBoy: " << cpu;
-    return repr.str();
 }
