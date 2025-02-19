@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <bitset>
+#include "../logger.hpp"
 #include "cpu.hpp"
 #include "../interrupt_manager.hpp"
 
@@ -104,6 +105,9 @@ void Cpu::fetch_cycle() {
     opcode = cb_prefix ? cb_opcodes[opcode_address] : opcodes[opcode_address];
     opcode_m_cycles = cb_prefix ?
         opcode->t_cycles / 4 - 1 : opcode->t_cycles / 4;
+
+    Log::debug(*this);
+
     set_state(State::WORK);
 }
 

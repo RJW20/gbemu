@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <bitset>
+#include "logger.hpp"
 #include "timer.hpp"
 #include "interrupt_manager.hpp"
 
@@ -34,6 +35,8 @@ void Timer::tick() {
         interrupt_manager->request(InterruptType::TIMER);
         tima_overflow = false;
     }
+
+    Log::debug(*this);
 }
 
 // Increment tima_ and check for an overflow.

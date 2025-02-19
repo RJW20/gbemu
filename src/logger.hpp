@@ -138,7 +138,7 @@ private:
     static void open_debug_file();
 };
 
-constexpr LogLevel log_level = LogLevel::DEBUG;
+constexpr LogLevel log_level = LogLevel::INFO;
 using Log = Logger<log_level>;
 
 #endif

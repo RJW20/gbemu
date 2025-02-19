@@ -3,6 +3,7 @@
 #include <utility>
 #include <string>
 #include <sstream>
+#include "../logger.hpp"
 #include "ppu.hpp"
 #include "oam_scanner/oam_object.hpp"
 #include "../interrupt_manager.hpp"
@@ -116,6 +117,8 @@ void Ppu::tick() {
             }
             break;
     }
+
+    Log::debug(*this);
 }
 
 /* Set the Ppu mode to the given Mode. 
@@ -183,13 +186,13 @@ std::string Ppu::representation() const {
         << " LCDC = " << static_cast<int>(lcdc())
         << " LY = " << static_cast<int>(ly())
         << " LYC = " << static_cast<int>(lyc)
-        //<< " STAT = " << static_cast<int>(stat())
+        << " STAT = " << static_cast<int>(stat())
         << " SCY = " << static_cast<int>(scy)
         << " SCX = " << static_cast<int>(scx)
         << " WY = " << static_cast<int>(wy)
-        << " WX = " << static_cast<int>(wx);
-        //<< " BGP = " << static_cast<int>(bgp)
-        //<< " OBP0 = " << static_cast<int>(obp0)
-        //<< " OBP1 = " << static_cast<int>(obp1);
+        << " WX = " << static_cast<int>(wx)
+        << " BGP = " << static_cast<int>(bgp)
+        << " OBP0 = " << static_cast<int>(obp0)
+        << " OBP1 = " << static_cast<int>(obp1);
     return repr.str();
 }

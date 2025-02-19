@@ -1,7 +1,6 @@
 #ifndef GAMEBOY_HPP
 #define GAMEBOY_HPP
 
-#include <string>
 #include "cartridge/cartridge.hpp"
 #include "interrupt_manager.hpp"
 #include "timer.hpp"
@@ -22,8 +21,6 @@ public:
     }
 
     void run();
-
-    std::string representation() const;
 
 private:
     Cartridge cartridge;
