@@ -10,6 +10,7 @@
 #include "no_mbc.hpp"
 #include "mbc1.hpp"
 #include "mbc2.hpp"
+#include "mbc3.hpp"
 
 // Maps to constructor for MBC in the cartridge
 const std::unordered_map<
@@ -39,6 +40,24 @@ const std::unordered_map<
     {0x6, [](std::ifstream& rom_file) {
         return std::make_unique<Mbc2>(rom_file);
     }},
+
+    // MBC3
+    {0xF, [](std::ifstream& rom_file) {
+        return std::make_unique<Mbc3>(rom_file, false, true);
+    }},
+    {0x10, [](std::ifstream& rom_file) {
+        return std::make_unique<Mbc3>(rom_file, true, true);
+    }},
+    {0x11, [](std::ifstream& rom_file) {
+        return std::make_unique<Mbc3>(rom_file, false, false);
+    }},
+    {0x12, [](std::ifstream& rom_file) {
+        return std::make_unique<Mbc3>(rom_file, true, false);
+    }},
+    {0x13, [](std::ifstream& rom_file) {
+        return std::make_unique<Mbc3>(rom_file, true, false);
+    }},
+
 };
 
 // Number of external 8KB banks in the cartridge
