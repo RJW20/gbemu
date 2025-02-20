@@ -1,13 +1,13 @@
 #include <cstdint>
 #include <cstddef>
 #include <fstream>
-#include <vector>
+#include <array>
 #include <sstream>
 #include "../../logger.hpp"
 #include "base_mbc.hpp"
 #include "lookup.hpp"
 
-/* Load the given rom_file into the rom vector and read the cartridge header.
+/* Load the given rom_file into the ROM banks and read the cartridge header.
  * Initialises the external ram if required.
  * Does not take ownership of the given std::ifstream. */
 BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
@@ -15,11 +15,10 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
     // Read the rom into 16 KB banks
     rom_file.seekg(0, std::ios::beg);
     while (!rom_file.eof()) {
-        std::vector<uint8_t> bank(ROM_BANK_SIZE, 0);
+        std::array<uint8_t, ROM_BANK_SIZE> bank;
         rom_file.read(reinterpret_cast<char*>(bank.data()), ROM_BANK_SIZE);
         std::size_t bytes_read = rom_file.gcount();
         if (bytes_read > 0) {
-            bank.resize(bytes_read);
             rom.push_back(std::move(bank));
         }
     }
@@ -55,5 +54,5 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
 
 // Clear RAM.
 void BaseMbc::reset() {
-    ram.resize(ram_size, std::vector<uint8_t>(RAM_BANK_SIZE));
+    ram.resize(ram_size, std::array<uint8_t, RAM_BANK_SIZE>());
 }

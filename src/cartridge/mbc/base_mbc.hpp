@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <fstream>
 #include <vector>
+#include <array>
 
 // Base class for a Memory Bank Controller.
 class BaseMbc {
@@ -21,8 +22,8 @@ protected:
     static constexpr uint16_t ROM_BANK_SIZE = 0x4000;   // 16 KB
     static constexpr uint16_t RAM_BANK_SIZE = 0x2000;   // 8 KB
 
-    std::vector<std::vector<uint8_t>> rom;  // Vector of ROM banks
-    std::vector<std::vector<uint8_t>> ram;  // Vector of RAM banks
+    std::vector<std::array<uint8_t, ROM_BANK_SIZE>> rom;  // ROM banks
+    std::vector<std::array<uint8_t, RAM_BANK_SIZE>> ram;  // RAM banks
 
     // Cartridge header values
     int rom_size;       // Total number of ROM banks

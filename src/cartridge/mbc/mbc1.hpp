@@ -20,10 +20,10 @@ public:
 
 private:
     // Registers
-    bool is_ram_enabled;        // Controls if RAM is accessible
-    uint8_t rom_bank_number;    // Currently selected ROM bank (5 bit)
-    uint8_t ram_bank_number;    // Currently selected RAM bank (2 bit)
-    bool advanced_banking;      // Controls behaviour of ram_bank_number
+    bool is_ram_enabled : 1;        // Controls if RAM is accessible
+    uint8_t rom_bank_number : 5;    // Currently selected ROM bank
+    uint8_t ram_bank_number : 2;    // Currently selected RAM bank
+    bool advanced_banking : 1;      // Controls behaviour of ram_bank_number
 
     // Write regions
     static constexpr uint16_t IS_RAM_ENABLED_UPPER = 0x2000;

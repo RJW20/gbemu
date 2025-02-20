@@ -1,5 +1,4 @@
 #include <cstdint>
-#include <fstream>
 #include "mbc1.hpp"
 #include "../../exceptions.hpp"
 
@@ -18,13 +17,13 @@ void Mbc1::reset() {
 uint8_t Mbc1::read_rom(uint16_t address) const {
 
     if (address < ROM_BANK_SIZE) {
-        uint8_t selected_rom_bank = advanced_banking ? 
+        const uint8_t selected_rom_bank = advanced_banking ? 
             (ram_bank_number << 5) & (rom_size - 1) : 0;
         return rom[selected_rom_bank][address];
     }
 
     else if (address < 2 * ROM_BANK_SIZE) {
-        uint8_t selected_rom_bank =
+        const uint8_t selected_rom_bank =
             ((ram_bank_number << 5) | rom_bank_number) & (rom_size - 1);
         return rom[selected_rom_bank][address & (ROM_BANK_SIZE - 1)];
     }
@@ -54,12 +53,12 @@ void Mbc1::write_rom(uint16_t address, uint8_t value) {
     }
 
     else if (address < ROM_BANK_SIZE) {
-        rom_bank_number = value & 0b11111;
+        rom_bank_number = value & 0x1F;
         rom_bank_number = rom_bank_number ? rom_bank_number : 1;
     }
 
     else if (address < RAM_BANK_NUMBER_UPPER) {
-        ram_bank_number = value & 0b11;
+        ram_bank_number = value & 3;
     }
 
     else if (address < 2 * ROM_BANK_SIZE) {
@@ -98,7 +97,7 @@ uint8_t Mbc1::read_ram(uint16_t address) const {
         );
     }
 
-    uint8_t selected_ram_bank = advanced_banking ? ram_bank_number : 0;
+    const uint8_t selected_ram_bank = advanced_banking ? ram_bank_number : 0;
     return ram[selected_ram_bank][address & (RAM_BANK_SIZE - 1)];
 }
 
@@ -127,6 +126,6 @@ void Mbc1::write_ram(uint16_t address, uint8_t value) {
         );
     }
 
-    uint8_t selected_ram_bank = advanced_banking ? ram_bank_number : 0;
+    const uint8_t selected_ram_bank = advanced_banking ? ram_bank_number : 0;
     ram[selected_ram_bank][address & (RAM_BANK_SIZE - 1)] = value;
 }

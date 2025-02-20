@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <fstream>
+#include <array>
 #include "mbc2.hpp"
 #include "base_mbc.hpp"
 #include "../../exceptions.hpp"
@@ -13,7 +14,7 @@ Mbc2::Mbc2(std::ifstream& rom_file) : BaseMbc(rom_file, false) {
 
 // Clear RAM and set registers to their default power-on values.
 void Mbc2::reset() {
-    ram.resize(ram_size, std::vector<uint8_t>(BUILT_IN_RAM_SIZE));
+    ram.resize(ram_size, std::array<uint8_t, RAM_BANK_SIZE>());
     is_ram_enabled = false;
     rom_bank_number = 1;
 }
@@ -53,7 +54,7 @@ void Mbc2::write_rom(uint16_t address, uint8_t value) {
             is_ram_enabled = (value == 0xA);
         }
         else {
-            rom_bank_number = value & 0b1111;
+            rom_bank_number = value & 0xF;
             rom_bank_number = rom_bank_number ? rom_bank_number : 1;
         }
     }
@@ -80,7 +81,7 @@ uint8_t Mbc2::read_ram(uint16_t address) const {
         );
     }
 
-    if (address >= BUILT_IN_RAM_SIZE) {
+    if (address >= RAM_BANK_SIZE) {
         throw MemoryAccessException(
             "MBC2 RAM", "out of bounds", address, true
         );
@@ -91,6 +92,8 @@ uint8_t Mbc2::read_ram(uint16_t address) const {
 
 /* Write the trailing 4 bits of the given 8 bit value to the RAM at the given
  * address.
+ * Only the bottom 9 bits of the address are used, so those over 0x200 will be
+ * mapped to the region 0x000-0x1FF.
  * Throws a MemoryAccessException if RAM is not accessible or if the address is
  * out of bounds. */
 void Mbc2::write_ram(uint16_t address, uint8_t value) {
@@ -102,7 +105,7 @@ void Mbc2::write_ram(uint16_t address, uint8_t value) {
         );
     }
 
-    if (address >= BUILT_IN_RAM_SIZE) {
+    if (address >= RAM_BANK_SIZE) {
         throw MemoryAccessException(
             "MBC2 RAM", "out of bounds", address, false
         );
