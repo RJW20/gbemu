@@ -13,6 +13,7 @@ set(SOURCES
     src/cartridge/mbc/no_mbc.cpp
     src/cartridge/mbc/mbc1.cpp
     src/cartridge/mbc/mbc2.cpp
+    src/cartridge/mbc/mbc3.cpp
     src/interrupt_manager.cpp
     src/timer.cpp
     src/serial.cpp

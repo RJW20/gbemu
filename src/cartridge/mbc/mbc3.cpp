@@ -54,36 +54,26 @@ uint8_t Rtc::read(uint8_t reg) const {
  * Adjusts the start time as necessary to keep the RTC ticking. 
  * Throws a MemoryAccessException if the given register is invalid. */
 void Rtc::write(uint8_t reg, uint8_t value) {
-
-    if (!halted) {
-        update();
-    }
-
+    
+    update();
+    
     switch (reg) {
         case 0x8:
-            seconds = value % 60;
+            seconds = value & 0x3F;
             break;
         case 0x9:
-            minutes = value % 60;
+            minutes = value & 0x3F;
             break;
         case 0xA:
-            hours = value % 24;
+            hours = value & 0x1F;
             break;
         case 0xB:
             days = (days & 0x100) | value;
             break;
         case 0x0C: {
-            const bool prev_halted = halted;
-            const bool prev_overflowed = overflowed;
-
             days = ((value & 0x1) << 8) | (days & 0xFF);
             halted = value >> 6;
             overflowed = value >> 7;
-
-            if (prev_halted && !halted && !overflowed ||
-                prev_overflowed && !overflowed) {
-                adjust_start_time();
-            }
             break;
         }
         default:
@@ -92,9 +82,7 @@ void Rtc::write(uint8_t reg, uint8_t value) {
             );
     }
 
-    if (!halted && !overflowed && reg != 0xC) {
-        adjust_start_time();
-    }
+    adjust_start_time();
 }
 
 // Clear RAM and set registers to their default power-on values.
