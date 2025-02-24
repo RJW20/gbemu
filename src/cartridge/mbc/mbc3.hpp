@@ -2,17 +2,16 @@
 #define MBC3_HPP
 
 #include <cstdint>
-#include <ctime>
+#include <chrono>
 #include <fstream>
 #include "base_mbc.hpp"
 
 // RealTimeClock
 class Rtc {
 public:
-    Rtc() { start_time = std::time(nullptr); }
+    Rtc() {}
 
     void update();
-    void adjust_start_time();
     uint8_t read(uint8_t reg) const;
     void write(uint8_t reg, uint8_t value);
 
@@ -23,7 +22,9 @@ private:
     uint16_t days : 9;
     uint8_t halted : 1;
     uint8_t overflowed : 1;
-    std::time_t start_time;
+    std::chrono::time_point<std::chrono::steady_clock> previous_update_time =
+        std::chrono::steady_clock::now();
+    std::chrono::time_point<std::chrono::steady_clock> halt_time;
 };
 
 // Memory Bank Controller version 3.

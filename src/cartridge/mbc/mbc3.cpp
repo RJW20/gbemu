@@ -1,35 +1,100 @@
 #include <cstdint>
-#include <ctime>
+#include <chrono>
 #include "mbc3.hpp"
 #include "../../exceptions.hpp"
 
-/* Set the registers to the values representing the time between now and when
- * the RTC was started. */
+/* Update the registers to include the time that has passed since the last
+ * update.
+ * The elapsed time is added to the seconds register, and a tick is sent up the
+ * chain to the next register only if it takes the register through its maximum
+ * (e.g. 60 for seconds and minutes, 24 for hours).
+ * If a register has a value greater than or equal to its maximum (via a write)
+ * then it will overflow its number of bits as appropriate without sending a
+ * tick to the next register. */
 void Rtc::update() {
 
     if (halted || overflowed) {
         return;
     }
 
-    std::time_t now = std::time(nullptr);
-    std::time_t elapsed = now - start_time;
-    seconds = elapsed % 60;
-    minutes = (elapsed / 60) % 60;
-    hours = (elapsed / 3600) % 24;
-    days = (elapsed / 86400);
-    if (elapsed / 86400 > 511) {
-        overflowed = true;
+    const auto now = std::chrono::steady_clock::now();
+    uint64_t elapsed_seconds =
+        std::chrono::duration<double>(now - previous_update_time).count();
+    if (!elapsed_seconds) {
+        return;
     }
+    uint64_t elapsed_minutes = 0;
+    uint64_t elapsed_hours = 0;
+    uint64_t elapsed_days = 0;
+
+    if (seconds > 59) {
+        const uint8_t count_to_overflow = 64 - seconds;
+        if (elapsed_seconds > count_to_overflow - 1) {
+            seconds = 0;
+            elapsed_seconds -= count_to_overflow;
+        }
+    }
+    else {
+        const uint8_t count_to_tick = 60 - seconds;
+        if (elapsed_seconds > count_to_tick - 1) {
+            seconds = 0;
+            elapsed_seconds -= count_to_tick;
+            elapsed_minutes = 1;
+        }
+    }
+    seconds += elapsed_seconds % 60;
+    elapsed_minutes += elapsed_seconds / 60;
+
+    if (minutes > 59) {
+        const uint8_t count_to_overflow = 64 - minutes;
+        if (elapsed_minutes > count_to_overflow - 1) {
+            minutes = 0;
+            elapsed_minutes -= count_to_overflow;
+        }
+    }
+    else {
+        const uint8_t count_to_tick = 60 - minutes;
+        if (elapsed_minutes > count_to_tick - 1) {
+            minutes = 0;
+            elapsed_minutes -= count_to_tick;
+            elapsed_hours = 1;
+        }
+    }
+    minutes += elapsed_minutes % 60;
+    elapsed_hours += elapsed_minutes / 60;
+
+    if (hours > 23) {
+        const uint8_t count_to_overflow = 32 - hours;
+        if (elapsed_hours > count_to_overflow - 1) {
+            hours = 0;
+            elapsed_hours -= count_to_overflow;
+        }
+    }
+    else {
+        const uint8_t count_to_tick = 24 - hours;
+        if (elapsed_hours > count_to_tick - 1) {
+            hours = 0;
+            elapsed_hours -= count_to_tick;
+            elapsed_days = 1;
+        }
+    }
+    hours += elapsed_hours % 24;
+    elapsed_days += elapsed_hours / 24;
+
+    const uint16_t count_to_overflow = 512 - days;
+    if (elapsed_days > count_to_overflow - 1) {
+        days = 0;
+        overflowed = true;
+        halt_time = now;
+    }
+    else {
+        days += elapsed_days;
+    }
+
+    previous_update_time = now;
 }
 
-/* Set the start time to the time into the past that the register values
- * currently represent. */
-void Rtc::adjust_start_time() {
-    std::time_t now = std::time(nullptr);
-    start_time = now - (days * 86400 + hours * 3600 + minutes * 60 + seconds);
-}
-
-/* Read the value from corresponding RTC register.
+/* Read the value from the corresponding RTC register.
  * Throws a MemoryAccessException if the given register is invalid. */
 uint8_t Rtc::read(uint8_t reg) const {
     switch(reg) {
@@ -51,7 +116,8 @@ uint8_t Rtc::read(uint8_t reg) const {
 }
 
 /* Write the value to the corresponding RTC register. 
- * Adjusts the start time as necessary to keep the RTC ticking. 
+ * Adjusts previous_update_time as necessary if the written value changes the
+ * halted or overflow status of the RTC. 
  * Throws a MemoryAccessException if the given register is invalid. */
 void Rtc::write(uint8_t reg, uint8_t value) {
     
@@ -71,9 +137,20 @@ void Rtc::write(uint8_t reg, uint8_t value) {
             days = (days & 0x100) | value;
             break;
         case 0x0C: {
+            const bool prev_halted_or_overflowed = (halted || overflowed);
             days = ((value & 0x1) << 8) | (days & 0xFF);
             halted = value >> 6;
             overflowed = value >> 7;
+            if (!prev_halted_or_overflowed) {
+                if (halted || overflowed) {
+                    halt_time = std::chrono::steady_clock::now();
+                }
+            }
+            else {
+                if (!(halted || overflowed)) {
+                    previous_update_time += std::chrono::steady_clock::now() - halt_time;
+                }
+            }
             break;
         }
         default:
@@ -81,8 +158,6 @@ void Rtc::write(uint8_t reg, uint8_t value) {
                 "RTC", "invalid RTC register", reg, false
             );
     }
-
-    adjust_start_time();
 }
 
 // Clear RAM and set registers to their default power-on values.
