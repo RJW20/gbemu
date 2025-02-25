@@ -8,7 +8,7 @@
 // NOP
 Opcode Cpu::opcode_0x00() {
     std::vector<Step> steps;
-    steps.push_back([this] { ; });
+    steps.push_back([this] {  });
     return Opcode{0x00, "NOP", 1, 4, steps};
 }
 
@@ -71,7 +71,9 @@ Opcode Cpu::opcode_0x08() {
     steps.push_back([this] { z8 = mmu->read(reg.pc++); });
     steps.push_back([this] { z16 = (mmu->read(reg.pc++) << 8) | z8; });
     steps.push_back([this] { mmu->write(z16, reg.sp & 0xFF); });
-    steps.push_back([this] { mmu->write((uint16_t) (z16 + 1), reg.sp >> 8); });
+    steps.push_back([this] { 
+        mmu->write(static_cast<uint16_t>(z16 + 1), reg.sp >> 8);
+    });
     return Opcode{0x08, "LD (a16), SP", 3, 20, steps};
 }
 
@@ -130,7 +132,7 @@ Opcode Cpu::opcode_0x0f() {
 // STOP 0
 Opcode Cpu::opcode_0x10() {
     std::vector<Step> steps;
-    steps.push_back([this] { ; });
+    steps.push_back([this] {  });
     return Opcode{0x10, "STOP 0", 1, 4, steps};
 }
 
@@ -191,7 +193,9 @@ Opcode Cpu::opcode_0x17() {
 Opcode Cpu::opcode_0x18() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.pc++); });
-    steps.push_back([this] { reg.pc = (uint16_t) (reg.pc + (int8_t) z8); });
+    steps.push_back([this] { 
+        reg.pc = static_cast<uint16_t>(reg.pc + static_cast<int8_t>(z8));
+    });
     return Opcode{0x18, "JR r8", 2, 12, steps};
 }
 
@@ -252,7 +256,9 @@ Opcode Cpu::opcode_0x20() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.pc++);
         if (reg.flag_z) early_exit = true; });
-    steps.push_back([this] { reg.pc = (uint16_t) (reg.pc + (int8_t) z8); });
+    steps.push_back([this] { 
+        reg.pc = static_cast<uint16_t>(reg.pc + static_cast<int8_t>(z8));
+    });
     return Opcode{0x20, "JR NZ, r8", 2, 12, steps};
 }
 
@@ -314,7 +320,9 @@ Opcode Cpu::opcode_0x28() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.pc++);
         if (!reg.flag_z) early_exit = true; });
-    steps.push_back([this] { reg.pc = (uint16_t) (reg.pc + (int8_t) z8); });
+    steps.push_back([this] { 
+        reg.pc = static_cast<uint16_t>(reg.pc + static_cast<int8_t>(z8));
+    });
     return Opcode{0x28, "JR Z, r8", 2, 12, steps};
 }
 
@@ -375,7 +383,9 @@ Opcode Cpu::opcode_0x30() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.pc++);
         if (reg.flag_c) early_exit = true; });
-    steps.push_back([this] { reg.pc = (uint16_t) (reg.pc + (int8_t) z8); });
+    steps.push_back([this] { 
+        reg.pc = static_cast<uint16_t>(reg.pc + static_cast<int8_t>(z8));
+    });
     return Opcode{0x30, "JR NC, r8", 2, 12, steps};
 }
 
@@ -441,7 +451,9 @@ Opcode Cpu::opcode_0x38() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.pc++);
         if (!reg.flag_c) early_exit = true; });
-    steps.push_back([this] { reg.pc = (uint16_t) (reg.pc + (int8_t) z8); });
+    steps.push_back([this] { 
+        reg.pc = static_cast<uint16_t>(reg.pc + static_cast<int8_t>(z8));
+    });
     return Opcode{0x38, "JR C, r8", 2, 12, steps};
 }
 
@@ -884,7 +896,7 @@ Opcode Cpu::opcode_0x75() {
 // HALT
 Opcode Cpu::opcode_0x76() {
     std::vector<Step> steps;
-    steps.push_back([this] { ; });
+    steps.push_back([this] {  });
     return Opcode{0x76, "HALT", 1, 4, steps};
 }
 
@@ -1518,7 +1530,7 @@ Opcode Cpu::opcode_0xca() {
 // PREFIX CB
 Opcode Cpu::opcode_0xcb() {
     std::vector<Step> steps;
-    steps.push_back([this] { ; });
+    steps.push_back([this] {  });
     return Opcode{0xcb, "PREFIX CB", 1, 4, steps};
 }
 
@@ -1699,7 +1711,9 @@ Opcode Cpu::opcode_0xdf() {
 Opcode Cpu::opcode_0xe0() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.pc++); });
-    steps.push_back([this] { mmu->write((uint16_t) (0xFF00 + z8), reg.a); });
+    steps.push_back([this] { 
+        mmu->write(static_cast<uint16_t>(0xFF00 + z8), reg.a);
+    });
     return Opcode{0xe0, "LDH (a8), A", 2, 12, steps};
 }
 
@@ -1715,7 +1729,9 @@ Opcode Cpu::opcode_0xe1() {
 // LDH (C), A
 Opcode Cpu::opcode_0xe2() {
     std::vector<Step> steps;
-    steps.push_back([this] { mmu->write((uint16_t) (0xFF00 + reg.c), reg.a); });
+    steps.push_back([this] { 
+        mmu->write(static_cast<uint16_t>(0xFF00 + reg.c), reg.a);
+    });
     return Opcode{0xe2, "LDH (C), A", 1, 8, steps};
 }
 
@@ -1793,7 +1809,9 @@ Opcode Cpu::opcode_0xef() {
 Opcode Cpu::opcode_0xf0() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.pc++); });
-    steps.push_back([this] { z8 = mmu->read((uint16_t) (0xFF00 + z8)); });
+    steps.push_back([this] { 
+        z8 = mmu->read(static_cast<uint16_t>(0xFF00 + z8));
+    });
     steps.push_back([this] { reg.a = z8; });
     return Opcode{0xf0, "LDH A, (a8)", 2, 12, steps};
 }
@@ -1810,7 +1828,9 @@ Opcode Cpu::opcode_0xf1() {
 // LDH A, (C)
 Opcode Cpu::opcode_0xf2() {
     std::vector<Step> steps;
-    steps.push_back([this] { z8 = mmu->read((uint16_t) (0xFF00 + reg.c)); });
+    steps.push_back([this] { 
+        z8 = mmu->read(static_cast<uint16_t>(0xFF00 + reg.c));
+    });
     steps.push_back([this] { reg.a = z8; });
     return Opcode{0xf2, "LDH A, (C)", 1, 8, steps};
 }
