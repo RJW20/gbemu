@@ -13,19 +13,19 @@ void Cpu::add(uint8_t value) {
     reg.flag_n = false;
     reg.flag_h = ((reg.a & 0xF) + (value & 0xF) > 0xF); // Bits 3 and 4
     reg.flag_c = (result > 0xFF);
-    reg.a = (uint8_t) result;
+    reg.a = static_cast<uint8_t>(result);
 }
 
 /* Set a to a + value + the current value of the carry flag.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 void Cpu::add_with_carry(uint8_t value) {
-    uint8_t carry = (uint8_t) reg.flag_c;
+    uint8_t carry = reg.flag_c;
     int result = reg.a + value + carry;
     reg.flag_z = ((result & 0xFF) == 0);
     reg.flag_n = false;
     reg.flag_h = ((reg.a & 0xF) + (value & 0xF) + carry > 0xF); // Bits 3 and 4
     reg.flag_c = (result > 0xFF);
-    reg.a = (uint8_t) result;
+    reg.a = static_cast<uint8_t>(result);
 }
 
 /* Set a to a - value.
@@ -36,19 +36,19 @@ void Cpu::subtract(uint8_t value) {
     reg.flag_n = true;
     reg.flag_h = ((reg.a & 0xF) < (value & 0xF)); // Bits 3 and 4
     reg.flag_c = (result < 0);
-    reg.a = (uint8_t) result;
+    reg.a = static_cast<uint8_t>(result);
 }
 
 /* Set a to a - value - the current value of the carry flag.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 void Cpu::subtract_with_carry(uint8_t value) {
-    uint8_t carry = (uint8_t) reg.flag_c;
+    uint8_t carry = reg.flag_c;
     int result = reg.a - value - carry;
     reg.flag_z = ((result & 0xFF) == 0);
     reg.flag_n = true;
     reg.flag_h = ((reg.a & 0xF) - (value & 0xF) - carry < 0); // Bits 3 and 4
     reg.flag_c = (result < 0);
-    reg.a = (uint8_t) result;
+    reg.a = static_cast<uint8_t>(result);
 }
 
 /* Set a to a & value.
@@ -122,7 +122,7 @@ void Cpu::add_hl(uint16_t value) {
     reg.flag_n = false;
     reg.flag_h = ((reg.hl() & 0xFFF) + (value & 0xFFF) > 0xFFF); // Bits 11 and 12
     reg.flag_c = (result > 0xFFFF);
-    reg.set_hl((uint16_t) result);
+    reg.set_hl(static_cast<uint16_t>(result));
 }
 
 /* Return the addition of the given unsigned 16-bit value and unsigned 8-bit
@@ -149,7 +149,7 @@ uint8_t Cpu::swap(uint8_t value) {
     reg.flag_n = false;
     reg.flag_h = false;
     reg.flag_c = false;
-    return (uint8_t) (value << 4) | (value >> 4);
+    return (value << 4) | (value >> 4);
 }
 
 /* Adjust a to a binary coded decimal (bcd).
@@ -220,7 +220,7 @@ uint8_t Cpu::rotate_left_circular(uint8_t value) {
  * The 0th bit is set to the current value of the carry flag.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 uint8_t Cpu::rotate_left(uint8_t value) {
-    uint8_t result = (value << 1) | (uint8_t) reg.flag_c;
+    uint8_t result = (value << 1) | reg.flag_c;
     reg.flag_z = (result == 0);
     reg.flag_n = false;
     reg.flag_h = false;
@@ -231,7 +231,7 @@ uint8_t Cpu::rotate_left(uint8_t value) {
 /* Return the given 8-bit value rotated once (circularly) to the right.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 uint8_t Cpu::rotate_right_circular(uint8_t value) {
-    uint8_t result = (value >> 1) | (uint8_t) (value << 7);
+    uint8_t result = (value >> 1) | (value << 7);
     reg.flag_z = (result == 0);
     reg.flag_n = false;
     reg.flag_h = false;
@@ -243,7 +243,7 @@ uint8_t Cpu::rotate_right_circular(uint8_t value) {
  * The 7th bit is set to the current value of the carry flag.
  * Sets the zero, subtract, half-carry and carry flags as necessary. */
 uint8_t Cpu::rotate_right(uint8_t value) {
-    uint8_t result = (value >> 1) | (uint8_t) (reg.flag_c << 7);
+    uint8_t result = (value >> 1) | (reg.flag_c << 7);
     reg.flag_z = (result == 0);
     reg.flag_n = false;
     reg.flag_h = false;
