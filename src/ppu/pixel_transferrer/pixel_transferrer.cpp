@@ -86,7 +86,9 @@ void PixelTransferrer::try_push_fetcher_to_fifo() {
             const PaletteRegister palette_register =
                 PaletteRegister(oam_object.pallette + 1);
             const bool priority = oam_object.priority;
-            const int start = oam_object.x_flip ? 0 : 7;
+            const int cut_off_pixels = oam_object.x < 8 ? 8 - oam_object.x : 0; 
+            const int start = oam_object.x_flip ?
+                0 + cut_off_pixels : 7 - cut_off_pixels;
             const int end = oam_object.x_flip ? 8 : -1;
             const int step = oam_object.x_flip ? 1 : -1;
             uint8_t position = 0;
