@@ -20,12 +20,12 @@ uint8_t Mmu::read(uint16_t address) const {
         value = read_value(address);
     }
     catch (MemoryAccessException& e) {
-        Log::warning([e](){ return e.what(); });
+        Log::warning([e]{ return e.what(); });
         value = 0xFF;
     }
 
     Log::debug(
-        [this, address, value]() {
+        [this, address, value] {
             return read_write_message(address, value, true);
         }
     );
@@ -38,13 +38,13 @@ void Mmu::write(uint16_t address, uint8_t value) {
     try {
         write_value(address, value);
         Log::debug(
-            [this, address, value]() {
+            [this, address, value] {
                 return read_write_message(address, value, false);
             }
         );
     }
     catch (MemoryAccessException& e) {
-        Log::warning([e](){ return e.what(); });
+        Log::warning([e]{ return e.what(); });
     }
 }
 
