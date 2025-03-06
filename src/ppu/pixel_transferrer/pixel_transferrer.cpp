@@ -308,9 +308,15 @@ void PixelTransferrer::shift_pixel() {
     }
     else {
         const Pixel object_pixel = object_fifo.shift();
-        shifted_pixel = !bgwin_pixel.colour_id ? object_pixel :
-            !object_pixel.colour_id || object_pixel.priority ?
-            bgwin_pixel : object_pixel;
+        if (!object_pixel.colour_id) {
+            shifted_pixel = bgwin_pixel;
+        }
+        else if (object_pixel.priority && bgwin_pixel.colour_id) {
+            shifted_pixel = bgwin_pixel;
+        }
+        else {
+            shifted_pixel = object_pixel;
+        }
     }
     pixel_buffer[ly_ * SCREEN_WIDTH + lx++] = pixel_to_rgba(shifted_pixel);
 }
