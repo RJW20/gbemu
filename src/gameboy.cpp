@@ -6,21 +6,26 @@
 void GameBoy::run() {
 
     using namespace std::chrono;
-    using time_between_frames = duration<int64_t, std::ratio<1, 60>>;
+    using time_between_frames = duration<int64_t, std::ratio<1, FPS>>;
     auto next_frame = system_clock::now() + time_between_frames{0};
     auto last_frame = next_frame - time_between_frames{1};
 
     while (true) {
         tick();
-        if (++ticks == SIXTY_FPS) {
+        if (++ticks == TICKS_PER_FRAME) {
             screen.render();
             ticks = 0;
             if (power_off()) {
                 break;
             }
-            std::this_thread::sleep_until(next_frame);
-            last_frame = next_frame;
-            next_frame = next_frame + time_between_frames{1};
+            if (throttled()) {
+                std::this_thread::sleep_until(next_frame);
+                last_frame = next_frame;
+                next_frame = next_frame + time_between_frames{1};
+            }
+            else {
+                next_frame = system_clock::now() + time_between_frames{0};
+            }
         }
     }
 }
@@ -43,4 +48,10 @@ bool GameBoy::power_off() const {
         }
     }
     return false;
+}
+
+// Return true if the SPACE key is not currently pressed.
+bool GameBoy::throttled() const {
+    const uint8_t* keyboard = SDL_GetKeyboardState(NULL);
+    return !keyboard[SDL_SCANCODE_SPACE];
 }
