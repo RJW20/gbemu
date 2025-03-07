@@ -46,11 +46,12 @@ void PixelTransferrer::set_fetcher_source(FetcherSource new_source) {
     switch(fetcher.source) {
         
         case FetcherSource::BACKGROUND:
-            fetcher.x = (lx + bgwin_fifo.size()) >> 3;
+            fetcher.x =
+                (lx + bgwin_fifo.size() + bgwin_pixels_to_discard) >> 3;
             break;
 
         case FetcherSource::WINDOW:
-            fetcher.x = ((lx - (wx - 7)) + bgwin_fifo.size()) >> 3;
+            fetcher.x = (lx - (wx - 7) + bgwin_fifo.size()) >> 3;
             window_visible_on_scanline = true;
             break;
     }
