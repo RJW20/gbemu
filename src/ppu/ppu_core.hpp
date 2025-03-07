@@ -45,7 +45,6 @@ protected:
     uint16_t mode_t_cycles;
     uint16_t scanline_t_cycles;
     std::deque<OamObject> scanline_objects;
-    bool window_present_on_scanline;    // Decided at start of scanline
 
     // Underlying (partially) read-only registers
     uint8_t lcdc_;

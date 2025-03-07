@@ -21,6 +21,7 @@ private:
     uint8_t background_tile_offset;
     BGWinFifo bgwin_fifo;
     ObjectFifo object_fifo;
+    bool window_present_on_scanline;
 
     // Helper methods
     void set_fetcher_source(FetcherSource source);

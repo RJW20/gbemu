@@ -12,6 +12,7 @@ void PixelTransferrer::new_pixel_transfer() {
     object_fifo.clear();
     bgwin_fifo.to_discard = background_tile_offset;
     set_fetcher_source(FetcherSource::BACKGROUND);
+    window_present_on_scanline = (ly_ >= wy);
     window_visible_on_scanline = false;
 }
 
