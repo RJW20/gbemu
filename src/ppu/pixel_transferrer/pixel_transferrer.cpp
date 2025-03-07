@@ -11,7 +11,6 @@ void PixelTransferrer::new_pixel_transfer() {
     object_fifo.clear();
     bgwin_fifo.to_discard = bgwin_pixels_to_discard;
     set_fetcher_source(FetcherSource::BACKGROUND);
-    fetcher.wly = 0;
     window_visible_on_scanline = false;
 }
 
