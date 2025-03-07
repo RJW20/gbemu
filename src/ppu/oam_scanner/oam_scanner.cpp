@@ -7,7 +7,6 @@ void OamScanner::new_oam_scan() {
     scanline_t_cycles = 0;
     scan_index = 0;
     scanline_objects.resize(0);
-    bgwin_pixels_to_discard = scx & 0x7;
     window_present_on_scanline = (ly_ >= wy);
 }
 

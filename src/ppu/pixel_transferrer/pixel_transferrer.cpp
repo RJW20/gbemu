@@ -7,9 +7,10 @@
 // Initialise variables for a new pixel transfer.
 void PixelTransferrer::new_pixel_transfer() {
     lx = 0;
+    background_tile_offset = scx & 0x7;
     bgwin_fifo.clear();
     object_fifo.clear();
-    bgwin_fifo.to_discard = bgwin_pixels_to_discard;
+    bgwin_fifo.to_discard = background_tile_offset;
     set_fetcher_source(FetcherSource::BACKGROUND);
     window_visible_on_scanline = false;
 }
@@ -45,8 +46,7 @@ void PixelTransferrer::set_fetcher_source(FetcherSource new_source) {
     switch(fetcher.source) {
         
         case FetcherSource::BACKGROUND:
-            fetcher.x =
-                (lx + bgwin_fifo.size() + bgwin_pixels_to_discard) >> 3;
+            fetcher.x = (lx + bgwin_fifo.size() + background_tile_offset) >> 3;
             break;
 
         case FetcherSource::WINDOW:
@@ -140,7 +140,7 @@ void PixelTransferrer::check_fetcher_source() {
         case FetcherSource::WINDOW:
             if (!window_enabled()) {
                 bgwin_fifo.clear();
-                bgwin_fifo.to_discard = bgwin_pixels_to_discard;
+                bgwin_fifo.to_discard = background_tile_offset;
                 set_fetcher_source(FetcherSource::BACKGROUND);
             }
             else if (bgwin_fifo.is_shifting_pixels() &&

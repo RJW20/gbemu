@@ -18,6 +18,7 @@ public:
     std::array<uint32_t, SCREEN_WIDTH * SCREEN_HEIGHT> pixel_buffer;
 
 private:
+    uint8_t background_tile_offset;
     BGWinFifo bgwin_fifo;
     ObjectFifo object_fifo;
 
