@@ -109,7 +109,7 @@ public:
                 open_debug_file();
             }
             if (debug_file.is_open()) {
-                debug_file << message << std::endl;
+                debug_file << message << "\n";
             }
         }
     }
@@ -126,8 +126,7 @@ public:
                 open_debug_file();
             }
             if (debug_file.is_open()) {
-                debug_file << std::forward<Func>(message_generator)()
-                    << std::endl;
+                debug_file << std::forward<Func>(message_generator)() << "\n";
             }
         }
     }
