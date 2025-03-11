@@ -24,8 +24,8 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
     }
 
     // ROM bank handling
-    rom_size = rom[0][ROM_SIZE_ADDRESS];
-    if (rom.size() != (1 << (rom_size + 1))) {
+    rom_size = 1 << (rom[0][ROM_SIZE_ADDRESS] + 1);
+    if (rom.size() != rom_size) {
         std::ostringstream rom_size_address;
         rom_size_address << std::hex << ROM_SIZE_ADDRESS;
         Log::error(
