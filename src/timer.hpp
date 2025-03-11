@@ -49,7 +49,6 @@ private:
 
     // Variables to ensure overflow behaviour is correct
     bool previous_sc_bit;   // Previous value of selected bit in system_counter
-    bool tima_overflow;
     uint8_t ticks_since_overflow;
 
     bool timer_is_enabled() const { return (tac_ >> 2) & 1; }

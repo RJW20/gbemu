@@ -13,8 +13,7 @@ void Timer::reset() {
     tma_ = 0;
     tac_ = 0xF8;
     previous_sc_bit = 0;
-    tima_overflow = false;
-    ticks_since_overflow = 0;
+    ticks_since_overflow = 0xFF;
 }
 
 // Carry out 1 t-cycle.
@@ -30,10 +29,11 @@ void Timer::tick() {
     previous_sc_bit = current_sc_bit;
 
     // Send interrupt request if tima_ overflowed last m-cycle
-    if (tima_overflow && ++ticks_since_overflow == 4) {
-        tima_ = tma_;
-        interrupt_manager->request(InterruptType::TIMER);
-        tima_overflow = false;
+    if (ticks_since_overflow < 8) {
+        if (++ticks_since_overflow == 4) {
+            interrupt_manager->request(InterruptType::TIMER);
+            tima_ = tma_;
+        }
     }
 
     Log::debug(*this);
@@ -42,21 +42,21 @@ void Timer::tick() {
 // Increment tima_ and check for an overflow.
 void Timer::increase_tima() {
     if (++tima_ == 0) {
-        tima_overflow = true;
         ticks_since_overflow = 0;
     }
 }
 
 /* Set tima_ to the given value.
- * If a tima_ overflow occurred in the previous cycle the write will be
+ * If a tima_ overflow occurred in the previous m-cycle the write will be
  * ignored.
- * If a tima_ overflow occurred in this cycle the overflow will be ignored. */
+ * If a tima_ overflow occurred in this m-cycle the overflow will be
+ * ignored. */
 void Timer::set_tima(uint8_t value) {
-    if (ticks_since_overflow == 4) {
+    if (ticks_since_overflow < 4) {
         return;
     }
-    if (tima_overflow) {
-        tima_overflow = false;
+    else if (ticks_since_overflow < 8) {
+        ticks_since_overflow = 0xFF;
     }
     tima_ = value;
 }
@@ -66,7 +66,7 @@ void Timer::set_tima(uint8_t value) {
  * set to the same value. */
 void Timer::set_tma(uint8_t value) {
     tma_ = value;
-    if (ticks_since_overflow == 4) {
+    if (ticks_since_overflow < 4) {
         tima_ = value;
     }
 }
