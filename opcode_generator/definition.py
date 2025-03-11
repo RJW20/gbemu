@@ -547,8 +547,7 @@ def inc(opcode: Opcode) -> str:
         case "(HL)":
             return (
                 step("z8 = mmu->read(reg.hl());") +
-                step("z8 = increment(z8);") +
-                step("mmu->write(reg.hl(), z8);")
+                step("mmu->write(reg.hl(), increment(z8));")
             )
 
         case "BC" | "DE" | "HL":
@@ -576,8 +575,7 @@ def dec(opcode: Opcode) -> str:
         case "(HL)":
             return (
                 step("z8 = mmu->read(reg.hl());") +
-                step("z8 = decrement(z8);") +
-                step("mmu->write(reg.hl(), z8);")
+                step("mmu->write(reg.hl(), decrement(z8));")
             )
 
         case "BC" | "DE" | "HL":
@@ -605,8 +603,7 @@ def swap(opcode: Opcode) -> str:
         case "(HL)":
             return (
                 step("z8 = mmu->read(reg.hl());") +
-                step("z8 = swap(z8);") +
-                step("mmu->write(reg.hl(), z8);")
+                step("mmu->write(reg.hl(), swap(z8));")
             )
 
         case _:
@@ -693,8 +690,11 @@ def rlc(opcode: Opcode) -> str:
         case "(HL)":
             return (
                 step("z8 = mmu->read(reg.hl());") +
-                step("z8 = rotate_left_circular(z8);") +
-                step("mmu->write(reg.hl(), z8);")
+                step(
+                    "\n"
+                    f"{INDENT}{INDENT}mmu->write(reg.hl(), rotate_left_circular(z8));\n"
+                    "   "
+                )
             )
 
         case _:
@@ -711,8 +711,7 @@ def rl(opcode: Opcode) -> str:
         case "(HL)":
             return (
                 step("z8 = mmu->read(reg.hl());") +
-                step("z8 = rotate_left(z8);") +
-                step("mmu->write(reg.hl(), z8);")
+                step("mmu->write(reg.hl(), rotate_left(z8));")
             )
 
         case _:
@@ -729,8 +728,11 @@ def rrc(opcode: Opcode) -> str:
         case "(HL)":
             return (
                 step("z8 = mmu->read(reg.hl());") +
-                step("z8 = rotate_right_circular(z8);") +
-                step("mmu->write(reg.hl(), z8);")
+                step(
+                    "\n"
+                    f"{INDENT}{INDENT}mmu->write(reg.hl(), rotate_right_circular(z8));\n"
+                    "   "
+                )
             )
 
         case _:
@@ -747,8 +749,7 @@ def rr(opcode: Opcode) -> str:
         case "(HL)":
             return (
                 step("z8 = mmu->read(reg.hl());") +
-                step("z8 = rotate_right(z8);") +
-                step("mmu->write(reg.hl(), z8);")
+                step("mmu->write(reg.hl(), rotate_right(z8));")
             )
 
         case _:
@@ -826,8 +827,7 @@ def set_(opcode: Opcode) -> str:
         case "(HL)":
             return (
                 step("z8 = mmu->read(reg.hl());") +
-                step(f"z8 = set(z8, {int(opcode.operand1)});") +
-                step("mmu->write(reg.hl(), z8);")
+                step(f"mmu->write(reg.hl(), set(z8, {int(opcode.operand1)}));")
             )
 
         case _:
@@ -844,8 +844,7 @@ def res(opcode: Opcode) -> str:
         case "(HL)":
             return (
                 step("z8 = mmu->read(reg.hl());") +
-                step(f"z8 = reset(z8, {int(opcode.operand1)});") +
-                step("mmu->write(reg.hl(), z8);")
+                step(f"mmu->write(reg.hl(), reset(z8, {int(opcode.operand1)}));")
             )
 
         case _:

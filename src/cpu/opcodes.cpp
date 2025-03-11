@@ -417,8 +417,7 @@ Opcode Cpu::opcode_0x33() {
 Opcode Cpu::opcode_0x34() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = increment(z8); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), increment(z8)); });
     return Opcode{0x34, "INC (HL)", 1, 12, steps};
 }
 
@@ -426,8 +425,7 @@ Opcode Cpu::opcode_0x34() {
 Opcode Cpu::opcode_0x35() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = decrement(z8); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), decrement(z8)); });
     return Opcode{0x35, "DEC (HL)", 1, 12, steps};
 }
 
@@ -1965,8 +1963,9 @@ Opcode Cpu::opcode_cb_0x05() {
 Opcode Cpu::opcode_cb_0x06() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = rotate_left_circular(z8); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { 
+        mmu->write(reg.hl(), rotate_left_circular(z8));
+    });
     return Opcode{0x06, "RLC (HL)", 2, 16, steps};
 }
 
@@ -2023,8 +2022,9 @@ Opcode Cpu::opcode_cb_0x0d() {
 Opcode Cpu::opcode_cb_0x0e() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = rotate_right_circular(z8); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { 
+        mmu->write(reg.hl(), rotate_right_circular(z8));
+    });
     return Opcode{0x0e, "RRC (HL)", 2, 16, steps};
 }
 
@@ -2081,8 +2081,7 @@ Opcode Cpu::opcode_cb_0x15() {
 Opcode Cpu::opcode_cb_0x16() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = rotate_left(z8); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), rotate_left(z8)); });
     return Opcode{0x16, "RL (HL)", 2, 16, steps};
 }
 
@@ -2139,8 +2138,7 @@ Opcode Cpu::opcode_cb_0x1d() {
 Opcode Cpu::opcode_cb_0x1e() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = rotate_right(z8); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), rotate_right(z8)); });
     return Opcode{0x1e, "RR (HL)", 2, 16, steps};
 }
 
@@ -2311,8 +2309,7 @@ Opcode Cpu::opcode_cb_0x35() {
 Opcode Cpu::opcode_cb_0x36() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = swap(z8); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), swap(z8)); });
     return Opcode{0x36, "SWAP (HL)", 2, 16, steps};
 }
 
@@ -2882,8 +2879,7 @@ Opcode Cpu::opcode_cb_0x85() {
 Opcode Cpu::opcode_cb_0x86() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = reset(z8, 0); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), reset(z8, 0)); });
     return Opcode{0x86, "RES 0, (HL)", 2, 16, steps};
 }
 
@@ -2940,8 +2936,7 @@ Opcode Cpu::opcode_cb_0x8d() {
 Opcode Cpu::opcode_cb_0x8e() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = reset(z8, 1); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), reset(z8, 1)); });
     return Opcode{0x8e, "RES 1, (HL)", 2, 16, steps};
 }
 
@@ -2998,8 +2993,7 @@ Opcode Cpu::opcode_cb_0x95() {
 Opcode Cpu::opcode_cb_0x96() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = reset(z8, 2); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), reset(z8, 2)); });
     return Opcode{0x96, "RES 2, (HL)", 2, 16, steps};
 }
 
@@ -3056,8 +3050,7 @@ Opcode Cpu::opcode_cb_0x9d() {
 Opcode Cpu::opcode_cb_0x9e() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = reset(z8, 3); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), reset(z8, 3)); });
     return Opcode{0x9e, "RES 3, (HL)", 2, 16, steps};
 }
 
@@ -3114,8 +3107,7 @@ Opcode Cpu::opcode_cb_0xa5() {
 Opcode Cpu::opcode_cb_0xa6() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = reset(z8, 4); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), reset(z8, 4)); });
     return Opcode{0xa6, "RES 4, (HL)", 2, 16, steps};
 }
 
@@ -3172,8 +3164,7 @@ Opcode Cpu::opcode_cb_0xad() {
 Opcode Cpu::opcode_cb_0xae() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = reset(z8, 5); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), reset(z8, 5)); });
     return Opcode{0xae, "RES 5, (HL)", 2, 16, steps};
 }
 
@@ -3230,8 +3221,7 @@ Opcode Cpu::opcode_cb_0xb5() {
 Opcode Cpu::opcode_cb_0xb6() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = reset(z8, 6); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), reset(z8, 6)); });
     return Opcode{0xb6, "RES 6, (HL)", 2, 16, steps};
 }
 
@@ -3288,8 +3278,7 @@ Opcode Cpu::opcode_cb_0xbd() {
 Opcode Cpu::opcode_cb_0xbe() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = reset(z8, 7); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), reset(z8, 7)); });
     return Opcode{0xbe, "RES 7, (HL)", 2, 16, steps};
 }
 
@@ -3346,8 +3335,7 @@ Opcode Cpu::opcode_cb_0xc5() {
 Opcode Cpu::opcode_cb_0xc6() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = set(z8, 0); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), set(z8, 0)); });
     return Opcode{0xc6, "SET 0, (HL)", 2, 16, steps};
 }
 
@@ -3404,8 +3392,7 @@ Opcode Cpu::opcode_cb_0xcd() {
 Opcode Cpu::opcode_cb_0xce() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = set(z8, 1); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), set(z8, 1)); });
     return Opcode{0xce, "SET 1, (HL)", 2, 16, steps};
 }
 
@@ -3462,8 +3449,7 @@ Opcode Cpu::opcode_cb_0xd5() {
 Opcode Cpu::opcode_cb_0xd6() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = set(z8, 2); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), set(z8, 2)); });
     return Opcode{0xd6, "SET 2, (HL)", 2, 16, steps};
 }
 
@@ -3520,8 +3506,7 @@ Opcode Cpu::opcode_cb_0xdd() {
 Opcode Cpu::opcode_cb_0xde() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = set(z8, 3); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), set(z8, 3)); });
     return Opcode{0xde, "SET 3, (HL)", 2, 16, steps};
 }
 
@@ -3578,8 +3563,7 @@ Opcode Cpu::opcode_cb_0xe5() {
 Opcode Cpu::opcode_cb_0xe6() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = set(z8, 4); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), set(z8, 4)); });
     return Opcode{0xe6, "SET 4, (HL)", 2, 16, steps};
 }
 
@@ -3636,8 +3620,7 @@ Opcode Cpu::opcode_cb_0xed() {
 Opcode Cpu::opcode_cb_0xee() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = set(z8, 5); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), set(z8, 5)); });
     return Opcode{0xee, "SET 5, (HL)", 2, 16, steps};
 }
 
@@ -3694,8 +3677,7 @@ Opcode Cpu::opcode_cb_0xf5() {
 Opcode Cpu::opcode_cb_0xf6() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = set(z8, 6); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), set(z8, 6)); });
     return Opcode{0xf6, "SET 6, (HL)", 2, 16, steps};
 }
 
@@ -3752,8 +3734,7 @@ Opcode Cpu::opcode_cb_0xfd() {
 Opcode Cpu::opcode_cb_0xfe() {
     std::vector<Step> steps;
     steps.push_back([this] { z8 = mmu->read(reg.hl()); });
-    steps.push_back([this] { z8 = set(z8, 7); });
-    steps.push_back([this] { mmu->write(reg.hl(), z8); });
+    steps.push_back([this] { mmu->write(reg.hl(), set(z8, 7)); });
     return Opcode{0xfe, "SET 7, (HL)", 2, 16, steps};
 }
 
