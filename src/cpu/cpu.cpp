@@ -82,18 +82,23 @@ void Cpu::fetch_cycle() {
 
     uint8_t opcode_address = mmu->read(reg.pc++);
 
+    if (halt_bug) {
+        reg.pc--;
+        halt_bug = false;
+    }
+
     if (!cb_prefix){
         switch(opcode_address) {
             case 0xCB:
                 cb_prefix = true;
                 return;
             case 0x76:
-                if (!halt_bug) {
-                    state = State::HALT;
+                if (!interrupt_manager->interrupts_enabled() &&
+                    interrupt_manager->interrupt_requested()) {
+                    halt_bug = true;
                 }
                 else {
-                    state == State::FETCH;
-                    halt_bug = false;
+                    state = State::HALT;
                 }
                 return;
             case 0x10:
@@ -192,20 +197,19 @@ void Cpu::interrupt_cycle() {
     current_m_cycles++;
 }
 
-/* Switch state to INTERRUPT if interrupts are enabled and an interrupt is 
- * requested.
- * If an interrupt is requested but interrupts are not enabled then sets to 
- * FETCH (halt bug) and prepares to fetch and ignore the same HALT opcode. */
+/* Carry out 1 m-cycle of the HALT state.
+ * If no interrupts are requested then does nothing.
+ * Otherwise, if interrupts are enabled then sets to INTERRUPT state and if not
+ * then sets to FETCH state. */
 void Cpu::halt_cycle() {
-    if (interrupt_manager->interrupt_requested()) {
-        if (interrupt_manager->interrupts_enabled()) {
-            set_state(State::INTERRUPT);
-        }
-        else {
-            set_state(State::FETCH);
-            reg.pc--;
-            halt_bug = true;
-        }
+    if (!interrupt_manager->interrupt_requested()) {
+        return;
+    }
+    if (interrupt_manager->interrupts_enabled()) {
+        set_state(State::INTERRUPT);
+    }
+    else {
+        set_state(State::FETCH);
     }
 }
 
