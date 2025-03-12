@@ -47,7 +47,9 @@ InterruptType InterruptManager::get_enabled() const {
 
 /* Return the program counter address corresponding to the given interrupt.
  * Should never be called when interruption is InterruptType::None. */
-uint8_t InterruptManager::get_handler_address(InterruptType interruption) {
+uint8_t InterruptManager::get_handler_address(
+    InterruptType interruption
+) const {
     if (interruption == InterruptType::NONE) {
         Log::error(
             "Do not call InterruptManager.get_handler_address with argument: "

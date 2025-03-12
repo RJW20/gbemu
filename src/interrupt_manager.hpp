@@ -34,13 +34,13 @@ public:
     bool interrupts_enabled() const { return ime; }
     bool interrupt_requested() const { return ie_ & if_; }
     InterruptType get_enabled() const;
-    uint8_t get_handler_address(InterruptType interruption);
+    uint8_t get_handler_address(InterruptType interruption) const;
 
     void disable_interrupts() { ime = false; }
     void enable_interrupts() { ime = true; }
-    uint8_t ie() const { return ie_; }
+    uint8_t ie() const { return ie_ | 0xE0; }
     uint8_t _if() const { return if_ | 0xE0; }
-    void set_ie(uint8_t value) { ie_ = value; }
+    void set_ie(uint8_t value) { ie_ = value & 0x1F; }
     void set_if(uint8_t value) { if_ = value & 0x1F; }
 
     std::string representation() const;
