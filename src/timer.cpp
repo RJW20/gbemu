@@ -8,7 +8,7 @@
 
 // Set the registers to their post boot ROM values.
 void Timer::reset() {
-    system_counter = 0;
+    system_counter = 0xABC8;
     tima_ = 0;
     tma_ = 0;
     tac_ = 0xF8;
@@ -47,26 +47,26 @@ void Timer::increase_tima() {
 }
 
 /* Set tima_ to the given value.
- * If a tima_ overflow occurred in the previous m-cycle the write will be
- * ignored.
  * If a tima_ overflow occurred in this m-cycle the overflow will be
+ * ignored.
+ * If a tima_ overflow occurred in the previous m-cycle the write will be
  * ignored. */
 void Timer::set_tima(uint8_t value) {
     if (ticks_since_overflow < 4) {
-        return;
+        ticks_since_overflow = 0xFF;
     }
     else if (ticks_since_overflow < 8) {
-        ticks_since_overflow = 0xFF;
+        return;
     }
     tima_ = value;
 }
 
 /* Set tma_ to the given value.
- * If a tima_ overflow occurred in the previous cycle then tima_ will also be
+ * If a tima_ overflow occurred in the previous m-cycle then tima_ will also be
  * set to the same value. */
 void Timer::set_tma(uint8_t value) {
     tma_ = value;
-    if (ticks_since_overflow < 4) {
+    if (ticks_since_overflow > 3 && ticks_since_overflow < 8) {
         tima_ = value;
     }
 }
