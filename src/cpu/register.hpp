@@ -4,8 +4,8 @@
 #include <cstdint>
 
 /* Register
- * Simulates 8 8-bit registers that hold data that can be manipulated by the
- * CPU when carrying out instructions. */
+ * Holds 8 8-bit and 2 16-bit registers that are manipulated by the CPU when
+ * carrying out instructions. */
 class Register {
 public:
     Register() { reset(); }
@@ -16,8 +16,8 @@ public:
     uint8_t b, c;   // General-purpose registers
     uint8_t d, e;   // General-purpose registers
     uint8_t h, l;   // General-purpose registers
-    uint16_t sp;    // Stack Pointer
-    uint16_t pc;    // Program Counter
+    uint16_t sp;    // Stack pointer
+    uint16_t pc;    // Program counter
 
     // Flags register
     uint8_t f() const ;

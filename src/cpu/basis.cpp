@@ -295,7 +295,7 @@ uint8_t Cpu::shift_right_logical(uint8_t value) {
  * given bit position.
  * Sets the subtract and half-carry flags as necessary. */
 void Cpu::bit(uint8_t value, int position) {
-    reg.flag_z = (((value >> position) & 1) == 0);
+    reg.flag_z = !((value >> position) & 1);
     reg.flag_n = false;
     reg.flag_h = true;
 }
