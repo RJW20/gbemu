@@ -33,8 +33,8 @@ void GameBoy::run() {
 // Carry out 1 t-cycle.
 void GameBoy::tick() {
     timer.tick();
-    cpu.tick();
     serial.tick();
+    cpu.tick();
     dma.tick();
     ppu.tick();
 }

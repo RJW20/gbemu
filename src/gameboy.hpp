@@ -26,7 +26,7 @@ private:
     Cartridge cartridge;
     InterruptManager interrupt_manager;
     Timer timer{&interrupt_manager};
-    Serial serial{&interrupt_manager};
+    Serial serial{&interrupt_manager, &timer};
     Joypad joypad{&interrupt_manager};
     Ppu ppu{&interrupt_manager};
     Dma dma{&ppu};
