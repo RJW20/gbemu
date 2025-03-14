@@ -19,10 +19,10 @@ public:
     void reset();
     void tick();
 
-    bool transfer_in_progress;
-
     uint8_t source_address() const { return _source_address >> 8; }
     void set_source_address(uint8_t value);
+
+    bool transfer_in_progress;
 
     std::string representation() const;
 
@@ -30,13 +30,15 @@ private:
     Ppu* ppu;
     Mmu* mmu;
 
-    uint8_t locked;
-    uint8_t current_m_cycles;
-    static constexpr uint8_t DELAY_M_CYCLES = 2;
-    static constexpr uint8_t TOTAL_TRANSFER_M_CYCLES = 0xA0;
-
     // The 16 bit address to start the transfer from
     uint16_t _source_address;
+
+    bool delay_in_progress;
+    uint8_t locked;
+    uint8_t delay_m_cycles;
+    uint8_t transfer_m_cycles;
+    static constexpr uint8_t TOTAL_DELAY_M_CYCLES = 2;
+    static constexpr uint8_t TOTAL_TRANSFER_M_CYCLES = 0xA0;
 };
 
 #endif

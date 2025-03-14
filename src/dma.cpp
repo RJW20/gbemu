@@ -8,12 +8,15 @@
 void Dma::reset() {
     _source_address = 0xFF;
     transfer_in_progress = false;
+    locked = 0;
+    delay_m_cycles = 0;
+    transfer_m_cycles = 0;
 }
 
 // Carry out 1 t-cycle.
 void Dma::tick() {
 
-    if (!transfer_in_progress) {
+    if (!delay_in_progress && !transfer_in_progress) {
         return;
     }
 
@@ -23,28 +26,31 @@ void Dma::tick() {
     }
     locked = 0;
 
-    // Delay for first 2 m-cycles
-    if (current_m_cycles < DELAY_M_CYCLES) {
-        current_m_cycles++;
+    if (delay_in_progress && ++delay_m_cycles == TOTAL_DELAY_M_CYCLES) {
+        transfer_in_progress = true;
+        delay_in_progress = false;
+        transfer_m_cycles = 0;
         return;
     }
 
-    ppu->write_oam(
-        current_m_cycles - DELAY_M_CYCLES,
-        mmu->read(_source_address + current_m_cycles - DELAY_M_CYCLES)
-    );
-    
-    if (++current_m_cycles == DELAY_M_CYCLES + TOTAL_TRANSFER_M_CYCLES) {
-        transfer_in_progress = false;
+    if (transfer_in_progress) {
+        ppu->write_oam(
+            transfer_m_cycles,
+            mmu->read(_source_address + transfer_m_cycles)
+        );
+        
+        if (++transfer_m_cycles == TOTAL_TRANSFER_M_CYCLES) {
+            transfer_in_progress = false;
+        }
     }
 }
 
 // Set _source_address to the given value << 8 and start a transfer.
 void Dma::set_source_address(uint8_t value) {
     _source_address = value << 8;
-    transfer_in_progress = true;
+    delay_in_progress = true;
     locked = 0;
-    current_m_cycles = 0;
+    delay_m_cycles = 0;
 }
 
 // Return a string representation of the DMA.
