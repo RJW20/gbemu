@@ -97,7 +97,8 @@ uint8_t Mbc1::read_ram(uint16_t address) const {
         );
     }
 
-    const uint8_t selected_ram_bank = advanced_banking ? ram_bank_number : 0;
+    const uint8_t selected_ram_bank =
+        (advanced_banking ? ram_bank_number : 0) & (ram_size - 1);
     return ram[selected_ram_bank][address & (RAM_BANK_SIZE - 1)];
 }
 
@@ -126,6 +127,7 @@ void Mbc1::write_ram(uint16_t address, uint8_t value) {
         );
     }
 
-    const uint8_t selected_ram_bank = advanced_banking ? ram_bank_number : 0;
+    const uint8_t selected_ram_bank = 
+        (advanced_banking ? ram_bank_number : 0) & (ram_size - 1);
     ram[selected_ram_bank][address & (RAM_BANK_SIZE - 1)] = value;
 }

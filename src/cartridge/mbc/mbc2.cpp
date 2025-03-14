@@ -51,7 +51,7 @@ void Mbc2::write_rom(uint16_t address, uint8_t value) {
 
     if (address < ROM_BANK_SIZE) {
         if (!((address >> 8) & 1)) {
-            is_ram_enabled = (value == 0xA);
+            is_ram_enabled = ((value & 0xF) == 0xA);
         }
         else {
             rom_bank_number = value & 0xF;
@@ -87,7 +87,7 @@ uint8_t Mbc2::read_ram(uint16_t address) const {
         );
     }
 
-    return ram[0][address & (BUILT_IN_RAM_SIZE - 1)] & 0xF;
+    return ram[0][address & (BUILT_IN_RAM_SIZE - 1)] | 0xF0;
 }
 
 /* Write the trailing 4 bits of the given 8 bit value to the RAM at the given
