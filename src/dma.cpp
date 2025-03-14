@@ -4,9 +4,9 @@
 #include "dma.hpp"
 #include "mmu.hpp"
 
-// Set _source_address to its post boot ROM value. 
+// Set source_address_ to its post boot ROM value. 
 void Dma::reset() {
-    _source_address = 0xFF;
+    source_address_ = 0xFF;
     transfer_in_progress = false;
     locked = 0;
     delay_m_cycles = 0;
@@ -36,7 +36,7 @@ void Dma::tick() {
     if (transfer_in_progress) {
         ppu->write_oam(
             transfer_m_cycles,
-            mmu->read(_source_address + transfer_m_cycles)
+            mmu->read(source_address_ + transfer_m_cycles)
         );
         
         if (++transfer_m_cycles == TOTAL_TRANSFER_M_CYCLES) {
@@ -45,9 +45,9 @@ void Dma::tick() {
     }
 }
 
-// Set _source_address to the given value << 8 and start a transfer.
+// Set source_address_ to the given value << 8 and start a transfer.
 void Dma::set_source_address(uint8_t value) {
-    _source_address = value << 8;
+    source_address_ = value << 8;
     delay_in_progress = true;
     locked = 0;
     delay_m_cycles = 0;

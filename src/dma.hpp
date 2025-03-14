@@ -19,7 +19,7 @@ public:
     void reset();
     void tick();
 
-    uint8_t source_address() const { return _source_address >> 8; }
+    uint8_t source_address() const { return source_address_ >> 8; }
     void set_source_address(uint8_t value);
 
     bool transfer_in_progress;
@@ -31,7 +31,7 @@ private:
     Mmu* mmu;
 
     // The 16 bit address to start the transfer from
-    uint16_t _source_address;
+    uint16_t source_address_;
 
     bool delay_in_progress;
     uint8_t locked;
