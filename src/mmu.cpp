@@ -94,9 +94,9 @@ uint8_t Mmu::read_value(uint16_t address) const {
             case 0xFF00:
                 return joypad->joyp();
             case 0xFF01:
-                return serial->sb;
+                return serial->sb();
             case 0xFF02:
-                return serial->sc;
+                return serial->sc();
             case 0xFF04:
                 return timer->div();
             case 0xFF05:
@@ -254,10 +254,10 @@ void Mmu::write_value(uint16_t address, const uint8_t value) {
                 joypad->set_joyp(value);
                 break;
             case 0xFF01:
-                serial->sb = value;
+                serial->set_sb(value);
                 break;
             case 0xFF02:
-                serial->sc = value;
+                serial->set_sc(value);
                 break;
             case 0xFF04:
                 timer->set_div();

@@ -5,8 +5,8 @@
 
 // Set the registers to their post boot ROM values.
 void Serial::reset() {
-    sb = 0;
-    sc = 0x7E;
+    sb_ = 0;
+    sc_ = 0x7E;
     transfer_counter = 0;
 }
 
@@ -20,8 +20,8 @@ void Serial::tick() {
     if (++transfer_counter == 512) { // 512 t-cycles per byte transfer 
         transfer_counter = 0;
         interrupt_manager->request(InterruptType::SERIAL);
-        sb = 0xFF;
-        sc &= 0x7F;
+        sb_ = 0xFF;
+        sc_ &= 0x7F;
     }
 }
 
@@ -29,7 +29,7 @@ void Serial::tick() {
 std::string Serial::representation() const {
     std::ostringstream repr;
     repr << "Serial:" << std::hex
-        << " SB = " << static_cast<int>(sb)
-        << " SC = " << static_cast<int>(sc);
+        << " SB = " << static_cast<int>(sb())
+        << " SC = " << static_cast<int>(sc());
     return repr.str();
 }

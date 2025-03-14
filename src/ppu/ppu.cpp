@@ -156,11 +156,13 @@ uint8_t Ppu::ly() const {
 }
 
 /* Return the LCD status.
- * Bits 7-3 are the leading 5 bits of stat_.
+ * Bit 7 is always 1.
+ * Bits 6-3 are those of stat_.
  * Bit 2 is set if ly_ = lyc or clear otherwise.
  * Bits 1-0 represent the current mode. */
 uint8_t Ppu::stat() const {
-    return (stat_ & 0xF8) | ((ly_ == lyc) << 2) | std::to_underlying(mode);
+    return 0x80 | (stat_ & 0x78) | ((ly_ == lyc) << 2) |
+        std::to_underlying(mode);
 }
 
 // Set lcdc_ to the given value and disable the LCD if needed.

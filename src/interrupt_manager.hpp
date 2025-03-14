@@ -38,9 +38,9 @@ public:
 
     void disable_interrupts() { ime = false; }
     void enable_interrupts() { ime = true; }
-    uint8_t ie() const { return ie_ | 0xE0; }
+    uint8_t ie() const { return ie_; }
     uint8_t _if() const { return if_ | 0xE0; }
-    void set_ie(uint8_t value) { ie_ = value & 0x1F; }
+    void set_ie(uint8_t value) { ie_ = value; }
     void set_if(uint8_t value) { if_ = value & 0x1F; }
 
     std::string representation() const;

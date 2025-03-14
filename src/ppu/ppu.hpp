@@ -26,7 +26,7 @@ public:
     uint8_t stat() const;
     void set_lcdc(uint8_t value);
     void set_ly(uint8_t value) const;
-    void set_stat(uint8_t value) { stat_ = value & 0xF8; }
+    void set_stat(uint8_t value) { stat_ = value & 0x78; }
 
     std::string representation() const;
 
