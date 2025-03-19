@@ -29,7 +29,9 @@ void Ppu::reset() {
     obp0 = 0xFF;
     obp1 = 0xFF;
 
-    set_mode(Mode::VBLANK);
+    fetcher.wly = 0;
+
+    set_mode(Mode::OAM_SCAN);
 }
 
 // Carry out 1 t-cycle.
@@ -39,109 +41,129 @@ void Ppu::tick() {
         return;
     }
 
-    switch(mode) {
-
-        case Mode::OAM_SCAN:
-            if (!mode_t_cycles++) {
-                if (oam_scan_interrupt_requested() ||
-                    (ly_ == lyc) && lyc_interrupt_requested()) {
-                    interrupt_manager->request(InterruptType::STAT);
-                }
-            }
-
-            oam_scan_tick();
-
-            if (mode_t_cycles == OAM_T_CYCLES) {
-                std::stable_sort(
-                    scanline_objects.begin(),
-                    scanline_objects.end(),
-                    [](const OamObject& a, const OamObject& b) {
-                        return a.x < b.x;
-                    }
-                );
-                set_mode(Mode::PIXEL_TRANSFER);
-            }
-
-            scanline_t_cycles++;
-            break;
-
-        case Mode::PIXEL_TRANSFER:
-            mode_t_cycles++;
-
-            pixel_transfer_tick();
-
-            if (lx == SCREEN_WIDTH) {
-                fetcher.wly += window_visible_on_scanline;
-                set_mode(Mode::HBLANK);
-            }
-
-            scanline_t_cycles++;
-            break;
-
-        case Mode::HBLANK:
-            if (!mode_t_cycles++ && hblank_interrupt_requested()) {
-                interrupt_manager->request(InterruptType::STAT);
-            }
-
-            if (++scanline_t_cycles == SCANLINE_T_CYCLES) {
-                if (++ly_ == SCREEN_HEIGHT) {
-                    set_mode(Mode::VBLANK); 
-                }
-                else {
-                    set_mode(Mode::OAM_SCAN);
-                }
-            }
-            break;
-
-        case Mode::VBLANK:
-            if (!mode_t_cycles++) {
-                interrupt_manager->request(InterruptType::VBLANK);
-                if (vblank_interrupt_requested()) {
-                    interrupt_manager->request(InterruptType::STAT);
-                }
-            }
-
-            if (!scanline_t_cycles++ &&
-                (ly_ == lyc) && lyc_interrupt_requested()) {
-                    interrupt_manager->request(InterruptType::STAT);
-                }
-            else if (scanline_t_cycles == SCANLINE_T_CYCLES) {
-                // !ly_ since first scanline after the boot ROM is VBLANK with ly_ = 0
-                if (!ly_ || ++ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES) {
-                    set_mode(Mode::OAM_SCAN);
-                    ly_ = 0;
-                }
-                else {
-                    scanline_t_cycles = 0;
-                }
-            }
-            break;
-    }
+    (this->*mode_tick)();
 
     Log::debug(*this);
 }
 
-/* Set the Ppu mode to the given Mode. 
+/* Set the PPU mode to the given Mode. 
  * Resets the appropriate variables in preparation for the new Mode.
- * Requests a STAT interrupt for the new Mode if necessary. */
+ * Sets the mode_tick pointer to the correct method.
+ * Requests an interrupt for the new Mode if necessary. */
 void Ppu::set_mode(Mode new_mode) {
     
     mode = new_mode;
-    mode_t_cycles = 0;
     switch (mode) {
 
         case Mode::OAM_SCAN:
             new_oam_scan();
+            mode_tick = &Ppu::oam_scan_tick;
+            if (oam_scan_interrupt_requested()) {
+                interrupt_manager->request(InterruptType::STAT);
+            }
             break;
 
         case Mode::PIXEL_TRANSFER:
             new_pixel_transfer();
+            mode_tick = &Ppu::pixel_transfer_tick;
+            break;
+
+        case Mode::HBLANK:
+            mode_tick = &Ppu::hblank_tick;
+            if (hblank_interrupt_requested()) {
+                interrupt_manager->request(InterruptType::STAT);
+            }
             break;
 
         case Mode::VBLANK:
             scanline_t_cycles = 0;
-            fetcher.wly = 0;
+            mode_tick = &Ppu::vblank_tick;
+            interrupt_manager->request(InterruptType::VBLANK);
+            if (vblank_interrupt_requested()) {
+                interrupt_manager->request(InterruptType::STAT);
+            }
             break;
+    }
+}
+
+/* Carry out 1 OAM_SCAN t-cycle.
+ * Sorts the identified scanline objects if at the end of OAM_SCAN and sets the
+ * PPU mode to PIXEL_TRANSFER. */
+void Ppu::oam_scan_tick() {
+
+    OamScanner::oam_scan_tick();
+
+    if (++scanline_t_cycles < OAM_T_CYCLES) {
+        return;
+    }
+
+    std::stable_sort(
+        scanline_objects.begin(),
+        scanline_objects.end(),
+        [](const OamObject& a, const OamObject& b) {
+            return a.x < b.x;
+        }
+    );
+    set_mode(Mode::PIXEL_TRANSFER);
+}
+
+/* Carry out 1 PIXEL_TRANSFER t-cycle.
+ * Sets the PPU mode to HBLANK if a whole scanline has been rendered. */
+void Ppu::pixel_transfer_tick() {
+
+    scanline_t_cycles++;
+
+    PixelTransferrer::pixel_transfer_tick();
+
+    if (lx == SCREEN_WIDTH) {
+        fetcher.wly += window_visible_on_scanline;
+        set_mode(Mode::HBLANK);
+    }
+}
+
+/* Carry out 1 HBLANK t-cycle.
+ * Increments ly_ if at the end of a scanline.
+ * Sets the PPU mode to OAM_SCAN or VBLANK depending on the new value of ly_.
+ * Requests a STAT interrupt for the new value of ly_ if necessary. */
+void Ppu::hblank_tick() {
+
+    if (++scanline_t_cycles < SCANLINE_T_CYCLES) {
+        return;
+    }
+
+    if (++ly_ < SCREEN_HEIGHT) {
+        set_mode(Mode::OAM_SCAN);
+    }
+    else {
+        set_mode(Mode::VBLANK);
+    }
+
+    if ((ly_ == lyc) && lyc_interrupt_requested()) {
+        interrupt_manager->request(InterruptType::STAT);
+    }
+}
+
+/* Carry out 1 VBLANK t-cycle.
+ * Increments ly_ if at the end of a scanline.
+ * Sets the PPU mode to OAM_SCAN if 10 VBLANK scanlines have been completed.
+ * Requests a STAT interrupt for the new value of ly_ if necessary. */
+void Ppu::vblank_tick() {
+
+    if (++scanline_t_cycles < SCANLINE_T_CYCLES) {
+        return;
+    }
+    
+    if (++ly_ < SCREEN_HEIGHT + VBLANK_SCANLINES) {
+        scanline_t_cycles = 0;
+    }
+    else {
+        set_mode(Mode::OAM_SCAN);
+        ly_ = 0;
+        fetcher.wly = 0;
+    }
+
+    if ((ly_ == lyc) && lyc_interrupt_requested()) {
+        interrupt_manager->request(InterruptType::STAT);
     }
 }
 
@@ -150,8 +172,8 @@ void Ppu::set_mode(Mode new_mode) {
 uint8_t Ppu::ly() const {
     if (ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES - 1 &&
         mode == Mode::VBLANK && scanline_t_cycles > 3) {
-            return 0;
-        }
+        return 0;
+    }
     return ly_;
 }
 

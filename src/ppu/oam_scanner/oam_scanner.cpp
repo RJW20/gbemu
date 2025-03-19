@@ -21,7 +21,7 @@ void OamScanner::oam_scan_tick() {
         return;
     }
 
-    if ((mode_t_cycles & 0x1) && scanline_objects.size() < 10) {
+    if ((scanline_t_cycles & 0x1) && scanline_objects.size() < 10) {
         scan_object.y = oam[scan_index];
         scan_object.x = oam[scan_index + 1];
         if (scan_object.x > 0 && scan_object.y - 16 <= ly_ &&

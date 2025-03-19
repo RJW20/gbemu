@@ -42,7 +42,6 @@ protected:
     std::array<uint8_t, OAM_SIZE> oam;      // Object attribute memory
 
     // Variables used during multiple modes
-    uint16_t mode_t_cycles;
     uint16_t scanline_t_cycles;
     std::deque<OamObject> scanline_objects;
 

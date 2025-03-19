@@ -6,7 +6,6 @@
 #include "ppu_core.hpp"
 #include "oam_scanner/oam_scanner.hpp"
 #include "pixel_transferrer/pixel_transferrer.hpp"
-#include "oam_scanner/oam_object.hpp"
 #include "../interrupt_manager.hpp"
 
 /* Pixel Processing Unit 
@@ -15,7 +14,7 @@
 class Ppu : public OamScanner, public PixelTransferrer {
 public:
     Ppu(InterruptManager* interrupt_manager) : PpuCore(interrupt_manager)
-        { reset(); };
+        { reset(); }
 
     void reset();
     void tick();
@@ -37,6 +36,14 @@ private:
     };
     Mode mode;
     void set_mode(Mode new_mode);
+
+    // Tick methods for each mode
+    void oam_scan_tick();
+    void pixel_transfer_tick();
+    void hblank_tick();
+    void vblank_tick();
+
+    void (Ppu::* mode_tick)();
 
     static constexpr uint16_t SCANLINE_T_CYCLES = 456;
     static constexpr uint8_t VBLANK_SCANLINES = 10;
