@@ -31,7 +31,7 @@ void Serial::tick() {
  * transfer if they're both set. */
 void Serial::set_sc(uint8_t value) {
     sc_ = value & 0x81;
-    if (sc_) {
+    if ((sc_ >> 7) && (sc_ & 1)) {
         transfer_in_progress = true;
         previous_div_bit = timer->div() & 1;
         bits_transferred = 0;
