@@ -41,8 +41,10 @@ private:
     static constexpr int FPS = 60;
     bool power_off = false;
     bool paused = false;
+    bool reset_ = false;
     bool throttled = true;
 
+    void reset();
     void tick();
     void check_events();
 };

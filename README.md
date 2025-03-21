@@ -41,6 +41,7 @@ Place SDL2.dll from the package in the build folder before running.
 | Left | <kbd>←</kbd> |
 | Right | <kbd>→</kbd> |
 | Speed-up | <kbd>Space</kbd> (hold) |
+| Pause/Resume | <kbd>P</kbd> |
   </td>
 </table>
 

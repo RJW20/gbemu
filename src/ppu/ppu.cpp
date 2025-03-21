@@ -16,6 +16,7 @@ void Ppu::reset() {
     vram.fill(0);
     oam.fill(0);
     pixel_buffer.fill(palette.at(0));
+    ready_to_render = false;
 
     lcdc_ = 0x91;
     ly_ = 0x99;

@@ -1,7 +1,9 @@
 #include <chrono>
 #include <thread>
+#include <utility>
 #include <SDL2/SDL.h>
 #include "gameboy.hpp"
+#include "joypad.hpp"
 
 void GameBoy::run() {
 
@@ -22,6 +24,10 @@ void GameBoy::run() {
         if (power_off) {
             break;
         }
+        if (reset_) {
+            reset();
+            break;
+        }
         if (throttled) {
             std::this_thread::sleep_until(next_frame);
             next_frame = next_frame + time_between_frames{1};
@@ -34,10 +40,30 @@ void GameBoy::run() {
             if (power_off) {
                 break;
             }
+            if (reset_) {
+                reset();
+                paused = false;
+                break;
+            }
             std::this_thread::sleep_until(next_frame);
             next_frame = system_clock::now() + time_between_frames{0};
         }
     }
+}
+
+// Set all components to their post boot ROM state.
+void GameBoy::reset() {
+    cartridge.reset();
+    interrupt_manager.reset();
+    timer.reset();
+    serial.reset();
+    joypad.reset();
+    ppu.reset();
+    dma.reset();
+    apu.reset();
+    mmu.reset();
+    cpu.reset();
+    reset_ = false;
 }
 
 // Carry out 1 t-cycle.
@@ -52,6 +78,7 @@ void GameBoy::tick() {
 /* Check SDL events.
  * Sets power_off if an SDL_QUIT event has occured.
  * Flips paused if the P key has been pressed.
+ * Sets reset_ if the START, SELECT, A and B buttons are pressed (a soft reset).
  * Resets throttled if the SPACE key is currently pressed. */
 void GameBoy::check_events() {
 
@@ -67,5 +94,9 @@ void GameBoy::check_events() {
     }
 
     const uint8_t* keyboard = SDL_GetKeyboardState(NULL);
+    reset_ = keyboard[std::to_underlying(Button::START)] &&
+        keyboard[std::to_underlying(Button::SELECT)] && 
+        keyboard[std::to_underlying(Button::A)] &&
+        keyboard[std::to_underlying(Button::B)];
     throttled = !keyboard[SDL_SCANCODE_SPACE];
 }
