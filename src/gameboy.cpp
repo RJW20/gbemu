@@ -26,7 +26,7 @@ void GameBoy::run() {
         }
         if (reset_) {
             reset();
-            break;
+            continue;;
         }
         if (throttled) {
             std::this_thread::sleep_until(next_frame);
