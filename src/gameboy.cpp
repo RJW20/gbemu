@@ -8,28 +8,33 @@ void GameBoy::run() {
     using namespace std::chrono;
     using time_between_frames = duration<int64_t, std::ratio<1, FPS>>;
     auto next_frame = system_clock::now() + time_between_frames{0};
-    auto last_frame = next_frame - time_between_frames{1};
 
-    while (true) {
+    while (!power_off) {
 
         tick();
 
         if (!ppu.ready_to_render) {
             continue;
         }
-
         screen.render();
 
-        if (power_off()) {
+        check_events();
+        if (power_off) {
             break;
         }
-        
-        if (throttled()) {
+        if (throttled) {
             std::this_thread::sleep_until(next_frame);
-            last_frame = next_frame;
             next_frame = next_frame + time_between_frames{1};
         }
         else {
+            next_frame = system_clock::now() + time_between_frames{0};
+        }
+        while (paused) {
+            check_events();
+            if (power_off) {
+                break;
+            }
+            std::this_thread::sleep_until(next_frame);
             next_frame = system_clock::now() + time_between_frames{0};
         }
     }
@@ -44,19 +49,23 @@ void GameBoy::tick() {
     cpu.tick();
 }
 
-// Return true if an SDL_QUIT event has occurred.
-bool GameBoy::power_off() const {
+/* Check SDL events.
+ * Sets power_off if an SDL_QUIT event has occured.
+ * Flips paused if the P key has been pressed.
+ * Resets throttled if the SPACE key is currently pressed. */
+void GameBoy::check_events() {
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
-            return true;
+            power_off = true;
+        }
+        else if (event.type == SDL_KEYDOWN &&
+            event.key.keysym.sym == SDLK_p) {
+            paused = !paused;
         }
     }
-    return false;
-}
 
-// Return true if the SPACE key is not currently pressed.
-bool GameBoy::throttled() const {
     const uint8_t* keyboard = SDL_GetKeyboardState(NULL);
-    return !keyboard[SDL_SCANCODE_SPACE];
+    throttled = !keyboard[SDL_SCANCODE_SPACE];
 }

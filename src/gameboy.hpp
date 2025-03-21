@@ -39,10 +39,12 @@ private:
     Screen screen{cartridge.title, &ppu};
 
     static constexpr int FPS = 60;
+    bool power_off = false;
+    bool paused = false;
+    bool throttled = true;
 
     void tick();
-    bool power_off() const;
-    bool throttled() const;
+    void check_events();
 };
 
 #endif
