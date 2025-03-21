@@ -22,6 +22,8 @@ void Cpu::reset() {
     set_state(State::FETCH);
     halt_bug = false;
     opcode = &(opcodes[0]);
+    interrupt_enable_delayed = false;
+    early_exit = false;
     interrupt_enable_scheduled = false;
 }
 
@@ -66,11 +68,8 @@ void Cpu::set_state(State new_state) {
             cb_prefix = false;
             break;
         case State::WORK:
-            current_m_cycles = 0;
-            early_exit = false;
-            break;
         case State::INTERRUPT:
-            current_m_cycles = 0;
+            state_m_cycles = 0;
             break;
     }
 }
@@ -101,6 +100,7 @@ void Cpu::fetch_cycle() {
                     state = State::HALT;
                     if (interrupt_enable_scheduled) {
                         interrupt_manager->enable_interrupts();
+                        interrupt_enable_delayed = false;
                         interrupt_enable_scheduled = false;
                     }
                 }
@@ -122,29 +122,36 @@ void Cpu::fetch_cycle() {
 }
 
 /* Carry out 1 WORK m-cycle.
- * Executes the opcode.step at the current_m_cycle and increments it.
+ * Executes the opcode step at state_m_cycle and increments it.
  * Sets to FETCH state if exits early.
  * Carries out an additional fetch_cycle if on the last step of the opcode. */
 void Cpu::work_cycle() {
 
     // Opcodes sometimes do nothing in last m-cycle
     try {
-        opcode->steps.at(current_m_cycles++)();
+        opcode->steps.at(state_m_cycles++)();
     }
     catch(const std::out_of_range& e) {}
 
     if (early_exit) {
         set_state(State::FETCH);
+        early_exit = false;
         return;
     }
 
-    if (current_m_cycles == opcode_m_cycles) {
+    if (state_m_cycles == opcode_m_cycles) {
 
         /* Set master interrupt enable if scheduled - done here since EI effect
          * delays one opcode. */
-        if (interrupt_enable_scheduled && opcode->name != "EI") {
-            interrupt_manager->enable_interrupts();
-            interrupt_enable_scheduled = false;
+        if (interrupt_enable_scheduled) {
+            if (interrupt_enable_delayed) {
+                interrupt_manager->enable_interrupts();
+                interrupt_enable_delayed = false;
+                interrupt_enable_scheduled = false;
+            }
+            else {
+                interrupt_enable_delayed = true;
+            }
         }
         
         // Set next state
@@ -167,7 +174,7 @@ void Cpu::work_cycle() {
  * corresponding opcode. */
 void Cpu::interrupt_cycle() {
 
-    switch(current_m_cycles) {
+    switch(state_m_cycles) {
         
         case 0:
             break;
@@ -198,7 +205,7 @@ void Cpu::interrupt_cycle() {
             return;
     }
 
-    current_m_cycles++;
+    state_m_cycles++;
 }
 
 /* Carry out 1 m-cycle of the HALT state.
