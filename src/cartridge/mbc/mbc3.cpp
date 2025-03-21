@@ -13,7 +13,7 @@
  * tick to the next register. */
 void Rtc::update() {
 
-    if (halted || overflowed) {
+    if (halted) {
         return;
     }
 
@@ -85,7 +85,7 @@ void Rtc::update() {
     if (elapsed_days > count_to_overflow - 1) {
         days = 0;
         overflowed = true;
-        halt_time = now;
+        //halt_time = now;
     }
     else {
         days += elapsed_days;
@@ -137,17 +137,17 @@ void Rtc::write(uint8_t reg, uint8_t value) {
             days = (days & 0x100) | value;
             break;
         case 0x0C: {
-            const bool prev_halted_or_overflowed = (halted || overflowed);
+            const bool previous_halted = (halted);
             days = ((value & 0x1) << 8) | (days & 0xFF);
             halted = value >> 6;
             overflowed = value >> 7;
-            if (!prev_halted_or_overflowed) {
-                if (halted || overflowed) {
+            if (!previous_halted) {
+                if (halted) {
                     halt_time = std::chrono::steady_clock::now();
                 }
             }
             else {
-                if (!(halted || overflowed)) {
+                if (!(halted)) {
                     previous_update_time += std::chrono::steady_clock::now() - halt_time;
                 }
             }
