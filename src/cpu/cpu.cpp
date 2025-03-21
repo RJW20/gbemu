@@ -99,6 +99,10 @@ void Cpu::fetch_cycle() {
                 }
                 else {
                     state = State::HALT;
+                    if (interrupt_enable_scheduled) {
+                        interrupt_manager->enable_interrupts();
+                        interrupt_enable_scheduled = false;
+                    }
                 }
                 return;
             case 0x10:
@@ -210,6 +214,7 @@ void Cpu::halt_cycle() {
     }
     else {
         set_state(State::FETCH);
+        fetch_cycle();
     }
 }
 
