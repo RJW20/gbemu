@@ -13,8 +13,6 @@ public:
     PixelTransferrer() {}
 
     // Pixel buffer
-    static constexpr uint8_t SCREEN_WIDTH = 160;
-    static constexpr uint8_t SCREEN_HEIGHT = 144;
     std::array<uint32_t, SCREEN_WIDTH * SCREEN_HEIGHT> pixel_buffer;
 
 private:

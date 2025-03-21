@@ -11,14 +11,14 @@
 
 /* Clear VRAM, OAM and the pixel_buffer.
  * Set the registers to their post boot ROM values. 
- * Set mode to VBLANK. */
+ * Set the PPU mode to VBLANK, with OAM_SCAN immediately pending. */
 void Ppu::reset() {
     vram.fill(0);
     oam.fill(0);
     pixel_buffer.fill(palette.at(0));
 
     lcdc_ = 0x91;
-    ly_ = 0;
+    ly_ = 0x99;
     lyc = 0;
     stat_ = 0x85;
     scy = 0;
@@ -31,7 +31,10 @@ void Ppu::reset() {
 
     fetcher.wly = 0;
 
-    set_mode(Mode::OAM_SCAN);
+    mode = Mode::VBLANK;
+    scanline_t_cycles = SCANLINE_T_CYCLES;
+    mode_change = true;
+    pending_mode = Mode::OAM_SCAN;
 }
 
 // Carry out 1 t-cycle.
@@ -39,6 +42,11 @@ void Ppu::tick() {
 
     if (!lcd_enabled()) {
         return;
+    }
+
+    if (mode_change) {
+        set_mode(pending_mode);
+        mode_change = false;
     }
 
     (this->*mode_tick)();
@@ -49,7 +57,7 @@ void Ppu::tick() {
 /* Set the PPU mode to the given Mode. 
  * Resets the appropriate variables in preparation for the new Mode.
  * Sets the mode_tick pointer to the correct method.
- * Requests an interrupt for the new Mode if necessary. */
+ * Requests a STAT interrupt if necessary. */
 void Ppu::set_mode(Mode new_mode) {
     
     mode = new_mode;
@@ -58,7 +66,8 @@ void Ppu::set_mode(Mode new_mode) {
         case Mode::OAM_SCAN:
             new_oam_scan();
             mode_tick = &Ppu::oam_scan_tick;
-            if (oam_scan_interrupt_requested()) {
+            if ((ly_ == lyc) && lyc_interrupt_requested() ||
+                oam_scan_interrupt_requested()) {
                 interrupt_manager->request(InterruptType::STAT);
             }
             break;
@@ -79,7 +88,8 @@ void Ppu::set_mode(Mode new_mode) {
             scanline_t_cycles = 0;
             mode_tick = &Ppu::vblank_tick;
             interrupt_manager->request(InterruptType::VBLANK);
-            if (vblank_interrupt_requested()) {
+            if (vblank_interrupt_requested() ||
+                oam_scan_interrupt_requested()) {
                 interrupt_manager->request(InterruptType::STAT);
             }
             break;
@@ -88,7 +98,7 @@ void Ppu::set_mode(Mode new_mode) {
 
 /* Carry out 1 OAM_SCAN t-cycle.
  * Sorts the identified scanline objects if at the end of OAM_SCAN and sets the
- * PPU mode to PIXEL_TRANSFER. */
+ * pending PPU mode to PIXEL_TRANSFER. */
 void Ppu::oam_scan_tick() {
 
     OamScanner::oam_scan_tick();
@@ -104,11 +114,14 @@ void Ppu::oam_scan_tick() {
             return a.x < b.x;
         }
     );
-    set_mode(Mode::PIXEL_TRANSFER);
+
+    mode_change = true;
+    pending_mode = Mode::PIXEL_TRANSFER;
 }
 
 /* Carry out 1 PIXEL_TRANSFER t-cycle.
- * Sets the PPU mode to HBLANK if a whole scanline has been rendered. */
+ * Sets the pending PPU mode to HBLANK if a whole scanline has been
+ * rendered. */
 void Ppu::pixel_transfer_tick() {
 
     scanline_t_cycles++;
@@ -117,61 +130,54 @@ void Ppu::pixel_transfer_tick() {
 
     if (lx == SCREEN_WIDTH) {
         fetcher.wly += window_visible_on_scanline;
-        set_mode(Mode::HBLANK);
+        mode_change = true;
+        pending_mode = Mode::HBLANK;
     }
 }
 
 /* Carry out 1 HBLANK t-cycle.
- * Increments ly_ if at the end of a scanline.
- * Sets the PPU mode to OAM_SCAN or VBLANK depending on the new value of ly_.
- * Requests a STAT interrupt for the new value of ly_ if necessary. */
+ * Sets the pending PPU mode to OAM_SCAN or VBLANK if at the end of a scanline,
+ * depending on the value of ly_. */
 void Ppu::hblank_tick() {
 
     if (++scanline_t_cycles < SCANLINE_T_CYCLES) {
         return;
     }
 
-    if (++ly_ < SCREEN_HEIGHT) {
-        set_mode(Mode::OAM_SCAN);
-    }
-    else {
-        set_mode(Mode::VBLANK);
-    }
-
-    if ((ly_ == lyc) && lyc_interrupt_requested()) {
-        interrupt_manager->request(InterruptType::STAT);
-    }
+    mode_change = true;
+    pending_mode = ly_ < SCREEN_HEIGHT - 1 ? Mode::OAM_SCAN : Mode::VBLANK;
 }
 
 /* Carry out 1 VBLANK t-cycle.
- * Increments ly_ if at the end of a scanline.
- * Sets the PPU mode to OAM_SCAN if 10 VBLANK scanlines have been completed.
- * Requests a STAT interrupt for the new value of ly_ if necessary. */
+ * Increments ly_ if at the start of a scanline and requests a STAT interrupt
+ * if necessary.
+ * Sets the pending PPU mode to OAM_SCAN if 10 VBLANK scanlines have been
+ * completed. */
 void Ppu::vblank_tick() {
 
+    if (!scanline_t_cycles && (++ly_ == lyc) && lyc_interrupt_requested()) {
+        interrupt_manager->request(InterruptType::STAT);
+    }
+    
     if (++scanline_t_cycles < SCANLINE_T_CYCLES) {
         return;
     }
     
-    if (++ly_ < SCREEN_HEIGHT + VBLANK_SCANLINES) {
+    if (ly_ < SCREEN_HEIGHT + VBLANK_SCANLINES - 1) {
         scanline_t_cycles = 0;
     }
     else {
-        set_mode(Mode::OAM_SCAN);
-        ly_ = 0;
         fetcher.wly = 0;
-    }
-
-    if ((ly_ == lyc) && lyc_interrupt_requested()) {
-        interrupt_manager->request(InterruptType::STAT);
+        mode_change = true;
+        pending_mode = Mode::OAM_SCAN;
     }
 }
 
 /* Return ly_. 
- * On the final scanline of VBLANK, for t-cycles 4-456 ly reads as 0. */
+ * On the final scanline of VBLANK, for t-cycles 5-456 ly reads as 0. */
 uint8_t Ppu::ly() const {
     if (ly_ == SCREEN_HEIGHT + VBLANK_SCANLINES - 1 &&
-        mode == Mode::VBLANK && scanline_t_cycles > 3) {
+        mode == Mode::VBLANK && scanline_t_cycles > 4) {
         return 0;
     }
     return ly_;
@@ -209,6 +215,7 @@ std::string Ppu::representation() const {
     repr << "PPU:" << " ticks = " << scanline_t_cycles << std::hex
         << " LCDC = " << static_cast<int>(lcdc())
         << " LY = " << static_cast<int>(ly())
+        << " LX = " << static_cast<int>(lx)
         << " LYC = " << static_cast<int>(lyc)
         << " STAT = " << static_cast<int>(stat())
         << " SCY = " << static_cast<int>(scy)

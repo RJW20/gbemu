@@ -1,12 +1,19 @@
 #include <cstdint>
 #include "oam_scanner.hpp"
+#include "../../interrupt_manager.hpp"
 #include "../../dma.hpp"
 
-// Initialise variables for a new scanline.
+/* Initialise variables for a new scanline.
+ * Increments ly_ or resets it depending on if the previous mode was HBLANK or
+ * VBLANK. */
 void OamScanner::new_oam_scan() {
     scanline_t_cycles = 0;
     scan_index = 0;
     scanline_objects.resize(0);
+
+    if (++ly_ > SCREEN_HEIGHT) {
+        ly_ = 0;
+    }
 }
 
 /* Carry out 1 OAM_SCAN t-cycle.

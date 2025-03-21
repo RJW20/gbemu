@@ -35,6 +35,8 @@ private:
         OAM_SCAN = 2, PIXEL_TRANSFER = 3, HBLANK = 0, VBLANK = 1
     };
     Mode mode;
+    bool mode_change;
+    Mode pending_mode;
     void set_mode(Mode new_mode);
 
     // Tick methods for each mode

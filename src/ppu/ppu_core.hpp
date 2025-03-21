@@ -15,6 +15,10 @@ public:
     PpuCore(InterruptManager* interrupt_manager) :
         interrupt_manager(interrupt_manager) {}
 
+    // Screen info (to be replaced with the screen)
+    static constexpr uint8_t SCREEN_WIDTH = 160;
+    static constexpr uint8_t SCREEN_HEIGHT = 144;
+
     // VRAM/OAM access
     uint8_t read_vram(uint16_t address) const;
     void write_vram(uint16_t address, uint8_t value);
