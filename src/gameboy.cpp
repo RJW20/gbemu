@@ -34,9 +34,9 @@ void GameBoy::run() {
 void GameBoy::tick() {
     timer.tick();
     serial.tick();
-    cpu.tick();
-    dma.tick();
     ppu.tick();
+    dma.tick();
+    cpu.tick();
 }
 
 // Return true if an SDL_QUIT event has occurred.
