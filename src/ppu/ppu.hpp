@@ -27,6 +27,8 @@ public:
     void set_ly(uint8_t value) const;
     void set_stat(uint8_t value) { stat_ = value & 0x78; }
 
+    bool ready_to_render;
+
     std::string representation() const;
 
 private:

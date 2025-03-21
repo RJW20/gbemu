@@ -167,6 +167,7 @@ void Ppu::vblank_tick() {
         scanline_t_cycles = 0;
     }
     else {
+        ready_to_render = true;
         fetcher.wly = 0;
         mode_change = true;
         pending_mode = Mode::OAM_SCAN;

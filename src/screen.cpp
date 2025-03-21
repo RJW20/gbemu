@@ -60,8 +60,8 @@ Screen::~Screen() {
 }
 
 /* Draw the PPU's pixel_buffer to the window.
- * Should be called every time the pixel_buffer is updated, but ~60FPS (every 
- * 70224 ticks) is sufficient and efficient. */
+ * Should be called every time the pixel_buffer is updated, but the end of
+ * each PPU VBLANK (every 70224 ticks = ~60FPS) is sufficient and efficient. */
 void Screen::render() {
 
     void* pixel_pointer;
@@ -83,4 +83,6 @@ void Screen::render() {
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, nullptr, nullptr);
     SDL_RenderPresent(renderer);
+
+    ppu->ready_to_render = false;
 }

@@ -11,21 +11,26 @@ void GameBoy::run() {
     auto last_frame = next_frame - time_between_frames{1};
 
     while (true) {
+
         tick();
-        if (++ticks == TICKS_PER_FRAME) {
-            screen.render();
-            ticks = 0;
-            if (power_off()) {
-                break;
-            }
-            if (throttled()) {
-                std::this_thread::sleep_until(next_frame);
-                last_frame = next_frame;
-                next_frame = next_frame + time_between_frames{1};
-            }
-            else {
-                next_frame = system_clock::now() + time_between_frames{0};
-            }
+
+        if (!ppu.ready_to_render) {
+            continue;
+        }
+
+        screen.render();
+
+        if (power_off()) {
+            break;
+        }
+        
+        if (throttled()) {
+            std::this_thread::sleep_until(next_frame);
+            last_frame = next_frame;
+            next_frame = next_frame + time_between_frames{1};
+        }
+        else {
+            next_frame = system_clock::now() + time_between_frames{0};
         }
     }
 }

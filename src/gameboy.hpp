@@ -39,8 +39,6 @@ private:
     Screen screen{cartridge.title, &ppu};
 
     static constexpr int FPS = 60;
-    static constexpr int TICKS_PER_FRAME = 70224;
-    int ticks = 0;
 
     void tick();
     bool power_off() const;

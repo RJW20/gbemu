@@ -15,7 +15,7 @@ public:
     PpuCore(InterruptManager* interrupt_manager) :
         interrupt_manager(interrupt_manager) {}
 
-    // Screen info (to be replaced with the screen)
+    // Screen info
     static constexpr uint8_t SCREEN_WIDTH = 160;
     static constexpr uint8_t SCREEN_HEIGHT = 144;
 
