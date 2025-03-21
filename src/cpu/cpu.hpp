@@ -38,7 +38,6 @@ private:
     Opcode* opcode;
     uint8_t opcode_m_cycles;
     uint8_t state_m_cycles;
-    bool interrupt_enable_delayed;
     InterruptType interrupt_type;
 
     // Cycle methods for each state
@@ -58,6 +57,7 @@ private:
     uint16_t z16;
     bool early_exit;
     bool interrupt_enable_scheduled;
+    uint8_t interrupt_enable_delay;
 
     // Basis of cpu functionality
     void add(uint8_t value);

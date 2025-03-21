@@ -1837,7 +1837,7 @@ Opcode Cpu::opcode_0xf2() {
 Opcode Cpu::opcode_0xf3() {
     std::vector<Step> steps;
     steps.push_back([this] { interrupt_manager->disable_interrupts();
-        interrupt_enable_scheduled = false; });
+        interrupt_enable_scheduled = false; interrupt_enable_delay = 0; });
     return Opcode{0xf3, "DI", 1, 4, steps};
 }
 

@@ -642,7 +642,8 @@ def di(opcode: Opcode) -> str:
 
     return step(
         "interrupt_manager->disable_interrupts();\n"
-        f"{INDENT}{INDENT}interrupt_enable_scheduled = false;"
+        f"{INDENT}{INDENT}interrupt_enable_scheduled = false; "
+        f"interrupt_enable_delay = 0;"
     )
 
 @wrap_function_definition()

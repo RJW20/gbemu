@@ -22,9 +22,9 @@ void Cpu::reset() {
     set_state(State::FETCH);
     halt_bug = false;
     opcode = &(opcodes[0]);
-    interrupt_enable_delayed = false;
     early_exit = false;
     interrupt_enable_scheduled = false;
+    interrupt_enable_delay = 0;
 }
 
 // Carry out 1 t-cycle.
@@ -100,8 +100,8 @@ void Cpu::fetch_cycle() {
                     state = State::HALT;
                     if (interrupt_enable_scheduled) {
                         interrupt_manager->enable_interrupts();
-                        interrupt_enable_delayed = false;
                         interrupt_enable_scheduled = false;
+                        interrupt_enable_delay = 0;
                     }
                 }
                 return;
@@ -143,15 +143,10 @@ void Cpu::work_cycle() {
 
         /* Set master interrupt enable if scheduled - done here since EI effect
          * delays one opcode. */
-        if (interrupt_enable_scheduled) {
-            if (interrupt_enable_delayed) {
-                interrupt_manager->enable_interrupts();
-                interrupt_enable_delayed = false;
-                interrupt_enable_scheduled = false;
-            }
-            else {
-                interrupt_enable_delayed = true;
-            }
+        if (interrupt_enable_scheduled && interrupt_enable_delay++ == 1) {
+            interrupt_manager->enable_interrupts();
+            interrupt_enable_scheduled = false;
+            interrupt_enable_delay = 0;
         }
         
         // Set next state
