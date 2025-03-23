@@ -28,7 +28,7 @@ Place SDL2.dll from the package in the build folder before running.
 
 ### Controller Mapping
 <table style="width:100%">
-    <td style="width:50%; vertical-align: top;">
+  <td style="width:50%; vertical-align: top;">
 
 | Gameboy | Key |
 | --- | --- |
@@ -65,7 +65,16 @@ The first method is far easier to implement, and would also result in a faster e
 - Save functionality.
 
 ## Tests
-- [Blargg](https://github.com/retrio/gb-test-roms) - Passes all except the OAM bug tests (as not implemented).
+- [Blargg](https://github.com/retrio/gb-test-roms) - Passes 19/27 - all except the OAM bug tests (as not implemented).
+- [Mooneye](https://github.com/Gekkio/mooneye-test-suite) - Passes 78/86 of the tests that DMG-ABC and MBCs 1-3 should pass - all except for:
+    - `acceptance/interrupts/ie_push`
+    - `acceptance/ppu/hblank_ly_scx_timing-GS`
+    - `acceptance/ppu/intr_2_mode0_timing_sprites`
+    - `acceptance/ppu/intr_2_oam_ok_timing`
+    - `acceptance/ppu/lcdon_timing-GS`
+    - `acceptance/ppu/lcdon_write_timing-GS`
+    - `acceptance/ppu/stat_irq_blocking`
+    - `acceptance/ppu/stat_lyc_onoff`
 - [rtc3test](https://github.com/aaaaaa123456789/rtc3test) - Used to get the Real Time Clock working for MBC3.
 
 ## References
