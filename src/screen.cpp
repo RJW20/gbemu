@@ -14,7 +14,7 @@ Screen::Screen(const std::string rom_title, Ppu* ppu) : ppu(ppu) {
             "SDL could not initialize! SDL_Error: " +
             std::string(SDL_GetError())
         );
-        exit(1);
+        exit(4);
     };
 
     window = SDL_CreateWindow(
@@ -26,7 +26,7 @@ Screen::Screen(const std::string rom_title, Ppu* ppu) : ppu(ppu) {
             "Window could not be created! SDL_Error: " +
             std::string(SDL_GetError())
         );
-        exit(2);
+        exit(5);
     }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
@@ -35,7 +35,7 @@ Screen::Screen(const std::string rom_title, Ppu* ppu) : ppu(ppu) {
             "Renderer could not be created! SDL_Error: " +
             std::string(SDL_GetError())
         );
-        exit(3);
+        exit(6);
     }
 
     texture = SDL_CreateTexture(
@@ -47,7 +47,7 @@ Screen::Screen(const std::string rom_title, Ppu* ppu) : ppu(ppu) {
             "Texture could not be created! SDL_Error: " +
             std::string(SDL_GetError())
         );
-        exit(4);
+        exit(7);
     }
 }
 
@@ -70,7 +70,7 @@ void Screen::render() {
         Log::error(
             "SDL_LockTexture failed! SDL_Error: " + std::string(SDL_GetError())
         );
-        exit(5);
+        exit(8);
     }
 
     std::copy(

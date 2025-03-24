@@ -55,7 +55,7 @@ uint8_t InterruptManager::get_handler_address(
             "Do not call InterruptManager.get_handler_address with argument: "
             "InterruptType::NONE"
         );
-        exit(10);
+        exit(9);
     } 
     return handler_addresses.at(std::to_underlying(interruption));
 }

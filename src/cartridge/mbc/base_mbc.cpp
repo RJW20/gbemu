@@ -32,7 +32,7 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
             "Cartridge header has incorrect ROM size value at " +
             rom_size_address.str()
         );
-        exit(20);
+        exit(2);
     }
 
     // RAM bank handling
@@ -48,7 +48,7 @@ BaseMbc::BaseMbc(std::ifstream& rom_file, bool has_external_ram) {
             "Cartridge header has invalid RAM size value at " +
             ram_size_address.str()
         );
-        exit(21);
+        exit(3);
     }
 }
 
