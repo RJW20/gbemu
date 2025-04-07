@@ -9,7 +9,7 @@ A GameBoy emulator written in C++, using the SDL2 library for graphics.
 
 ## Usage
 ### Requirements
-1. **C++ Compiler**: Support for C++17 or later.
+1. **C++ Compiler**: Support for C++23 or later.
 2. **SDL2 Library**: For graphics rendering.
 3. **CMake** and **Make**: For building the emulator.
 
